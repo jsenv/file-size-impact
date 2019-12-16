@@ -1,7 +1,7 @@
 {
   "name": "@jsenv/github-pull-request-filesize-impact",
   "description": "Monitor pull request impact on file sizes",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -39,7 +39,6 @@
   },
   "dependencies": {
     "@jsenv/file-collector": "1.1.0",
-    "@jsenv/href": "1.2.0",
     "@jsenv/logger": "3.1.0",
     "@jsenv/url-meta": "5.0.0",
     "node-fetch": "2.6.0"
@@ -49,6 +48,7 @@
     "@jsenv/codecov-upload": "3.0.0",
     "@jsenv/core": "10.3.0",
     "@jsenv/eslint-config": "12.0.0",
+    "@jsenv/github-pull-request-filesize-impact": "1.1.0",
     "@jsenv/github-release-package": "1.1.1",
     "@jsenv/package-publish": "1.1.0",
     "@jsenv/prettier-check-project": "4.1.0",

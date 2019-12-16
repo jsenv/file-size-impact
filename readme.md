@@ -1,7 +1,8 @@
 # Github pull request filesize impact
 
 [![github package](https://img.shields.io/github/package-json/v/jsenv/jsenv-github-pull-request-filesize-impact.svg?label=package&logo=github)](https://github.com/jsenv/jsenv-github-pull-request-filesize-impact/packages)
-[![workflow status](https://github.com/jsenv/jsenv-github-pull-request-filesize-impact/workflows/continuous%20testing/badge.svg)](https://github.com/jsenv/jsenv-github-pull-request-filesize-impact/actions?workflow=continuous+testing)
+[![npm package](https://img.shields.io/npm/v/@jsenv/github-pull-request-filesize-impact.svg?logo=npm&label=package)](https://www.npmjs.com/package/@jsenv/github-pull-request-filesize-impact)
+[![workflow status](https://github.com/jsenv/jsenv-github-pull-request-filesize-impact/workflows/ci/badge.svg)](https://github.com/jsenv/jsenv-github-pull-request-filesize-impact/actions?workflow=ci)
 [![codecov](https://codecov.io/gh/jsenv/jsenv-github-pull-request-filesize-impact/branch/master/graph/badge.svg)](https://codecov.io/gh/jsenv/jsenv-github-pull-request-filesize-impact)
 
 ## Table of contents

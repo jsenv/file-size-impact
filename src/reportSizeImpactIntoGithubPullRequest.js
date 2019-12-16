@@ -43,7 +43,7 @@ ${baseSnapshotFilePath}
 --- head snapshot file path ---
 ${headSnapshotFilePath}
 `)
-  const snapshotPromises = Promise.all([
+  const snapshotsPromise = Promise.all([
     readFileContent(baseSnapshotFilePath),
     readFileContent(headSnapshotFilePath),
   ])
@@ -67,20 +67,30 @@ ${getPullRequestHref({
     regex: regexForMergingSizeImpact,
   })
 
-  const [[baseSnapshot, headSnapshot], existingComment] = await Promise.all([
-    snapshotPromises,
+  const [[baseSnapshotFileContent, headSnapshotFileContent], existingComment] = await Promise.all([
+    snapshotsPromise,
     existingCommentPromise,
   ])
 
-  const snaptshotComparison = compareTwoSnapshots(baseSnapshot, headSnapshot)
+  const snapshotComparison = compareTwoSnapshots(
+    JSON.parse(baseSnapshotFileContent),
+    JSON.parse(headSnapshotFileContent),
+  )
 
   const pullRequestCommentString = generatePullRequestCommentString({
     pullRequestBase,
     pullRequestHead,
-    snaptshotComparison,
+    snapshotComparison,
     formatSize,
     generatedByLink,
   })
+
+  if (!pullRequestCommentString) {
+    logger.warn(`
+aborting because the pull request comment would be empty.
+May happen whem a snapshot file is empty for instance
+`)
+  }
 
   if (existingComment) {
     logger.info(`comment found, updating it

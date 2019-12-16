@@ -5,4 +5,5 @@ execute({
   ...jsenvConfig,
   launch: (options) => launchNode({ ...options, debugPort: 40000 }),
   fileRelativeUrl: process.argv[2],
+  stopPlatformAfterExecute: false,
 })
