@@ -1,0 +1,60 @@
+{
+  "name": "@jsenv/github-pull-request-filesize-impact",
+  "description": "Monitor pull request impact on file sizes",
+  "version": "1.0.0",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jsenv/jsenv-github-pull-request-filesize-impact"
+  },
+  "engines": {
+    "node": ">=12.0.0"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://npm.pkg.github.com"
+  },
+  "main": "dist/commonjs/main.js",
+  "module": "index.js",
+  "files": [
+    "/dist/",
+    "/src/",
+    "/index.js"
+  ],
+  "imports": {},
+  "scripts": {
+    "test": "node ./script/test/test.js",
+    "test-with-coverage": "node ./script/test/test.js --coverage",
+    "eslint-check": "eslint .",
+    "prettier-check": "node ./script/prettier-check/prettier-check.js",
+    "upload-coverage": "node ./script/upload-coverage/upload-coverage.js",
+    "generate-commonjs-bundle": "node ./script/generate-commonjs-bundle/generate-commonjs-bundle.js",
+    "generate-import-map": "node ./script/generate-import-map/generate-import-map.js",
+    "dist": "npm run clean && npm run generate-commonjs-bundle",
+    "clean": "rimraf dist && rimraf coverage",
+    "reinstall": "npm run clean && rimraf node_modules && npm install",
+    "postinstall": "npm run generate-import-map",
+    "prepublishOnly": "node ./script/transform-package/remove-postinstall.js && npm run dist",
+    "postpublish": "node ./script/transform-package/restore-postinstall.js"
+  },
+  "dependencies": {
+    "@jsenv/file-collector": "1.1.0",
+    "@jsenv/href": "1.2.0",
+    "@jsenv/logger": "3.1.0",
+    "@jsenv/url-meta": "5.0.0",
+    "node-fetch": "2.6.0"
+  },
+  "devDependencies": {
+    "@jsenv/assert": "1.1.1",
+    "@jsenv/codecov-upload": "3.0.0",
+    "@jsenv/core": "10.3.0",
+    "@jsenv/eslint-config": "12.0.0",
+    "@jsenv/github-release-package": "1.1.1",
+    "@jsenv/package-publish": "1.1.0",
+    "@jsenv/prettier-check-project": "4.1.0",
+    "@jsenv/prettier-config": "1.1.0",
+    "babel-eslint": "11.0.0-beta.0",
+    "eslint": "6.7.2",
+    "prettier": "1.19.1"
+  }
+}
