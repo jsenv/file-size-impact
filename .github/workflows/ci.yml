@@ -42,7 +42,7 @@ jobs:
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
       - name: pull request size impact
-        if: github.event_name = 'pull_request'
+        if: github.event_name == 'pull_request'
         run: |
           git checkout $GITHUB_BASE_REF
           npm install
