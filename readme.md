@@ -7,14 +7,11 @@
 
 ## Table of contents
 
-- [Installation](#installation)
-  - [Step 1 - Install package](#step-1---install-package)
-  - [Step 2 - Enable github actions](#step-2---enable-github-actions)
-  - [Step 3 - Add script](#step-3---add-script)
-  - [Step 4 - Add github workflow](#step-4---add-github-worflow)
+- [Presentation](#Presentation)
+- [Usage](#Usage)
 - [Usage outside github workflow](#usage-outside-github-workflow)
 
-## Introduction
+## Presentation
 
 `@jsenv/github-pull-request-filesize-impact` comment your pull request on github to see the impact of changes on a folder size.
 
@@ -24,48 +21,9 @@ The screenshot below was taken inside a githug pull request to give you a better
 
 There is also a comment example visible at [./docs/comment-example.md](./docs/comment-example.md)
 
-## Installation
+## Usage
 
-The steps below explains how to install continuous size reporting in your github repository relying on github actions.
-
-### Step 1 - Install package
-
-If you never installed a jsenv package, read [Installing a jsenv package](https://github.com/jsenv/jsenv-core/blob/master/docs/installing-jsenv-package.md#installing-a-jsenv-package) before going further.
-
-This documentation is up-to-date with a specific version so prefer any of the following commands
-
-```console
-npm install --save-dev @jsenv/github-pull-request-filesize-impact@1.1.0
-```
-
-```console
-yarn add --dev @jsenv/github-pull-request-filesize-impact@1.1.0
-```
-
-### Step 2 - Enable github actions
-
-— see [https://github.com/features/actions](https://github.com/features/actions)
-
-### Step 3 - Add script
-
-In your project, create a file like [./script/report-size-impact/report-size-impact.js](./script/report-size-impact/report-size-impact.js)
-
-You can put this file anywhere in your project because you will specify its location in the next step.
-
-As you can see we are using a function named `reportSizeImpactIntoGithubPullRequest`.<br />
-See [api documentation](./docs/api.md) to get more information about it.
-
-### Step 4 - Add github worflow
-
-In your project, create a worflow that looks like [./.github/workflows/github-pull-request-filesize-impact.yml](./.github/workflows/github-pull-request-filesize-impact.yml)
-
-The worflow above assumes that:
-
-- you want to watch size of `dist/**`
-- `npm run dist` generates a fresh `dist/` folder
-- the script is located at `./script/report-size-impact/report-size-impact.js`
-
-Don't forget to change this to your own needs.
+Waiting for a proper documentation you can check `pull request size impact` step in [.github/workflows/ci.yml](./.github/workflows/ci.yml)
 
 ## Usage outside github workflow
 
@@ -89,7 +47,7 @@ process.env.GITHUB_HEAD_REF = pullRequestRef
 process.env.GITHUB_TOKEN = githubToken
 
 reportSizeImpactIntoGithubPullRequest({
-  projectPath: __dirname,
+  projectDirectoryUrl: __dirname,
 })
 ```
 

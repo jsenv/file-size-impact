@@ -1,26 +1,25 @@
 # Table of contents
 
 - [reportSizeImpactIntoGithubPullRequest](#reportSizeImpactIntoGithubPullRequest)
-  - [projectPath](#projectpath)
-  - [folderRelativePath](#folderrelativepath)
-  - [trackingMetaMap](#trackingmetamap)
+  - [projectDirectoryUrl](#projectDirectoryUrl)
   - [logLevel](#loglevel)
+  - [baseSnapshotFileRelativeUrl](#baseSnapshotFileRelativeUrl)
+  - [headSnapshotFileRelativeUrl](#headSnapshotFileRelativeUrl)
   - [formatSize](#formatsize)
 
 ## reportSizeImpactIntoGithubPullRequest
 
 > `reportSizeImpactIntoGithubPullRequest` is an async function comparing two folder size and commenting a github pull request with the comparison result.
 
+Implemented in [src/reportSizeImpactIntoGithubPullRequest.js](../src/reportSizeImpactIntoGithubPullRequest.js), you can use it as shown below.
+
 ```js
 const { reportSizeImpactIntoGithubPullRequest } = require("@jsenv/continuous-size-reporting")
 
 reportSizeImpactIntoGithubPullRequest({
-  projectPath: "/Users/you/project",
-  folderRelativePath: "/dist",
-  trackingMetaMap: {
-    "/**/*": true,
-    "/**/*.map": false,
-  },
+  projectDirectoryUrl: "file:///Users/you/directory",
+  baseSnapshotFileRelativeUrl: "../base-snapshot.json",
+  headSnapshotFileRelativeUrl: "../head-snapshot.json",
   logLevel: "info",
   formatSize: (sizeInBytes) => `${sizeInBytes} bytes`,
   generatedByLink: true,
@@ -29,50 +28,15 @@ reportSizeImpactIntoGithubPullRequest({
 
 — see [source code on github](../src/reportSizeImpactIntoGithubPullRequest/reportSizeImpactIntoGithubPullRequest.js)
 
-### projectPath
+### projectDirectoryUrl
 
-> `projectPath` parameter is a string leading to your project root folder.
+> `projectDirectoryUrl` parameter is a string leading to your project root folder.
 
 This parameter is **required**, an example value could be:
 
 ```js
-"/Users/you/folder"
+"file:///Users/you/directory"
 ```
-
-On windows you would pass `C:\Users\you\folder`, that's fine.<br />
-You can use `__dirname` to provide this parameter value.<br />
-— see [\_\_dirname documentation on node.js](https://nodejs.org/docs/latest/api/modules.html#modules_dirname)
-
----
-
-### folderRelativePath
-
-> `folderRelativePath` is a string representing a path relative to `projectPath` and leading to the folder you want to track.
-
-This parameter is optionnal, the default value is:
-
-```js
-"/dist"
-```
-
-It must start with `/`. Relative notation like `./` or `../` are not supported.
-
----
-
-### trackingMetaMap
-
-> `trackingMetaMap` parameter is an object used to include/exclude certain files from the size impact computation.
-
-This parameter is optionnal, the default value is:
-
-```json
-{
-  "/**/*": true,
-  "/**/*.map": false
-}
-```
-
-It uses pattern matching provided by [@jsenv/url-meta](https://github.com/jsenv/jsenv-url-meta)
 
 ---
 
@@ -87,6 +51,30 @@ This parameter is optionnal, the default value is:
 ```
 
 The list of available logLevel values can be found on [@jsenv/logger documentation](https://github.com/jsenv/jsenv-logger#list-of-log-levels)
+
+---
+
+### baseSnapshotFileRelativeUrl
+
+> `baseSnapshotFileRelativeUrl` is a string leading to the base snapshot file.
+
+This parameter is **required**, an example value could be:
+
+```js
+"../base-snapshot.json"
+```
+
+---
+
+### headSnapshotFileRelativeUrl
+
+> `headSnapshotFileRelativeUrl` is a string leading to the head snapshot file.
+
+This parameter is **required**, an example value could be:
+
+```js
+"../head-snapshot.json"
+```
 
 ---
 

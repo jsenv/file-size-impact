@@ -13,14 +13,25 @@ const regexForMergingSizeImpact = /Merging .*? into .*? would .*? size/
 export const reportSizeImpactIntoGithubPullRequest = async ({
   logLevel,
   projectDirectoryUrl,
-  baseSnapshotFileRelativeUrl = "../base/file-size-snapshot.json",
-  headSnapshotFileRelativeUrl = "../head/file-size-snapshot.json",
+  baseSnapshotFileRelativeUrl,
+  headSnapshotFileRelativeUrl,
   formatSize,
   generatedByLink,
 }) => {
   const logger = createLogger({ logLevel })
 
   projectDirectoryUrl = normalizeDirectoryUrl(projectDirectoryUrl)
+
+  if (typeof baseSnapshotFileRelativeUrl !== "string") {
+    throw new TypeError(
+      `baseSnapshotFileRelativeUrl must be a string, got ${baseSnapshotFileRelativeUrl}`,
+    )
+  }
+  if (typeof headSnapshotFileRelativeUrl !== "string") {
+    throw new TypeError(
+      `headSnapshotFileRelativeUrl must be a string, got ${headSnapshotFileRelativeUrl}`,
+    )
+  }
 
   const {
     repositoryOwner,
