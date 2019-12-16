@@ -6,7 +6,7 @@ export const generatePullRequestCommentString = ({
   folderRelativePath,
   pullRequestBase,
   pullRequestHead,
-  folderDiff,
+  snaptshotComparison,
   formatSize = formatSizeFallback,
   // this is to inform someone wondering where this message comes from
   // do not confuse this with advertising
@@ -16,16 +16,16 @@ export const generatePullRequestCommentString = ({
   const sizeImpactMap = {}
   let sizeImpact = 0
   let hasSizeImpact = false
-  Object.keys(folderDiff).forEach((relativePath) => {
-    const { leftInfo, rightInfo } = folderDiff[relativePath]
+  Object.keys(snaptshotComparison).forEach((relativeUrl) => {
+    const { base, head } = snaptshotComparison[relativeUrl]
 
     // added
-    if (!leftInfo && rightInfo.type === "file") {
+    if (!base && head.type === "file") {
       const baseSize = 0
-      const headSize = rightInfo.size
+      const headSize = head.size
       const diffSize = headSize - baseSize
       if (diffSize) {
-        sizeImpactMap[relativePath] = {
+        sizeImpactMap[relativeUrl] = {
           why: "removed",
           baseSize,
           headSize,
@@ -36,12 +36,12 @@ export const generatePullRequestCommentString = ({
       }
     }
     // removed
-    else if (leftInfo && leftInfo.type === "file" && !rightInfo) {
-      const baseSize = leftInfo.size
+    else if (base && base.type === "file" && !head) {
+      const baseSize = base.size
       const headSize = 0
       const diffSize = headSize - baseSize
       if (diffSize) {
-        sizeImpactMap[relativePath] = {
+        sizeImpactMap[relativeUrl] = {
           why: "removed",
           baseSize,
           headSize,
@@ -52,12 +52,12 @@ export const generatePullRequestCommentString = ({
       }
     }
     // changed
-    else if (leftInfo && leftInfo.type === "file" && rightInfo && rightInfo.type === "file") {
-      const baseSize = leftInfo.size
-      const headSize = rightInfo.size
+    else if (base && base.type === "file" && head && head.type === "file") {
+      const baseSize = base.size
+      const headSize = head.size
       const diffSize = headSize - baseSize
       if (diffSize) {
-        sizeImpactMap[relativePath] = {
+        sizeImpactMap[relativeUrl] = {
           why: "changed",
           baseSize,
           headSize,

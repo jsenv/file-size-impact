@@ -5,14 +5,13 @@ import { resolveUrl, urlToFilePath } from "./internal/urlUtils.js"
 import { writeFileContent } from "./internal/filesystemUtils.js"
 import { normalizeDirectoryUrl } from "./internal/normalizeDirectoryUrl.js"
 
-export const generateFileSizeSnapshot = async ({
+export const generateSnapshotFile = async ({
   logLevel,
   projectDirectoryUrl,
   trackedFilesConfig = {
     "./**/*": true,
     "./**/*.map": false,
   },
-  file = true,
   fileRelativeUrl = "./filesize-snapshot.json",
 }) => {
   const logger = createLogger({ logLevel })
@@ -23,27 +22,23 @@ export const generateFileSizeSnapshot = async ({
     track: trackedFilesConfig,
   })
 
-  const filesizeSnapshot = {}
+  const snapshot = {}
 
   await collectFiles({
     directoryPath: urlToFilePath(projectDirectoryUrl),
     specifierMetaMap,
     predicate: (meta) => meta.track === true,
     matchingFileOperation: async ({ relativeUrl, lstat }) => {
-      filesizeSnapshot[relativeUrl] = {
+      snapshot[relativeUrl] = {
         type: statsToType(lstat),
         size: lstat.size,
       }
     },
   })
 
-  if (file) {
-    const fileUrl = resolveUrl(fileRelativeUrl, projectDirectoryUrl)
-    logger.info(`write filesize snapshot file at ${fileUrl}`)
-    await writeFileContent(fileUrl, JSON.stringify(filesizeSnapshot, null, "  "))
-  }
-
-  return filesizeSnapshot
+  const fileUrl = resolveUrl(fileRelativeUrl, projectDirectoryUrl)
+  logger.info(`write filesize snapshot file at ${fileUrl}`)
+  await writeFileContent(fileUrl, JSON.stringify(snapshot, null, "  "))
 }
 
 const statsToType = (stats) => {

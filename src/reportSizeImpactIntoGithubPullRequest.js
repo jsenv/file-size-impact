@@ -3,9 +3,10 @@ import { getPullRequestCommentMatching } from "./internal/getPullRequestCommentM
 import { createPullRequestComment } from "./internal/createPullRequestComment.js"
 import { updatePullRequestComment } from "./internal/updatePullRequestComment.js"
 import { generatePullRequestCommentString } from "./internal/generatePullRequestCommentString.js"
-import { compareSnapshots } from "./internal/compareSnapshots.js"
+import { compareTwoSnapshots } from "./internal/compareTwoSnapshots.js"
 import { normalizeDirectoryUrl } from "./internal/normalizeDirectoryUrl.js"
 import { resolveUrl, urlToFilePath } from "./internal/urlUtils.js"
+import { readFileContent } from "./internal/filesystemUtils.js"
 
 const regexForMergingSizeImpact = /Merging .*? into .*? would .*? size/
 
@@ -42,7 +43,10 @@ ${baseSnapshotFilePath}
 --- head snapshot file path ---
 ${headSnapshotFilePath}
 `)
-  const comparePromise = compareSnapshots(baseSnapshotFilePath, headSnapshotFilePath)
+  const snapshotPromises = Promise.all([
+    readFileContent(baseSnapshotFilePath),
+    readFileContent(headSnapshotFilePath),
+  ])
 
   logger.info(
     `
@@ -63,20 +67,19 @@ ${getPullRequestHref({
     regex: regexForMergingSizeImpact,
   })
 
-  const [compareResult, existingComment] = await Promise.all([
-    comparePromise,
+  const [[baseSnapshot, headSnapshot], existingComment] = await Promise.all([
+    snapshotPromises,
     existingCommentPromise,
   ])
 
-  const folderDiff = {}
-  Object.keys(compareResult).forEach((relativePath) => {
-    folderDiff[relativePath.slice(1)] = compareResult[relativePath]
-  })
+  const snaptshotComparison = compareTwoSnapshots(baseSnapshot, headSnapshot)
+
+
   const pullRequestCommentString = generatePullRequestCommentString({
     folderRelativePath,
     pullRequestBase,
     pullRequestHead,
-    folderDiff,
+    snaptshotComparison,
     formatSize,
     generatedByLink,
   })
