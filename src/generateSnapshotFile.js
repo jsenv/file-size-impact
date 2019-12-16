@@ -16,10 +16,15 @@ export const generateSnapshotFile = async ({
 
   projectDirectoryUrl = normalizeDirectoryUrl(projectDirectoryUrl)
 
+  const directoryRelativeUrlArray = Object.keys(directorySizeTrackingConfig)
+  if (directoryRelativeUrlArray.length === 0) {
+    logger.warn(`directorySizeTrackingConfig is empty`)
+  }
+
   const snapshot = {}
 
   await Promise.all(
-    Object.keys(directorySizeTrackingConfig).map(async (directoryRelativeUrl) => {
+    directoryRelativeUrlArray.map(async (directoryRelativeUrl) => {
       const directorySnapshot = {}
       const directoryUrl = resolveDirectoryUrl(directoryRelativeUrl, projectDirectoryUrl)
       const specifierMetaMap = metaMapToSpecifierMetaMap({
