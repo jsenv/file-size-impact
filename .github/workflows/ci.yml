@@ -41,6 +41,20 @@ jobs:
         run: npm run upload-coverage
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+      - name: pull request size impact
+        if: github.event_name = 'pull_request'
+        run: |
+          git checkout $GITHUB_BASE_REF
+          npm install
+          npm run dist
+          node ./.github/generate-size-snapshot.js ../base/snapshot.json
+          git checkout $GITHUB_HEAD_REF
+          npm install
+          npm run dist
+          node ./.github/generate-size-snapshot.js ../head/snapshot.json
+          node ./.github/report-size-impact ../base/snapshot.json ../head/snapshot.json
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: publish package
         if: github.event_name == 'push'
         run: node ./.github/publish-package.js
