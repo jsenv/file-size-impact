@@ -74,9 +74,7 @@ ${getPullRequestHref({
 
   const snaptshotComparison = compareTwoSnapshots(baseSnapshot, headSnapshot)
 
-
   const pullRequestCommentString = generatePullRequestCommentString({
-    folderRelativePath,
     pullRequestBase,
     pullRequestHead,
     snaptshotComparison,
