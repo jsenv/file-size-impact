@@ -10,7 +10,7 @@ export const generateSnapshotFile = async ({
   logLevel,
   projectDirectoryUrl,
   directorySizeTrackingConfig = jsenvDirectorySizeTrackingConfig,
-  fileRelativeUrl = "./filesize-snapshot.json",
+  snapshotFileRelativeUrl = "./filesize-snapshot.json",
 }) => {
   const logger = createLogger({ logLevel })
 
@@ -23,27 +23,37 @@ export const generateSnapshotFile = async ({
       const directorySnapshot = {}
       const directoryUrl = resolveDirectoryUrl(directoryRelativeUrl, projectDirectoryUrl)
       const specifierMetaMap = metaMapToSpecifierMetaMap({
-        track: directorySizeTrackingConfig[directoryRelativeUrl].trackedFiles,
+        track: directorySizeTrackingConfig[directoryRelativeUrl],
       })
+      const directoryPath = urlToFilePath(directoryUrl)
+      try {
+        await collectFiles({
+          directoryPath,
+          specifierMetaMap,
+          predicate: (meta) => meta.track === true,
+          matchingFileOperation: async ({ relativeUrl, lstat }) => {
+            directorySnapshot[relativeUrl] = {
+              type: statsToType(lstat),
+              size: lstat.size,
+            }
+          },
+        })
+      } catch (e) {
+        if (e.code === "ENOENT" && e.path === directoryPath) {
+          logger.warn(`${directoryPath} does not exists`)
+        } else {
+          throw e
+        }
+      }
 
-      await collectFiles({
-        directoryPath: urlToFilePath(directoryUrl),
-        specifierMetaMap,
-        predicate: (meta) => meta.track === true,
-        matchingFileOperation: async ({ relativeUrl, lstat }) => {
-          snapshot[relativeUrl] = {
-            type: statsToType(lstat),
-            size: lstat.size,
-          }
-        },
-      })
       snapshot[directoryRelativeUrl] = directorySnapshot
     }),
   )
 
-  const fileUrl = resolveUrl(fileRelativeUrl, projectDirectoryUrl)
-  logger.info(`write filesize snapshot file at ${fileUrl}`)
-  await writeFileContent(fileUrl, JSON.stringify(snapshot, null, "  "))
+  const snapshotFileUrl = resolveUrl(snapshotFileRelativeUrl, projectDirectoryUrl)
+  const snapshotFilePath = urlToFilePath(snapshotFileUrl)
+  logger.info(`write snapshot file at ${snapshotFilePath}`)
+  await writeFileContent(snapshotFilePath, JSON.stringify(snapshot, null, "  "))
 }
 
 const statsToType = (stats) => {

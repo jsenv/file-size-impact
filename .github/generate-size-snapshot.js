@@ -3,5 +3,5 @@ const { projectDirectoryUrl } = require("../jsenv.config.js")
 
 generateSnapshotFile({
   projectDirectoryUrl,
-  fileRelativeUrl: process.argv[2],
+  snapshotFileRelativeUrl: process.argv[2],
 })

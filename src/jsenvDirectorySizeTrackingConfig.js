@@ -1,14 +1,10 @@
 export const jsenvDirectorySizeTrackingConfig = {
   dist: {
-    trackedFiles: {
-      "./**/*": true,
-      "./**/*.map": false,
-    },
+    "./**/*": true,
+    "./**/*.map": false,
   },
   src: {
-    trackedFiles: {
-      "./**/*": true,
-      "./**/*.map": false,
-    },
+    "./**/*": true,
+    "./**/*.map": false,
   },
 }
