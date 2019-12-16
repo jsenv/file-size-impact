@@ -1,40 +1,45 @@
 import { createLogger } from "@jsenv/logger"
 import { metaMapToSpecifierMetaMap } from "@jsenv/url-meta"
 import { collectFiles } from "@jsenv/file-collector"
-import { resolveUrl, urlToFilePath } from "./internal/urlUtils.js"
+import { resolveUrl, resolveDirectoryUrl, urlToFilePath } from "./internal/urlUtils.js"
 import { writeFileContent } from "./internal/filesystemUtils.js"
 import { normalizeDirectoryUrl } from "./internal/normalizeDirectoryUrl.js"
+import { jsenvDirectorySizeTrackingConfig } from "./jsenvDirectorySizeTrackingConfig.js"
 
 export const generateSnapshotFile = async ({
   logLevel,
   projectDirectoryUrl,
-  trackedFilesConfig = {
-    "./**/*": true,
-    "./**/*.map": false,
-  },
+  directorySizeTrackingConfig = jsenvDirectorySizeTrackingConfig,
   fileRelativeUrl = "./filesize-snapshot.json",
 }) => {
   const logger = createLogger({ logLevel })
 
   projectDirectoryUrl = normalizeDirectoryUrl(projectDirectoryUrl)
 
-  const specifierMetaMap = metaMapToSpecifierMetaMap({
-    track: trackedFilesConfig,
-  })
-
   const snapshot = {}
 
-  await collectFiles({
-    directoryPath: urlToFilePath(projectDirectoryUrl),
-    specifierMetaMap,
-    predicate: (meta) => meta.track === true,
-    matchingFileOperation: async ({ relativeUrl, lstat }) => {
-      snapshot[relativeUrl] = {
-        type: statsToType(lstat),
-        size: lstat.size,
-      }
-    },
-  })
+  await Promise.all(
+    Object.keys(directorySizeTrackingConfig).map(async (directoryRelativeUrl) => {
+      const directorySnapshot = {}
+      const directoryUrl = resolveDirectoryUrl(directoryRelativeUrl, projectDirectoryUrl)
+      const specifierMetaMap = metaMapToSpecifierMetaMap({
+        track: directorySizeTrackingConfig[directoryRelativeUrl].trackedFiles,
+      })
+
+      await collectFiles({
+        directoryPath: urlToFilePath(directoryUrl),
+        specifierMetaMap,
+        predicate: (meta) => meta.track === true,
+        matchingFileOperation: async ({ relativeUrl, lstat }) => {
+          snapshot[relativeUrl] = {
+            type: statsToType(lstat),
+            size: lstat.size,
+          }
+        },
+      })
+      snapshot[directoryRelativeUrl] = directorySnapshot
+    }),
+  )
 
   const fileUrl = resolveUrl(fileRelativeUrl, projectDirectoryUrl)
   logger.info(`write filesize snapshot file at ${fileUrl}`)

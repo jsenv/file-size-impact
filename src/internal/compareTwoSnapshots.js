@@ -1,4 +1,15 @@
 export const compareTwoSnapshots = async (baseSnapshot, headSnapshot) => {
+  const comparison = {}
+  Object.keys(baseSnapshot).forEach((directoryRelativeUrl) => {
+    comparison[directoryRelativeUrl] = compareDirectorySnapshot(
+      baseSnapshot[directoryRelativeUrl],
+      headSnapshot[directoryRelativeUrl],
+    )
+  })
+  return comparison
+}
+
+const compareDirectorySnapshot = (baseSnapshot, headSnapshot) => {
   const snapshotComparison = {}
   const baseRelativeUrlArray = Object.keys(baseSnapshot)
   const headRelativeUrlArray = Object.keys(headSnapshot)
