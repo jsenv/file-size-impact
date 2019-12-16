@@ -1,5 +1,6 @@
 const {
   reportSizeImpactIntoGithubPullRequest,
+// eslint-disable-next-line import/no-unresolved
 } = require("@jsenv/github-pull-request-filesize-impact")
 const { projectDirectoryUrl } = require("../jsenv.config.js")
 
