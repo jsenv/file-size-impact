@@ -71,7 +71,9 @@ Don't forget to change this to your own needs.
 You can use the following pattern to use this repository outside a github workflow like travis or jenkins.
 
 ```js
-const { reportSizeImpactIntoGithubPullRequest } = require("@jsenv/github-pull-request-filesize-impact")
+const {
+  reportSizeImpactIntoGithubPullRequest,
+} = require("@jsenv/github-pull-request-filesize-impact")
 
 const githubToken = "github-personnal-access-token"
 const githubRepository = "jsenv/repository-name"

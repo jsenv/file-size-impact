@@ -47,7 +47,7 @@ const genericUpdatePullRequestComment = async ({
   const body = JSON.stringify({ body: commentBody })
   const response = await fetch(href, {
     headers: {
-      authorization: `token ${githubToken}`,
+      "authorization": `token ${githubToken}`,
       "content-length": Buffer.byteLength(body),
     },
     method: "PATCH",

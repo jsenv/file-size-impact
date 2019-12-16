@@ -48,7 +48,7 @@ const genericCreatePullRequestComment = async ({
     `https://api.github.com/repos/${repositoryOwner}/${repositoryName}/issues/${pullRequestNumber}/comments`,
     {
       headers: {
-        authorization: `token ${githubToken}`,
+        "authorization": `token ${githubToken}`,
         "content-length": Buffer.byteLength(body),
       },
       method: "POST",
