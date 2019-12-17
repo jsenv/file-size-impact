@@ -36,6 +36,7 @@ export const generateSnapshotFile = async ({
       const [directoryManifest, directorySizeReport] = await Promise.all([
         manifest
           ? readDirectoryManifest({
+              logger,
               manifestFilename,
               directoryUrl,
             })
@@ -62,10 +63,19 @@ export const generateSnapshotFile = async ({
   await writeFileContent(snapshotFilePath, JSON.stringify(snapshot, null, "  "))
 }
 
-const readDirectoryManifest = async ({ manifestFilename, directoryUrl }) => {
+const readDirectoryManifest = async ({ logger, manifestFilename, directoryUrl }) => {
   const manifestFileUrl = resolveUrl(manifestFilename, directoryUrl)
-  const manifestFileContent = await readFileContent(urlToFilePath(manifestFileUrl))
-  return JSON.parse(manifestFileContent)
+  const manifestFilePath = urlToFilePath(manifestFileUrl)
+  try {
+    const manifestFileContent = await readFileContent(manifestFilePath)
+    return JSON.parse(manifestFileContent)
+  } catch (e) {
+    if (e && e.code === "ENOENT") {
+      logger.debug(`manifest file not found at ${manifestFilePath}`)
+      return null
+    }
+    throw e
+  }
 }
 
 const generateDirectorySizeReport = async ({
@@ -79,7 +89,7 @@ const generateDirectorySizeReport = async ({
   const directorySizeReport = {}
   try {
     await collectFiles({
-      directoryPath,
+      directoryUrl,
       specifierMetaMap,
       predicate: (meta) => meta.track === true,
       matchingFileOperation: async ({ relativeUrl, lstat }) => {

@@ -1,3 +1,5 @@
+import { compareFilePath } from "@jsenv/file-collector"
+
 export const compareTwoSnapshots = (baseSnapshot, headSnapshot) => {
   const comparison = {}
   Object.keys(baseSnapshot).forEach((directoryRelativeUrl) => {
@@ -24,7 +26,7 @@ const compareDirectorySnapshot = (baseSnapshot, headSnapshot) => {
       base: null,
       head: {
         relativeUrl: headRelativeUrl,
-        size: baseSizeReport[headRelativeUrl],
+        size: headSizeReport[headRelativeUrl],
       },
     }
   }
@@ -53,8 +55,8 @@ const compareDirectorySnapshot = (baseSnapshot, headSnapshot) => {
   Object.keys(baseSizeReport).forEach((baseRelativeUrl) => {
     if (baseRelativeUrl in baseMappings) {
       const baseRelativeUrlMapped = baseMappings[baseRelativeUrl]
-      if (baseRelativeUrlMapped in headMappings) {
-        const headRelativeUrl = headMappings[baseRelativeUrlMapped]
+      if (baseRelativeUrlMapped in headManifest) {
+        const headRelativeUrl = headManifest[baseRelativeUrlMapped]
         updated(baseRelativeUrlMapped, baseRelativeUrl, headRelativeUrl)
       } else if (baseRelativeUrl in headSizeReport) {
         updated(baseRelativeUrlMapped, baseRelativeUrl, baseRelativeUrl)
@@ -70,11 +72,11 @@ const compareDirectorySnapshot = (baseSnapshot, headSnapshot) => {
   Object.keys(headSizeReport).forEach((headRelativeUrl) => {
     if (headRelativeUrl in headMappings) {
       const headRelativeUrlMapped = headMappings[headRelativeUrl]
-      if (headRelativeUrlMapped in baseMappings) {
+      if (headRelativeUrlMapped in baseManifest) {
         // the mapping should be the same and already found while iterating
         // baseSizeReport, otherwise it means the mappings
         // of heads and base are different right ?
-        const baseRelativeUrl = baseMappings[headRelativeUrlMapped]
+        const baseRelativeUrl = baseManifest[headRelativeUrlMapped]
         updated(headRelativeUrlMapped, baseRelativeUrl, headRelativeUrl)
       } else if (headRelativeUrl in baseSizeReport) {
         updated(headRelativeUrlMapped, headRelativeUrl, headRelativeUrl)
@@ -102,14 +104,10 @@ const manifestToMappings = (manifest) => {
 }
 
 const sortDirectoryStructure = (directoryStructure) => {
-  const relativeUrlSortedArray = Object.keys(directoryStructure).sort(compareLengthOrLocaleCompare)
+  const relativeUrlSortedArray = Object.keys(directoryStructure).sort(compareFilePath)
   const directoryStructureSorted = {}
   relativeUrlSortedArray.forEach((relativeUrl) => {
     directoryStructureSorted[relativeUrl] = directoryStructure[relativeUrl]
   })
   return directoryStructureSorted
-}
-
-const compareLengthOrLocaleCompare = (a, b) => {
-  return b.length - a.length || a.localeCompare(b)
 }

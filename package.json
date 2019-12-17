@@ -38,7 +38,7 @@
     "postpublish": "node ./script/transform-package/restore-postinstall.js"
   },
   "dependencies": {
-    "@jsenv/file-collector": "1.1.0",
+    "@jsenv/file-collector": "2.0.0",
     "@jsenv/logger": "3.1.0",
     "@jsenv/url-meta": "5.0.0",
     "node-fetch": "2.6.0"
