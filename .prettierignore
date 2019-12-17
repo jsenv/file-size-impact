@@ -2,7 +2,7 @@
 /coverage/
 /dist/
 /node_modules/
-/test/**/*.json
+/test/**/snapshot.json
 /importMap.json
 /jsconfig.json
 /package-lock.json

@@ -28,40 +28,26 @@ export const generateSnapshotFile = async ({
 
   await Promise.all(
     directoryRelativeUrlArray.map(async (directoryRelativeUrl) => {
-      let directoryManifest = null
-      const directorySizeReport = {}
       const directoryUrl = resolveDirectoryUrl(directoryRelativeUrl, projectDirectoryUrl)
       const specifierMetaMap = metaMapToSpecifierMetaMap({
         track: directorySizeTrackingConfig[directoryRelativeUrl],
       })
-      const directoryPath = urlToFilePath(directoryUrl)
-      try {
-        await collectFiles({
-          directoryPath,
+
+      const [directoryManifest, directorySizeReport] = await Promise.all([
+        manifest
+          ? readDirectoryManifest({
+              manifestFilename,
+              directoryUrl,
+            })
+          : null,
+        generateDirectorySizeReport({
+          logger,
+          directoryUrl,
           specifierMetaMap,
-          predicate: (meta) => meta.track === true,
-          matchingFileOperation: async ({ relativeUrl, lstat }) => {
-            if (!lstat.isFile()) {
-              return
-            }
-
-            if (manifest && relativeUrl === manifestFilename) {
-              const manifestFileUrl = resolveUrl(relativeUrl, directoryUrl)
-              const manifestFileContent = await readFileContent(urlToFilePath(manifestFileUrl))
-              directoryManifest = JSON.parse(manifestFileContent)
-              return
-            }
-
-            directorySizeReport[relativeUrl] = lstat.size
-          },
-        })
-      } catch (e) {
-        if (e.code === "ENOENT" && e.path === directoryPath) {
-          logger.warn(`${directoryPath} does not exists`)
-        } else {
-          throw e
-        }
-      }
+          manifest,
+          manifestFilename,
+        }),
+      ])
 
       snapshot[directoryRelativeUrl] = {
         manifest: directoryManifest,
@@ -74,4 +60,45 @@ export const generateSnapshotFile = async ({
   const snapshotFilePath = urlToFilePath(snapshotFileUrl)
   logger.info(`write snapshot file at ${snapshotFilePath}`)
   await writeFileContent(snapshotFilePath, JSON.stringify(snapshot, null, "  "))
+}
+
+const readDirectoryManifest = async ({ manifestFilename, directoryUrl }) => {
+  const manifestFileUrl = resolveUrl(manifestFilename, directoryUrl)
+  const manifestFileContent = await readFileContent(urlToFilePath(manifestFileUrl))
+  return JSON.parse(manifestFileContent)
+}
+
+const generateDirectorySizeReport = async ({
+  logger,
+  directoryUrl,
+  specifierMetaMap,
+  manifest,
+  manifestFilename,
+}) => {
+  const directoryPath = urlToFilePath(directoryUrl)
+  const directorySizeReport = {}
+  try {
+    await collectFiles({
+      directoryPath,
+      specifierMetaMap,
+      predicate: (meta) => meta.track === true,
+      matchingFileOperation: async ({ relativeUrl, lstat }) => {
+        if (!lstat.isFile()) {
+          return
+        }
+        if (manifest && relativeUrl === manifestFilename) {
+          return
+        }
+        directorySizeReport[relativeUrl] = lstat.size
+      },
+    })
+  } catch (e) {
+    if (e.code === "ENOENT" && e.path === directoryPath) {
+      logger.warn(`${directoryPath} does not exists`)
+      return directorySizeReport
+    }
+    throw e
+  }
+
+  return directorySizeReport
 }
