@@ -2,7 +2,7 @@ import { createLogger } from "@jsenv/logger"
 import { metaMapToSpecifierMetaMap } from "@jsenv/url-meta"
 import { collectFiles } from "@jsenv/file-collector"
 import { resolveUrl, resolveDirectoryUrl, urlToFilePath } from "./internal/urlUtils.js"
-import { writeFileContent } from "./internal/filesystemUtils.js"
+import { writeFileContent, readFileContent } from "./internal/filesystemUtils.js"
 import { normalizeDirectoryUrl } from "./internal/normalizeDirectoryUrl.js"
 import { jsenvDirectorySizeTrackingConfig } from "./jsenvDirectorySizeTrackingConfig.js"
 
@@ -11,6 +11,9 @@ export const generateSnapshotFile = async ({
   projectDirectoryUrl,
   directorySizeTrackingConfig = jsenvDirectorySizeTrackingConfig,
   snapshotFileRelativeUrl = "./filesize-snapshot.json",
+
+  manifest = true,
+  manifestFilename = "manifest.json",
 }) => {
   const logger = createLogger({ logLevel })
 
@@ -25,7 +28,8 @@ export const generateSnapshotFile = async ({
 
   await Promise.all(
     directoryRelativeUrlArray.map(async (directoryRelativeUrl) => {
-      const directorySnapshot = {}
+      let directoryManifest = null
+      const directorySizeReport = {}
       const directoryUrl = resolveDirectoryUrl(directoryRelativeUrl, projectDirectoryUrl)
       const specifierMetaMap = metaMapToSpecifierMetaMap({
         track: directorySizeTrackingConfig[directoryRelativeUrl],
@@ -37,10 +41,18 @@ export const generateSnapshotFile = async ({
           specifierMetaMap,
           predicate: (meta) => meta.track === true,
           matchingFileOperation: async ({ relativeUrl, lstat }) => {
-            directorySnapshot[relativeUrl] = {
-              type: statsToType(lstat),
-              size: lstat.size,
+            if (!lstat.isFile()) {
+              return
             }
+
+            if (manifest && relativeUrl === manifestFilename) {
+              const manifestFileUrl = resolveUrl(relativeUrl, directoryUrl)
+              const manifestFileContent = await readFileContent(urlToFilePath(manifestFileUrl))
+              directoryManifest = JSON.parse(manifestFileContent)
+              return
+            }
+
+            directorySizeReport[relativeUrl] = lstat.size
           },
         })
       } catch (e) {
@@ -51,7 +63,10 @@ export const generateSnapshotFile = async ({
         }
       }
 
-      snapshot[directoryRelativeUrl] = directorySnapshot
+      snapshot[directoryRelativeUrl] = {
+        manifest: directoryManifest,
+        sizeReport: directorySizeReport,
+      }
     }),
   )
 
@@ -59,15 +74,4 @@ export const generateSnapshotFile = async ({
   const snapshotFilePath = urlToFilePath(snapshotFileUrl)
   logger.info(`write snapshot file at ${snapshotFilePath}`)
   await writeFileContent(snapshotFilePath, JSON.stringify(snapshot, null, "  "))
-}
-
-const statsToType = (stats) => {
-  if (stats.isFile()) return "file"
-  if (stats.isDirectory()) return "directory"
-  if (stats.isSymbolicLink()) return "symbolic-link"
-  if (stats.isFIFO()) return "fifo"
-  if (stats.isSocket()) return "socket"
-  if (stats.isCharacterDevice()) return "character-device"
-  if (stats.isBlockDevice()) return "block-device"
-  return "unknown type"
 }

@@ -10,6 +10,7 @@ const snapshotFilePath = urlToFilePath(snapshotFileUrl)
 
 await removeFile(snapshotFilePath)
 await generateSnapshotFile({
+  logLevel: "warn",
   projectDirectoryUrl: testDirectoryUrl,
   snapshotFileRelativeUrl,
   directorySizeTrackingConfig: {
@@ -22,9 +23,9 @@ const snapshotFileContent = await readFileContent(snapshotFilePath)
 const actual = JSON.parse(snapshotFileContent)
 const expected = {
   directory: {
-    "file.js": {
-      type: "file",
-      size: 21,
+    manifest: null,
+    sizeReport: {
+      "file.js": 21,
     },
   },
 }

@@ -21,7 +21,7 @@ export const generatePullRequestCommentString = ({
       const { base, head } = directoryComparison[relativeUrl]
 
       // added
-      if (!base && head.type === "file") {
+      if (!base) {
         const baseSize = 0
         const headSize = head.size
         const diffSize = headSize - baseSize
@@ -37,7 +37,7 @@ export const generatePullRequestCommentString = ({
         }
       }
       // removed
-      else if (base && base.type === "file" && !head) {
+      else if (base && !head) {
         const baseSize = base.size
         const headSize = 0
         const diffSize = headSize - baseSize
@@ -53,7 +53,7 @@ export const generatePullRequestCommentString = ({
         }
       }
       // changed
-      else if (base && base.type === "file" && head && head.type === "file") {
+      else if (base && head) {
         const baseSize = base.size
         const headSize = head.size
         const diffSize = headSize - baseSize
