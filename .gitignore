@@ -2,7 +2,7 @@
 /.vscode/settings.json
 /coverage/
 /node_modules/
-/test/generateSnapshotFile/**.json
+/test/generateSnapshotFile/**/snapshot.json
 /importMap.json
 /jsconfig.json
 /package-lock.json

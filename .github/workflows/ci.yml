@@ -47,12 +47,12 @@ jobs:
           git checkout $GITHUB_BASE_REF
           npm install
           npm run dist
-          node ./.github/generate-size-snapshot.js ../base/snapshot.json
+          node ./.github/generate-size-snapshot.js ../snapshot.base.json
           git checkout $GITHUB_HEAD_REF
           npm install
           npm run dist
-          node ./.github/generate-size-snapshot.js ../head/snapshot.json
-          node ./.github/report-size-impact ../base/snapshot.json ../head/snapshot.json
+          node ./.github/generate-size-snapshot.js ../snapshot.head.json
+          node ./.github/report-size-impact ../snapshot.base.json ../snapshot.head.json
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: publish package

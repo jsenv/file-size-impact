@@ -2,7 +2,7 @@ import { createLogger } from "@jsenv/logger"
 import { metaMapToSpecifierMetaMap } from "@jsenv/url-meta"
 import { collectFiles } from "@jsenv/file-collector"
 import { resolveUrl, resolveDirectoryUrl, urlToFilePath } from "./internal/urlUtils.js"
-import { writeFileContent } from "./internal/filesystemUtils.js"
+import { writeFileContent, readFileContent } from "./internal/filesystemUtils.js"
 import { normalizeDirectoryUrl } from "./internal/normalizeDirectoryUrl.js"
 import { jsenvDirectorySizeTrackingConfig } from "./jsenvDirectorySizeTrackingConfig.js"
 
@@ -11,6 +11,9 @@ export const generateSnapshotFile = async ({
   projectDirectoryUrl,
   directorySizeTrackingConfig = jsenvDirectorySizeTrackingConfig,
   snapshotFileRelativeUrl = "./filesize-snapshot.json",
+
+  manifest = true,
+  manifestFilename = "manifest.json",
 }) => {
   const logger = createLogger({ logLevel })
 
@@ -25,33 +28,32 @@ export const generateSnapshotFile = async ({
 
   await Promise.all(
     directoryRelativeUrlArray.map(async (directoryRelativeUrl) => {
-      const directorySnapshot = {}
       const directoryUrl = resolveDirectoryUrl(directoryRelativeUrl, projectDirectoryUrl)
       const specifierMetaMap = metaMapToSpecifierMetaMap({
         track: directorySizeTrackingConfig[directoryRelativeUrl],
       })
-      const directoryPath = urlToFilePath(directoryUrl)
-      try {
-        await collectFiles({
-          directoryPath,
-          specifierMetaMap,
-          predicate: (meta) => meta.track === true,
-          matchingFileOperation: async ({ relativeUrl, lstat }) => {
-            directorySnapshot[relativeUrl] = {
-              type: statsToType(lstat),
-              size: lstat.size,
-            }
-          },
-        })
-      } catch (e) {
-        if (e.code === "ENOENT" && e.path === directoryPath) {
-          logger.warn(`${directoryPath} does not exists`)
-        } else {
-          throw e
-        }
-      }
 
-      snapshot[directoryRelativeUrl] = directorySnapshot
+      const [directoryManifest, directorySizeReport] = await Promise.all([
+        manifest
+          ? readDirectoryManifest({
+              logger,
+              manifestFilename,
+              directoryUrl,
+            })
+          : null,
+        generateDirectorySizeReport({
+          logger,
+          directoryUrl,
+          specifierMetaMap,
+          manifest,
+          manifestFilename,
+        }),
+      ])
+
+      snapshot[directoryRelativeUrl] = {
+        manifest: directoryManifest,
+        sizeReport: directorySizeReport,
+      }
     }),
   )
 
@@ -61,13 +63,52 @@ export const generateSnapshotFile = async ({
   await writeFileContent(snapshotFilePath, JSON.stringify(snapshot, null, "  "))
 }
 
-const statsToType = (stats) => {
-  if (stats.isFile()) return "file"
-  if (stats.isDirectory()) return "directory"
-  if (stats.isSymbolicLink()) return "symbolic-link"
-  if (stats.isFIFO()) return "fifo"
-  if (stats.isSocket()) return "socket"
-  if (stats.isCharacterDevice()) return "character-device"
-  if (stats.isBlockDevice()) return "block-device"
-  return "unknown type"
+const readDirectoryManifest = async ({ logger, manifestFilename, directoryUrl }) => {
+  const manifestFileUrl = resolveUrl(manifestFilename, directoryUrl)
+  const manifestFilePath = urlToFilePath(manifestFileUrl)
+  try {
+    const manifestFileContent = await readFileContent(manifestFilePath)
+    return JSON.parse(manifestFileContent)
+  } catch (e) {
+    if (e && e.code === "ENOENT") {
+      logger.debug(`manifest file not found at ${manifestFilePath}`)
+      return null
+    }
+    throw e
+  }
+}
+
+const generateDirectorySizeReport = async ({
+  logger,
+  directoryUrl,
+  specifierMetaMap,
+  manifest,
+  manifestFilename,
+}) => {
+  const directoryPath = urlToFilePath(directoryUrl)
+  const directorySizeReport = {}
+  try {
+    await collectFiles({
+      directoryUrl,
+      specifierMetaMap,
+      predicate: (meta) => meta.track === true,
+      matchingFileOperation: async ({ relativeUrl, lstat }) => {
+        if (!lstat.isFile()) {
+          return
+        }
+        if (manifest && relativeUrl === manifestFilename) {
+          return
+        }
+        directorySizeReport[relativeUrl] = lstat.size
+      },
+    })
+  } catch (e) {
+    if (e.code === "ENOENT" && e.path === directoryPath) {
+      logger.warn(`${directoryPath} does not exists`)
+      return directorySizeReport
+    }
+    throw e
+  }
+
+  return directorySizeReport
 }

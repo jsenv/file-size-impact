@@ -29,21 +29,17 @@ changes are not affecting file sizes.
       dist: {
         "file-a.js": {
           base: {
-            type: "file",
             size: 10,
           },
           head: {
-            type: "file",
             size: 15,
           },
         },
         "file-b.js": {
           base: {
-            type: "file",
             size: 15,
           },
           head: {
-            type: "file",
             size: 10,
           },
         },
@@ -73,24 +69,20 @@ file-b.js|15 bytes|10 bytes|-5 bytes
         "file-added.js": {
           base: null,
           head: {
-            type: "file",
             size: 10,
           },
         },
         "file-removed.js": {
           base: {
-            type: "file",
             size: 20,
           },
           head: null,
         },
         "file-updated.js": {
           base: {
-            type: "file",
             size: 10,
           },
           head: {
-            type: "file",
             size: 15,
           },
         },
