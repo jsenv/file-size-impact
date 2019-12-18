@@ -95,104 +95,6 @@ const error = console.error;
 
 const errorDisabled = () => {};
 
-const isPlainObject = value => {
-  if (value === null) {
-    return false;
-  }
-
-  if (typeof value === "object") {
-    if (Array.isArray(value)) {
-      return false;
-    }
-
-    return true;
-  }
-
-  return false;
-};
-
-const metaMapToSpecifierMetaMap = (metaMap, ...rest) => {
-  if (!isPlainObject(metaMap)) {
-    throw new TypeError(`metaMap must be a plain object, got ${metaMap}`);
-  }
-
-  if (rest.length) {
-    throw new Error(`received more arguments than expected.
---- number of arguments received ---
-${1 + rest.length}
---- number of arguments expected ---
-1`);
-  }
-
-  const specifierMetaMap = {};
-  Object.keys(metaMap).forEach(metaKey => {
-    const specifierValueMap = metaMap[metaKey];
-
-    if (!isPlainObject(specifierValueMap)) {
-      throw new TypeError(`metaMap value must be plain object, got ${specifierValueMap} for ${metaKey}`);
-    }
-
-    Object.keys(specifierValueMap).forEach(specifier => {
-      const metaValue = specifierValueMap[specifier];
-      const meta = {
-        [metaKey]: metaValue
-      };
-      specifierMetaMap[specifier] = specifier in specifierMetaMap ? { ...specifierMetaMap[specifier],
-        ...meta
-      } : meta;
-    });
-  });
-  return specifierMetaMap;
-};
-
-// https://github.com/tc39/proposal-cancellation/tree/master/stage0
-const createCancellationToken = () => {
-  const register = callback => {
-    if (typeof callback !== "function") {
-      throw new Error(`callback must be a function, got ${callback}`);
-    }
-
-    return {
-      callback,
-      unregister: () => {}
-    };
-  };
-
-  const throwIfRequested = () => undefined;
-
-  return {
-    register,
-    cancellationRequested: false,
-    throwIfRequested
-  };
-};
-
-const createOperation = ({
-  cancellationToken = createCancellationToken(),
-  start,
-  ...rest
-}) => {
-  ensureExactParameters(rest);
-  cancellationToken.throwIfRequested();
-  const promise = new Promise(resolve => {
-    resolve(start());
-  });
-  const cancelPromise = new Promise((resolve, reject) => {
-    const cancelRegistration = cancellationToken.register(cancelError => {
-      cancelRegistration.unregister();
-      reject(cancelError);
-    });
-    promise.then(cancelRegistration.unregister, () => {});
-  });
-  const operationPromise = Promise.race([promise, cancelPromise]);
-  return operationPromise;
-};
-
-const ensureExactParameters = extraParameters => {
-  const extraParamNames = Object.keys(extraParameters);
-  if (extraParamNames.length) throw new Error(`createOperation expect only cancellationToken, start. Got ${extraParamNames}`);
-};
-
 const assertUrlLike = (value, name = "url") => {
   if (typeof value !== "string") {
     throw new TypeError(`${name} must be a url string, got ${value}`);
@@ -470,7 +372,7 @@ const fail = ({
   };
 };
 
-const isPlainObject$1 = value => {
+const isPlainObject = value => {
   if (value === null) {
     return false;
   }
@@ -486,8 +388,42 @@ const isPlainObject$1 = value => {
   return false;
 };
 
+const metaMapToSpecifierMetaMap = (metaMap, ...rest) => {
+  if (!isPlainObject(metaMap)) {
+    throw new TypeError(`metaMap must be a plain object, got ${metaMap}`);
+  }
+
+  if (rest.length) {
+    throw new Error(`received more arguments than expected.
+--- number of arguments received ---
+${1 + rest.length}
+--- number of arguments expected ---
+1`);
+  }
+
+  const specifierMetaMap = {};
+  Object.keys(metaMap).forEach(metaKey => {
+    const specifierValueMap = metaMap[metaKey];
+
+    if (!isPlainObject(specifierValueMap)) {
+      throw new TypeError(`metaMap value must be plain object, got ${specifierValueMap} for ${metaKey}`);
+    }
+
+    Object.keys(specifierValueMap).forEach(specifier => {
+      const metaValue = specifierValueMap[specifier];
+      const meta = {
+        [metaKey]: metaValue
+      };
+      specifierMetaMap[specifier] = specifier in specifierMetaMap ? { ...specifierMetaMap[specifier],
+        ...meta
+      } : meta;
+    });
+  });
+  return specifierMetaMap;
+};
+
 const assertSpecifierMetaMap = value => {
-  if (!isPlainObject$1(value)) {
+  if (!isPlainObject(value)) {
     throw new TypeError(`specifierMetaMap must be a plain object, got ${value}`);
   } // we could ensure it's key/value pair of url like key/object or null values
 
@@ -606,17 +542,66 @@ url, specifierMetaMap`);
   }, {});
 };
 
-const pathToDirectoryUrl = path => {
-  const directoryUrl = path.startsWith("file://") ? path : String(url$1.pathToFileURL(path));
+const createCancellationToken = () => {
+  const register = callback => {
+    if (typeof callback !== "function") {
+      throw new Error(`callback must be a function, got ${callback}`);
+    }
 
-  if (directoryUrl.endsWith("/")) {
-    return directoryUrl;
+    return {
+      callback,
+      unregister: () => {}
+    };
+  };
+
+  const throwIfRequested = () => undefined;
+
+  return {
+    register,
+    cancellationRequested: false,
+    throwIfRequested
+  };
+};
+
+const createOperation = ({
+  cancellationToken = createCancellationToken(),
+  start,
+  ...rest
+}) => {
+  const unknownArgumentNames = Object.keys(rest);
+
+  if (unknownArgumentNames.length) {
+    throw new Error(`createOperation called with unknown argument names.
+--- unknown argument names ---
+${unknownArgumentNames}
+--- possible argument names ---
+cancellationToken
+start`);
   }
 
-  return `${directoryUrl}/`;
+  cancellationToken.throwIfRequested();
+  const promise = new Promise(resolve => {
+    resolve(start());
+  });
+  const cancelPromise = new Promise((resolve, reject) => {
+    const cancelRegistration = cancellationToken.register(cancelError => {
+      cancelRegistration.unregister();
+      reject(cancelError);
+    });
+    promise.then(cancelRegistration.unregister, () => {});
+  });
+  const operationPromise = Promise.race([promise, cancelPromise]);
+  return operationPromise;
 };
-const fileUrlToPath = fileUrl => {
+
+const ensureUrlTrailingSlash = url => {
+  return url.endsWith("/") ? url : `${url}/`;
+};
+const urlToFilePath = fileUrl => {
   return url$1.fileURLToPath(fileUrl);
+};
+const hasScheme$1 = string => {
+  return /^[a-zA-Z]{2,}:/.test(string);
 };
 const urlToRelativeUrl = (url, baseUrl) => {
   if (typeof baseUrl !== "string") {
@@ -628,6 +613,24 @@ const urlToRelativeUrl = (url, baseUrl) => {
   }
 
   return url;
+};
+
+const normalizeDirectoryUrl = value => {
+  if (value instanceof URL) {
+    value = value.href;
+  }
+
+  if (typeof value === "string") {
+    const url = hasScheme$1(value) ? value : urlToFilePath(value);
+
+    if (!url.startsWith("file://")) {
+      throw new Error(`directoryUrl must starts with file://, received ${value}`);
+    }
+
+    return ensureUrlTrailingSlash(url);
+  }
+
+  throw new TypeError(`directoryUrl must be a string or an url, received ${value}`);
 };
 
 const compareFilePath = (leftPath, rightPath) => {
@@ -664,14 +667,12 @@ const compareFilePath = (leftPath, rightPath) => {
 
 const collectFiles = async ({
   cancellationToken = createCancellationToken(),
-  directoryPath,
+  directoryUrl,
   specifierMetaMap,
   predicate,
   matchingFileOperation = () => null
 }) => {
-  if (typeof directoryPath !== "string") {
-    throw new TypeError(`directoryPath must be a string, got ${directoryPath}`);
-  }
+  const rootDirectoryUrl = normalizeDirectoryUrl(directoryUrl);
 
   if (typeof predicate !== "function") {
     throw new TypeError(`predicate must be a function, got ${predicate}`);
@@ -681,19 +682,18 @@ const collectFiles = async ({
     throw new TypeError(`matchingFileOperation must be a function, got ${matchingFileOperation}`);
   }
 
-  const rootDirectoryUrl = pathToDirectoryUrl(directoryPath);
   const specifierMetaMapNormalized = normalizeSpecifierMetaMap(specifierMetaMap, rootDirectoryUrl);
   const matchingFileResultArray = [];
 
   const visitDirectory = async directoryUrl => {
-    const directoryPath = fileUrlToPath(directoryUrl);
+    const directoryPath = urlToFilePath(directoryUrl);
     const directoryItems = await createOperation({
       cancellationToken,
       start: () => readDirectory(directoryPath)
     });
     await Promise.all(directoryItems.map(async directoryItem => {
       const directoryItemUrl = `${directoryUrl}${directoryItem}`;
-      const directoryItemPath = fileUrlToPath(directoryItemUrl);
+      const directoryItemPath = urlToFilePath(directoryItemUrl);
       const lstat = await createOperation({
         cancellationToken,
         start: () => readLStat(directoryItemPath)
@@ -758,8 +758,8 @@ const collectFiles = async ({
   return matchingFileResultArray;
 };
 
-const readDirectory = pathname => new Promise((resolve, reject) => {
-  fs.readdir(pathname, (error, names) => {
+const readDirectory = filePath => new Promise((resolve, reject) => {
+  fs.readdir(filePath, (error, names) => {
     if (error) {
       reject(error);
     } else {
@@ -768,8 +768,8 @@ const readDirectory = pathname => new Promise((resolve, reject) => {
   });
 });
 
-const readLStat = pathname => new Promise((resolve, reject) => {
-  fs.lstat(pathname, (error, stat) => {
+const readLStat = filePath => new Promise((resolve, reject) => {
+  fs.lstat(filePath, (error, stat) => {
     if (error) {
       reject(error);
     } else {
@@ -778,10 +778,10 @@ const readLStat = pathname => new Promise((resolve, reject) => {
   });
 });
 
-const ensureUrlTrailingSlash = url => {
+const ensureUrlTrailingSlash$1 = url => {
   return url.endsWith("/") ? url : `${url}/`;
 };
-const urlToFilePath = fileUrl => {
+const urlToFilePath$1 = fileUrl => {
   return url$1.fileURLToPath(fileUrl);
 };
 const resolveDirectoryUrl = (specifier, baseUrl) => {
@@ -794,7 +794,7 @@ const resolveDirectoryUrl = (specifier, baseUrl) => {
   return `${directoryUrl}/`;
 };
 
-const hasScheme$1 = string => {
+const hasScheme$2 = string => {
   return /^[a-zA-Z]{2,}:/.test(string);
 };
 const resolveUrl = (specifier, baseUrl) => {
@@ -835,30 +835,30 @@ const createFileDirectories = filePath => {
   });
 };
 
-const normalizeDirectoryUrl = (value, name = "projectDirectoryUrl") => {
+const normalizeDirectoryUrl$1 = (value, name = "projectDirectoryUrl") => {
   if (value instanceof URL) {
     value = value.href;
   }
 
   if (typeof value === "string") {
-    const url = hasScheme$1(value) ? value : urlToFilePath(value);
+    const url = hasScheme$2(value) ? value : urlToFilePath$1(value);
 
     if (!url.startsWith("file://")) {
       throw new Error(`${name} must starts with file://, received ${value}`);
     }
 
-    return ensureUrlTrailingSlash(url);
+    return ensureUrlTrailingSlash$1(url);
   }
 
   throw new TypeError(`${name} must be a string or an url, received ${value}`);
 };
 
 const jsenvDirectorySizeTrackingConfig = {
-  dist: {
+  "dist/systemjs": {
     "./**/*": true,
     "./**/*.map": false
   },
-  src: {
+  "dist/commonjs": {
     "./**/*": true,
     "./**/*.map": false
   }
@@ -868,12 +868,14 @@ const generateSnapshotFile = async ({
   logLevel,
   projectDirectoryUrl,
   directorySizeTrackingConfig = jsenvDirectorySizeTrackingConfig,
-  snapshotFileRelativeUrl = "./filesize-snapshot.json"
+  snapshotFileRelativeUrl = "./filesize-snapshot.json",
+  manifest = true,
+  manifestFilename = "manifest.json"
 }) => {
   const logger = createLogger({
     logLevel
   });
-  projectDirectoryUrl = normalizeDirectoryUrl(projectDirectoryUrl);
+  projectDirectoryUrl = normalizeDirectoryUrl$1(projectDirectoryUrl);
   const directoryRelativeUrlArray = Object.keys(directorySizeTrackingConfig);
 
   if (directoryRelativeUrlArray.length === 0) {
@@ -882,53 +884,93 @@ const generateSnapshotFile = async ({
 
   const snapshot = {};
   await Promise.all(directoryRelativeUrlArray.map(async directoryRelativeUrl => {
-    const directorySnapshot = {};
     const directoryUrl = resolveDirectoryUrl(directoryRelativeUrl, projectDirectoryUrl);
     const specifierMetaMap = metaMapToSpecifierMetaMap({
       track: directorySizeTrackingConfig[directoryRelativeUrl]
     });
-    const directoryPath = urlToFilePath(directoryUrl);
-
-    try {
-      await collectFiles({
-        directoryPath,
-        specifierMetaMap,
-        predicate: meta => meta.track === true,
-        matchingFileOperation: async ({
-          relativeUrl,
-          lstat
-        }) => {
-          directorySnapshot[relativeUrl] = {
-            type: statsToType(lstat),
-            size: lstat.size
-          };
-        }
-      });
-    } catch (e) {
-      if (e.code === "ENOENT" && e.path === directoryPath) {
-        logger.warn(`${directoryPath} does not exists`);
-      } else {
-        throw e;
-      }
-    }
-
-    snapshot[directoryRelativeUrl] = directorySnapshot;
+    const [directoryManifest, directorySizeReport] = await Promise.all([manifest ? readDirectoryManifest({
+      logger,
+      manifestFilename,
+      directoryUrl
+    }) : null, generateDirectorySizeReport({
+      logger,
+      directoryUrl,
+      specifierMetaMap,
+      manifest,
+      manifestFilename
+    })]);
+    snapshot[directoryRelativeUrl] = {
+      manifest: directoryManifest,
+      sizeReport: directorySizeReport
+    };
   }));
   const snapshotFileUrl = resolveUrl(snapshotFileRelativeUrl, projectDirectoryUrl);
-  const snapshotFilePath = urlToFilePath(snapshotFileUrl);
+  const snapshotFilePath = urlToFilePath$1(snapshotFileUrl);
   logger.info(`write snapshot file at ${snapshotFilePath}`);
   await writeFileContent(snapshotFilePath, JSON.stringify(snapshot, null, "  "));
 };
 
-const statsToType = stats => {
-  if (stats.isFile()) return "file";
-  if (stats.isDirectory()) return "directory";
-  if (stats.isSymbolicLink()) return "symbolic-link";
-  if (stats.isFIFO()) return "fifo";
-  if (stats.isSocket()) return "socket";
-  if (stats.isCharacterDevice()) return "character-device";
-  if (stats.isBlockDevice()) return "block-device";
-  return "unknown type";
+const readDirectoryManifest = async ({
+  logger,
+  manifestFilename,
+  directoryUrl
+}) => {
+  const manifestFileUrl = resolveUrl(manifestFilename, directoryUrl);
+  const manifestFilePath = urlToFilePath$1(manifestFileUrl);
+
+  try {
+    const manifestFileContent = await readFileContent(manifestFilePath);
+    return JSON.parse(manifestFileContent);
+  } catch (e) {
+    if (e && e.code === "ENOENT") {
+      logger.debug(`manifest file not found at ${manifestFilePath}`);
+      return null;
+    }
+
+    throw e;
+  }
+};
+
+const generateDirectorySizeReport = async ({
+  logger,
+  directoryUrl,
+  specifierMetaMap,
+  manifest,
+  manifestFilename
+}) => {
+  const directoryPath = urlToFilePath$1(directoryUrl);
+  const directorySizeReport = {};
+
+  try {
+    await collectFiles({
+      directoryUrl,
+      specifierMetaMap,
+      predicate: meta => meta.track === true,
+      matchingFileOperation: async ({
+        relativeUrl,
+        lstat
+      }) => {
+        if (!lstat.isFile()) {
+          return;
+        }
+
+        if (manifest && relativeUrl === manifestFilename) {
+          return;
+        }
+
+        directorySizeReport[relativeUrl] = lstat.size;
+      }
+    });
+  } catch (e) {
+    if (e.code === "ENOENT" && e.path === directoryPath) {
+      logger.warn(`${directoryPath} does not exists`);
+      return directorySizeReport;
+    }
+
+    throw e;
+  }
+
+  return directorySizeReport;
 };
 
 // eslint-disable-next-line import/no-unresolved
@@ -1215,7 +1257,7 @@ const generatePullRequestCommentString = ({
         head
       } = directoryComparison[relativeUrl]; // added
 
-      if (!base && head.type === "file") {
+      if (!base) {
         const baseSize = 0;
         const headSize = head.size;
         const diffSize = headSize - baseSize;
@@ -1231,7 +1273,7 @@ const generatePullRequestCommentString = ({
           sizeImpact += diffSize;
         }
       } // removed
-      else if (base && base.type === "file" && !head) {
+      else if (base && !head) {
           const baseSize = base.size;
           const headSize = 0;
           const diffSize = headSize - baseSize;
@@ -1247,7 +1289,7 @@ const generatePullRequestCommentString = ({
             sizeImpact += diffSize;
           }
         } // changed
-        else if (base && base.type === "file" && head && head.type === "file") {
+        else if (base && head) {
             const baseSize = base.size;
             const headSize = head.size;
             const diffSize = headSize - baseSize;
@@ -1283,7 +1325,7 @@ ${generateSizeImpactDetails({
   if (directoryMessages.length === 0) return null;
   return `
 ${directoryMessages.join(`
-
+---
 `)}${generatedByLink ? `
 
 <sub>Generated by [github pull request filesize impact](https://github.com/jsenv/jsenv-github-pull-request-filesize-impact)</sub>` : ""}`;
@@ -1396,34 +1438,102 @@ const compareTwoSnapshots = (baseSnapshot, headSnapshot) => {
 
 const compareDirectorySnapshot = (baseSnapshot, headSnapshot) => {
   const snapshotComparison = {};
-  const baseRelativeUrlArray = Object.keys(baseSnapshot);
-  const headRelativeUrlArray = Object.keys(headSnapshot);
-  baseRelativeUrlArray.forEach(relativeUrl => {
-    if (headRelativeUrlArray.includes(relativeUrl)) {
-      snapshotComparison[relativeUrl] = {
-        base: baseSnapshot[relativeUrl],
-        head: headSnapshot[relativeUrl]
-      };
+  const baseManifest = baseSnapshot.manifest || {};
+  const headManifest = headSnapshot.manifest || {};
+  const baseSizeReport = baseSnapshot.sizeReport;
+  const headSizeReport = headSnapshot.sizeReport;
+  const baseMappings = manifestToMappings(baseManifest);
+  const headMappings = manifestToMappings(headManifest);
+
+  const added = (relativeUrl, headRelativeUrl) => {
+    snapshotComparison[relativeUrl] = {
+      base: null,
+      head: {
+        relativeUrl: headRelativeUrl,
+        size: headSizeReport[headRelativeUrl]
+      }
+    };
+  };
+
+  const removed = (relativeUrl, baseRelativeUrl) => {
+    snapshotComparison[relativeUrl] = {
+      base: {
+        relativeUrl: baseRelativeUrl,
+        size: baseSizeReport[baseRelativeUrl]
+      },
+      head: null
+    };
+  };
+
+  const updated = (relativeUrl, baseRelativeUrl, headRelativeUrl) => {
+    snapshotComparison[relativeUrl] = {
+      base: {
+        relativeUrl: baseRelativeUrl,
+        size: baseSizeReport[baseRelativeUrl]
+      },
+      head: {
+        relativeUrl: headRelativeUrl,
+        size: headSizeReport[headRelativeUrl]
+      }
+    };
+  };
+
+  Object.keys(baseSizeReport).forEach(baseRelativeUrl => {
+    if (baseRelativeUrl in baseMappings) {
+      const baseRelativeUrlMapped = baseMappings[baseRelativeUrl];
+
+      if (baseRelativeUrlMapped in headManifest) {
+        const headRelativeUrl = headManifest[baseRelativeUrlMapped];
+        updated(baseRelativeUrlMapped, baseRelativeUrl, headRelativeUrl);
+      } else if (baseRelativeUrl in headSizeReport) {
+        updated(baseRelativeUrlMapped, baseRelativeUrl, baseRelativeUrl);
+      } else {
+        removed(baseRelativeUrlMapped, baseRelativeUrl);
+      }
+    } else if (baseRelativeUrl in headSizeReport) {
+      updated(baseRelativeUrl, baseRelativeUrl, baseRelativeUrl);
     } else {
-      snapshotComparison[relativeUrl] = {
-        base: baseSnapshot[relativeUrl],
-        head: null
-      };
+      removed(baseRelativeUrl, baseRelativeUrl);
     }
   });
-  headRelativeUrlArray.forEach(relativeUrl => {
-    if (!baseRelativeUrlArray.includes(relativeUrl)) {
-      snapshotComparison[relativeUrl] = {
-        base: null,
-        head: headSnapshot[relativeUrl]
-      };
+  Object.keys(headSizeReport).forEach(headRelativeUrl => {
+    if (headRelativeUrl in headMappings) {
+      const headRelativeUrlMapped = headMappings[headRelativeUrl];
+
+      if (headRelativeUrlMapped in baseManifest) {
+        // the mapping should be the same and already found while iterating
+        // baseSizeReport, otherwise it means the mappings
+        // of heads and base are different right ?
+        const baseRelativeUrl = baseManifest[headRelativeUrlMapped];
+        updated(headRelativeUrlMapped, baseRelativeUrl, headRelativeUrl);
+      } else if (headRelativeUrl in baseSizeReport) {
+        updated(headRelativeUrlMapped, headRelativeUrl, headRelativeUrl);
+      } else {
+        added(headRelativeUrlMapped, headRelativeUrl);
+      }
+    } else if (headRelativeUrl in baseSizeReport) {
+      updated(headRelativeUrl, headRelativeUrl, headRelativeUrl);
+    } else {
+      added(headRelativeUrl, headRelativeUrl);
     }
   });
   return sortDirectoryStructure(snapshotComparison);
 };
 
+const manifestToMappings = manifest => {
+  const mappings = {};
+
+  if (manifest) {
+    Object.keys(manifest).forEach(originalRelativeUrl => {
+      mappings[manifest[originalRelativeUrl]] = originalRelativeUrl;
+    });
+  }
+
+  return mappings;
+};
+
 const sortDirectoryStructure = directoryStructure => {
-  const relativeUrlSortedArray = Object.keys(directoryStructure).sort(compareLengthOrLocaleCompare);
+  const relativeUrlSortedArray = Object.keys(directoryStructure).sort(compareFilePath);
   const directoryStructureSorted = {};
   relativeUrlSortedArray.forEach(relativeUrl => {
     directoryStructureSorted[relativeUrl] = directoryStructure[relativeUrl];
@@ -1431,23 +1541,28 @@ const sortDirectoryStructure = directoryStructure => {
   return directoryStructureSorted;
 };
 
-const compareLengthOrLocaleCompare = (a, b) => {
-  return b.length - a.length || a.localeCompare(b);
-};
-
 const regexForMergingSizeImpact = /Merging .*? into .*? would .*? size/;
 const reportSizeImpactIntoGithubPullRequest = async ({
   logLevel,
   projectDirectoryUrl,
-  baseSnapshotFileRelativeUrl = "../base/file-size-snapshot.json",
-  headSnapshotFileRelativeUrl = "../head/file-size-snapshot.json",
+  baseSnapshotFileRelativeUrl,
+  headSnapshotFileRelativeUrl,
   formatSize,
   generatedByLink
 }) => {
   const logger = createLogger({
     logLevel
   });
-  projectDirectoryUrl = normalizeDirectoryUrl(projectDirectoryUrl);
+  projectDirectoryUrl = normalizeDirectoryUrl$1(projectDirectoryUrl);
+
+  if (typeof baseSnapshotFileRelativeUrl !== "string") {
+    throw new TypeError(`baseSnapshotFileRelativeUrl must be a string, got ${baseSnapshotFileRelativeUrl}`);
+  }
+
+  if (typeof headSnapshotFileRelativeUrl !== "string") {
+    throw new TypeError(`headSnapshotFileRelativeUrl must be a string, got ${headSnapshotFileRelativeUrl}`);
+  }
+
   const {
     repositoryOwner,
     repositoryName,
@@ -1458,8 +1573,8 @@ const reportSizeImpactIntoGithubPullRequest = async ({
   } = getOptionsFromGithubAction();
   const baseSnapshotFileUrl = resolveUrl(baseSnapshotFileRelativeUrl, projectDirectoryUrl);
   const headSnapshotFileUrl = resolveUrl(headSnapshotFileRelativeUrl, projectDirectoryUrl);
-  const baseSnapshotFilePath = urlToFilePath(baseSnapshotFileUrl);
-  const headSnapshotFilePath = urlToFilePath(headSnapshotFileUrl);
+  const baseSnapshotFilePath = urlToFilePath$1(baseSnapshotFileUrl);
+  const headSnapshotFilePath = urlToFilePath$1(headSnapshotFileUrl);
   logger.info(`
 compare file snapshots
 --- base snapshot file path ---
@@ -1610,5 +1725,6 @@ const getPullRequestHref = ({
 }) => `https://github.com/${repositoryOwner}/${repositoryName}/pull/${pullRequestNumber}`;
 
 exports.generateSnapshotFile = generateSnapshotFile;
+exports.jsenvDirectorySizeTrackingConfig = jsenvDirectorySizeTrackingConfig;
 exports.reportSizeImpactIntoGithubPullRequest = reportSizeImpactIntoGithubPullRequest;
 //# sourceMappingURL=main.js.map

@@ -4,4 +4,10 @@ const { projectDirectoryUrl } = require("../jsenv.config.js")
 generateSnapshotFile({
   projectDirectoryUrl,
   snapshotFileRelativeUrl: process.argv[2],
+  directorySizeTrackingConfig: {
+    "dist/commonjs": {
+      "**/*": true,
+      "**/*.map": false,
+    },
+  },
 })
