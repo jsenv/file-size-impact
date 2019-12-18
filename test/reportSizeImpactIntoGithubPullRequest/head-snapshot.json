@@ -1,3 +1,14 @@
 {
-  "dist": {}
+  "dist/commonjs": {
+    "manifest": {
+      "main.js": "main.js"
+    },
+    "sizeReport": {
+      "main.js": 46742
+    },
+    "trackingConfig": {
+      "**/*": true,
+      "**/*.map": false
+    }
+  }
 }

@@ -909,7 +909,9 @@ const generateSnapshotFile = async ({
   }));
   const snapshotFilePath = urlToFilePath$1(snapshotFileUrl);
   logger.info(`write snapshot file at ${snapshotFilePath}`);
-  await writeFileContent(snapshotFilePath, JSON.stringify(snapshot, null, "  "));
+  const snapshotFileContent = JSON.stringify(snapshot, null, "  ");
+  logger.debug(snapshotFileContent);
+  await writeFileContent(snapshotFilePath, snapshotFileContent);
 };
 
 const readDirectoryManifest = async ({
@@ -1599,7 +1601,7 @@ const reportSizeImpactIntoGithubPullRequest = async ({
   const headSnapshotFileUrl = resolveUrl(headSnapshotFileRelativeUrl, projectDirectoryUrl);
   const baseSnapshotFilePath = urlToFilePath$1(baseSnapshotFileUrl);
   const headSnapshotFilePath = urlToFilePath$1(headSnapshotFileUrl);
-  logger.info(`
+  logger.debug(`
 compare file snapshots
 --- base snapshot file path ---
 ${baseSnapshotFilePath}
@@ -1607,7 +1609,7 @@ ${baseSnapshotFilePath}
 ${headSnapshotFilePath}
 `);
   const snapshotsPromise = Promise.all([readFileContent(baseSnapshotFilePath), readFileContent(headSnapshotFilePath)]);
-  logger.info(`
+  logger.debug(`
 search for existing comment inside pull request.
 --- pull request url ---
 ${getPullRequestHref({
@@ -1624,6 +1626,14 @@ ${getPullRequestHref({
     regex: regexForMergingSizeImpact
   });
   const [[baseSnapshotFileContent, headSnapshotFileContent], existingComment] = await Promise.all([snapshotsPromise, existingCommentPromise]);
+  logger.debug(`
+--- base snapshot file content ---
+${baseSnapshotFileContent}
+`);
+  logger.debug(`
+--- head snapshot file content ---
+${headSnapshotFileContent}
+`);
   const snapshotComparison = compareTwoSnapshots(JSON.parse(baseSnapshotFileContent), JSON.parse(headSnapshotFileContent));
   const pullRequestCommentString = generatePullRequestCommentString({
     pullRequestBase,
@@ -1641,7 +1651,7 @@ May happen whem a snapshot file is empty for instance
   }
 
   if (existingComment) {
-    logger.info(`comment found, updating it
+    logger.debug(`comment found, updating it
 --- comment href ---
 ${existingComment.html_url}`);
     const comment = await updatePullRequestComment({
@@ -1656,7 +1666,7 @@ ${existingComment.html_url}`);
     return comment;
   }
 
-  logger.info(`comment not found, creating a comment`);
+  logger.debug(`comment not found, creating a comment`);
   const comment = await createPullRequestComment({
     repositoryOwner,
     repositoryName,

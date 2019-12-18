@@ -63,7 +63,9 @@ export const generateSnapshotFile = async ({
 
   const snapshotFilePath = urlToFilePath(snapshotFileUrl)
   logger.info(`write snapshot file at ${snapshotFilePath}`)
-  await writeFileContent(snapshotFilePath, JSON.stringify(snapshot, null, "  "))
+  const snapshotFileContent = JSON.stringify(snapshot, null, "  ")
+  logger.debug(snapshotFileContent)
+  await writeFileContent(snapshotFilePath, snapshotFileContent)
 }
 
 const readDirectoryManifest = async ({ logger, manifestFilename, directoryUrl }) => {

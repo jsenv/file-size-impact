@@ -1,3 +1,20 @@
 {
-  "dist": {}
+  "dist/systemjs": {
+    "manifest": null,
+    "sizeReport": {},
+    "trackingConfig": {
+      "./**/*": true,
+      "./**/*.map": false
+    }
+  },
+  "dist/commonjs": {
+    "manifest": null,
+    "sizeReport": {
+      "main.js": 45916
+    },
+    "trackingConfig": {
+      "./**/*": true,
+      "./**/*.map": false
+    }
+  }
 }
