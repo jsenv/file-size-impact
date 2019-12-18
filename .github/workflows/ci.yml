@@ -39,11 +39,11 @@ jobs:
       - name: pull request size impact
         if: github.event_name == 'pull_request'
         run: |
-          git checkout $GITHUB_BASE_REF
+          git checkout -f $GITHUB_BASE_REF
           npm install
           npm run dist
           node ./.github/generate-size-snapshot.js ../snapshot.base.json
-          git checkout $GITHUB_HEAD_REF
+          git checkout -f $GITHUB_HEAD_REF
           npm install
           npm run dist
           node ./.github/generate-size-snapshot.js ../snapshot.head.json
