@@ -1,8 +1,10 @@
 import { compareFilePath } from "@jsenv/file-collector"
+import { metaMapToSpecifierMetaMap, urlToMeta, normalizeSpecifierMetaMap } from "@jsenv/url-meta"
+import { resolveUrl } from "./urlUtils.js"
 
 export const compareTwoSnapshots = (baseSnapshot, headSnapshot) => {
   const comparison = {}
-  Object.keys(baseSnapshot).forEach((directoryRelativeUrl) => {
+  Object.keys(headSnapshot).forEach((directoryRelativeUrl) => {
     comparison[directoryRelativeUrl] = compareDirectorySnapshot(
       baseSnapshot[directoryRelativeUrl],
       headSnapshot[directoryRelativeUrl],
@@ -13,6 +15,12 @@ export const compareTwoSnapshots = (baseSnapshot, headSnapshot) => {
 
 const compareDirectorySnapshot = (baseSnapshot, headSnapshot) => {
   const snapshotComparison = {}
+
+  if (!baseSnapshot) {
+    // may happen when a key in directorySizeTrackingConfig was deleted
+    // in that case we don't care about this directory anymore
+    return snapshotComparison
+  }
 
   const baseManifest = baseSnapshot.manifest || {}
   const headManifest = headSnapshot.manifest || {}
@@ -52,23 +60,6 @@ const compareDirectorySnapshot = (baseSnapshot, headSnapshot) => {
     }
   }
 
-  Object.keys(baseSizeReport).forEach((baseRelativeUrl) => {
-    if (baseRelativeUrl in baseMappings) {
-      const baseRelativeUrlMapped = baseMappings[baseRelativeUrl]
-      if (baseRelativeUrlMapped in headManifest) {
-        const headRelativeUrl = headManifest[baseRelativeUrlMapped]
-        updated(baseRelativeUrlMapped, baseRelativeUrl, headRelativeUrl)
-      } else if (baseRelativeUrl in headSizeReport) {
-        updated(baseRelativeUrlMapped, baseRelativeUrl, baseRelativeUrl)
-      } else {
-        removed(baseRelativeUrlMapped, baseRelativeUrl)
-      }
-    } else if (baseRelativeUrl in headSizeReport) {
-      updated(baseRelativeUrl, baseRelativeUrl, baseRelativeUrl)
-    } else {
-      removed(baseRelativeUrl, baseRelativeUrl)
-    }
-  })
   Object.keys(headSizeReport).forEach((headRelativeUrl) => {
     if (headRelativeUrl in headMappings) {
       const headRelativeUrlMapped = headMappings[headRelativeUrl]
@@ -87,6 +78,38 @@ const compareDirectorySnapshot = (baseSnapshot, headSnapshot) => {
       updated(headRelativeUrl, headRelativeUrl, headRelativeUrl)
     } else {
       added(headRelativeUrl, headRelativeUrl)
+    }
+  })
+
+  const headTrackingConfig = headSnapshot.trackingConfig
+  const directoryUrl = "file:///directory/"
+  const headSpecifierMetaMap = normalizeSpecifierMetaMap(
+    metaMapToSpecifierMetaMap({
+      track: headTrackingConfig,
+    }),
+    directoryUrl,
+  )
+  Object.keys(baseSizeReport).forEach((baseRelativeUrl) => {
+    const baseUrl = resolveUrl(baseRelativeUrl, directoryUrl)
+    if (!urlToMeta({ url: baseUrl, specifierMetaMap: headSpecifierMetaMap }).track) {
+      // head tracking config is not interested into this file anymore
+      return
+    }
+
+    if (baseRelativeUrl in baseMappings) {
+      const baseRelativeUrlMapped = baseMappings[baseRelativeUrl]
+      if (baseRelativeUrlMapped in headManifest) {
+        const headRelativeUrl = headManifest[baseRelativeUrlMapped]
+        updated(baseRelativeUrlMapped, baseRelativeUrl, headRelativeUrl)
+      } else if (baseRelativeUrl in headSizeReport) {
+        updated(baseRelativeUrlMapped, baseRelativeUrl, baseRelativeUrl)
+      } else {
+        removed(baseRelativeUrlMapped, baseRelativeUrl)
+      }
+    } else if (baseRelativeUrl in headSizeReport) {
+      updated(baseRelativeUrl, baseRelativeUrl, baseRelativeUrl)
+    } else {
+      removed(baseRelativeUrl, baseRelativeUrl)
     }
   })
 
