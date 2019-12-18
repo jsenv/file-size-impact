@@ -24,13 +24,16 @@ export const generateSnapshotFile = async ({
     logger.warn(`directorySizeTrackingConfig is empty`)
   }
 
+  const snapshotFileUrl = resolveUrl(snapshotFileRelativeUrl, projectDirectoryUrl)
+
   const snapshot = {}
 
   await Promise.all(
     directoryRelativeUrlArray.map(async (directoryRelativeUrl) => {
       const directoryUrl = resolveDirectoryUrl(directoryRelativeUrl, projectDirectoryUrl)
+      const directoryTrackingConfig = directorySizeTrackingConfig[directoryRelativeUrl]
       const specifierMetaMap = metaMapToSpecifierMetaMap({
-        track: directorySizeTrackingConfig[directoryRelativeUrl],
+        track: directoryTrackingConfig,
       })
 
       const [directoryManifest, directorySizeReport] = await Promise.all([
@@ -53,14 +56,16 @@ export const generateSnapshotFile = async ({
       snapshot[directoryRelativeUrl] = {
         manifest: directoryManifest,
         sizeReport: directorySizeReport,
+        trackingConfig: directoryTrackingConfig,
       }
     }),
   )
 
-  const snapshotFileUrl = resolveUrl(snapshotFileRelativeUrl, projectDirectoryUrl)
   const snapshotFilePath = urlToFilePath(snapshotFileUrl)
   logger.info(`write snapshot file at ${snapshotFilePath}`)
-  await writeFileContent(snapshotFilePath, JSON.stringify(snapshot, null, "  "))
+  const snapshotFileContent = JSON.stringify(snapshot, null, "  ")
+  logger.debug(snapshotFileContent)
+  await writeFileContent(snapshotFilePath, snapshotFileContent)
 }
 
 const readDirectoryManifest = async ({ logger, manifestFilename, directoryUrl }) => {

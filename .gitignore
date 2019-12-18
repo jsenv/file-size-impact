@@ -1,6 +1,7 @@
 /.jsenv/
 /.vscode/settings.json
 /coverage/
+/dist/**/manifest.json
 /node_modules/
 /test/generateSnapshotFile/**/snapshot.json
 /importMap.json

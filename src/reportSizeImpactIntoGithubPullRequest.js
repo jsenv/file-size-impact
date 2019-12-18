@@ -47,7 +47,7 @@ export const reportSizeImpactIntoGithubPullRequest = async ({
   const baseSnapshotFilePath = urlToFilePath(baseSnapshotFileUrl)
   const headSnapshotFilePath = urlToFilePath(headSnapshotFileUrl)
 
-  logger.info(`
+  logger.debug(`
 compare file snapshots
 --- base snapshot file path ---
 ${baseSnapshotFilePath}
@@ -59,7 +59,7 @@ ${headSnapshotFilePath}
     readFileContent(headSnapshotFilePath),
   ])
 
-  logger.info(
+  logger.debug(
     `
 search for existing comment inside pull request.
 --- pull request url ---
@@ -83,6 +83,16 @@ ${getPullRequestHref({
     existingCommentPromise,
   ])
 
+  logger.debug(`
+--- base snapshot file content ---
+${baseSnapshotFileContent}
+`)
+
+  logger.debug(`
+--- head snapshot file content ---
+${headSnapshotFileContent}
+`)
+
   const snapshotComparison = compareTwoSnapshots(
     JSON.parse(baseSnapshotFileContent),
     JSON.parse(headSnapshotFileContent),
@@ -104,7 +114,7 @@ May happen whem a snapshot file is empty for instance
   }
 
   if (existingComment) {
-    logger.info(`comment found, updating it
+    logger.debug(`comment found, updating it
 --- comment href ---
 ${existingComment.html_url}`)
     const comment = await updatePullRequestComment({
@@ -119,7 +129,7 @@ ${existingComment.html_url}`)
     return comment
   }
 
-  logger.info(`comment not found, creating a comment`)
+  logger.debug(`comment not found, creating a comment`)
   const comment = await createPullRequestComment({
     repositoryOwner,
     repositoryName,

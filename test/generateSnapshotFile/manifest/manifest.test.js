@@ -29,6 +29,9 @@ const expected = {
     sizeReport: {
       "file.hash.js": 21,
     },
+    trackingConfig: {
+      "./**/*": true,
+    },
   },
 }
 assert({ actual, expected })

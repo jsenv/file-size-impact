@@ -19,11 +19,6 @@ jobs:
       - uses: actions/setup-node@v1
         with:
           node-version: 12.8.0
-      - name: setup linux fs watchers
-        if: runner.os == 'Linux'
-        run: |
-          sudo sysctl fs.inotify.max_user_watches=524288
-          sudo sysctl -p
       - name: npm install
         run: |
           npm config set //npm.pkg.github.com/:_authToken ${{ secrets.GITHUB_TOKEN }}
@@ -44,11 +39,11 @@ jobs:
       - name: pull request size impact
         if: github.event_name == 'pull_request'
         run: |
-          git checkout $GITHUB_BASE_REF
+          git checkout -f $GITHUB_BASE_REF
           npm install
           npm run dist
           node ./.github/generate-size-snapshot.js ../snapshot.base.json
-          git checkout $GITHUB_HEAD_REF
+          git checkout -f $GITHUB_HEAD_REF
           npm install
           npm run dist
           node ./.github/generate-size-snapshot.js ../snapshot.head.json

@@ -27,6 +27,9 @@ const expected = {
     sizeReport: {
       "file.js": 21,
     },
+    trackingConfig: {
+      "./**/*.js": true,
+    },
   },
 }
 assert({ actual, expected })

@@ -1,9 +1,9 @@
 export const jsenvDirectorySizeTrackingConfig = {
-  dist: {
+  "dist/systemjs": {
     "./**/*": true,
     "./**/*.map": false,
   },
-  src: {
+  "dist/commonjs": {
     "./**/*": true,
     "./**/*.map": false,
   },

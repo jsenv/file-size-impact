@@ -92,7 +92,7 @@ ${generateSizeImpactDetails({
 
   return `
 ${directoryMessages.join(`
-
+---
 `)}${
     generatedByLink
       ? `

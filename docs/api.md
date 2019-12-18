@@ -1,15 +1,99 @@
 # Table of contents
 
+- [generateSnapshotFile](#generateSnapshotFile)
+  - [projectDirectoryUrl](#projectDirectoryUrl)
+  - [logLevel](#loglevel)
+  - [directorySizeTrackingConfig](#directorySizeTrackingConfig)
+  - [manifest](#manifest)
 - [reportSizeImpactIntoGithubPullRequest](#reportSizeImpactIntoGithubPullRequest)
   - [projectDirectoryUrl](#projectDirectoryUrl)
   - [logLevel](#loglevel)
   - [baseSnapshotFileRelativeUrl](#baseSnapshotFileRelativeUrl)
   - [headSnapshotFileRelativeUrl](#headSnapshotFileRelativeUrl)
   - [formatSize](#formatsize)
+  - [generatedByLink](#generatedByLink)
+  - [Usage outside github workflow](#Usage-outside-github-workflow)
+
+## generateSnapshotFile
+
+> `generateSnapshotFile` is an async function analysing file sizes per directory and saving the result into a json file.
+
+Implemented in [src/generateSnapshotFile.js](../src/generateSnapshotFile.js), you can use it as shown below.
+
+```js
+const { generateSnapshotFile } = require("@jsenv/continuous-size-reporting")
+
+generateSnapshotFile({
+  projectDirectoryUrl: "file:///Users/you/directory",
+  directorySizeTrackingConfig: {
+    dist: {
+      "./**/*.js": true,
+    },
+  },
+  snapshotFileRelativeUrl: "./size-snapshot.json",
+})
+```
+
+---
+
+### projectDirectoryUrl
+
+> `projectDirectoryUrl` parameter is a string leading to your project root directory.
+
+This parameter is **required**, an example value could be:
+
+```js
+"file:///Users/you/directory"
+```
+
+Other representation of this information such as `"/Users/you/directory"`, `"C:\\Users\\you\\directory"` or an url instance are possible too.
+
+---
+
+### logLevel
+
+> `logLevel` parameter controls verbosity of logs during the function execution.
+
+This parameter is optionnal with a default value of:
+
+```json
+"info"
+```
+
+The list of available logLevel values can be found on [@jsenv/logger documentation](https://github.com/jsenv/jsenv-logger#list-of-log-levels)
+
+---
+
+### directorySizeTrackingConfig
+
+> `directorySizeTrackingConfig` parameter is an object used to configure directories and files you want to track.
+
+This parameter is optional with a default value exported in [src/jsenvDirectorySizeTrackingConfig.js](../src/jsenvDirectorySizeTrackingConfig.js)
+
+`directorySizeTrackingConfig` keys are urls relative to your `projectDirectoryUrl`. These relative urls leads to the directory you want to track.
+`directorySizeTrackingConfig` values are `specifierMetaMap` as documented in https://github.com/jsenv/jsenv-url-meta#normalizespecifiermetamap.
+
+For every directory you track there will be a corresponding line in the generated pull request comment as visible in [docs/comment-example.md](./comment-example.md)
+
+### manifest
+
+> `manifest` parameter is a boolean controlling if a manifest json file will be taken into account when generating snapshot.
+
+This parameter is optional with a default value of:
+
+```js
+true
+```
+
+Manifest where introduced by webpack in https://github.com/danethurber/webpack-manifest-plugin. There is the equivalent for rollup at https://github.com/shuizhongyueming/rollup-plugin-output-manifest.
+
+The concept is to be able to remap generated file like `file.4798774987w97er984798.js` back to `file.js`.
+
+Without this, comparison of directories accross branches would consider generated files as always new because of their dynamic names.
 
 ## reportSizeImpactIntoGithubPullRequest
 
-> `reportSizeImpactIntoGithubPullRequest` is an async function comparing two folder size and commenting a github pull request with the comparison result.
+> `reportSizeImpactIntoGithubPullRequest` is an async function comparing two directory snapshots and commenting a github pull request with the comparison result.
 
 Implemented in [src/reportSizeImpactIntoGithubPullRequest.js](../src/reportSizeImpactIntoGithubPullRequest.js), you can use it as shown below.
 
@@ -18,39 +102,13 @@ const { reportSizeImpactIntoGithubPullRequest } = require("@jsenv/continuous-siz
 
 reportSizeImpactIntoGithubPullRequest({
   projectDirectoryUrl: "file:///Users/you/directory",
-  baseSnapshotFileRelativeUrl: "../base-snapshot.json",
-  headSnapshotFileRelativeUrl: "../head-snapshot.json",
+  baseSnapshotFileRelativeUrl: "../snapshot.base.json",
+  headSnapshotFileRelativeUrl: "../snapshot.head.json",
   logLevel: "info",
   formatSize: (sizeInBytes) => `${sizeInBytes} bytes`,
   generatedByLink: true,
 })
 ```
-
-— see [source code on github](../src/reportSizeImpactIntoGithubPullRequest/reportSizeImpactIntoGithubPullRequest.js)
-
-### projectDirectoryUrl
-
-> `projectDirectoryUrl` parameter is a string leading to your project root folder.
-
-This parameter is **required**, an example value could be:
-
-```js
-"file:///Users/you/directory"
-```
-
----
-
-### logLevel
-
-> `logLevel` parameter controls verbosity of logs during the function execution.
-
-This parameter is optionnal, the default value is:
-
-```json
-"info"
-```
-
-The list of available logLevel values can be found on [@jsenv/logger documentation](https://github.com/jsenv/jsenv-logger#list-of-log-levels)
 
 ---
 
@@ -102,3 +160,37 @@ true
 ```
 
 This parameter allows someone to understand where the pull request message comes from.
+
+### Usage outside github workflow
+
+You can set process.env variables required by `reportSizeImpactIntoGithubPullRequest` yourself to use it outside a github workflow.
+
+The code below shows what process.env should exists to use `reportSizeImpactIntoGithubPullRequest`.
+
+```js
+const {
+  reportSizeImpactIntoGithubPullRequest,
+} = require("@jsenv/github-pull-request-filesize-impact")
+
+const githubToken = "github-personnal-access-token"
+const githubRepository = "repository-owner/repository-name"
+const pullRequestNumber = 1
+const pullRequestRef = "pr-name"
+
+process.env.GITHUB_EVENT_NAME = "pull_request"
+process.env.GITHUB_REPOSITORY = githubRepository
+process.env.GITHUB_REF = `refs/pull/${pullRequestNumber}/merge`
+process.env.GITHUB_BASE_REF = "master"
+process.env.GITHUB_HEAD_REF = pullRequestRef
+process.env.GITHUB_TOKEN = githubToken
+
+reportSizeImpactIntoGithubPullRequest({
+  projectDirectoryUrl: __dirname,
+})
+```
+
+If you where inside travis you would write `process.env.GITHUB_REPOSITORY = process.env.TRAVIS_REPO_SLUG`. As documented in https://docs.travis-ci.com/user/environment-variables/#default-environment-variables
+
+The exact code to write is up to you according to your execution environment.
+
+Also be sure `githubToken` has the right to read/write comments on issues.
