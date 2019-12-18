@@ -20,6 +20,8 @@ The screenshot below shows how it is integrated to a github pull request.
 
 ## Usage
 
-Waiting for a proper documentation you see how it is integrated in this repository by `pull request size impact` step in [.github/workflows/ci.yml](./.github/workflows/ci.yml)
+Waiting for a proper documentation you can see how it is integrated in this repository workflow file.<br />
+— see [.github/workflows/ci.yml#pull-request-size-impact](https://github.com/jsenv/jsenv-github-pull-request-filesize-impact/blob/6edbd6f7b32d10f674140c45d14946765955598f/.github/workflows/ci.yml#L39)
 
-See also [docs/api.md](./docs/api.md)
+There is also an api documentation for further details.<br />
+— see [docs/api.md](./docs/api.md)
