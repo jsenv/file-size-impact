@@ -14,10 +14,12 @@
 
 `@jsenv/github-pull-request-filesize-impact` comment your pull request on github to see the impact of changes on specific file sizes.
 
-The screenshot below was taken inside a githug pull request to give you a better idea of the final result.
+The screenshot below shows how it is integrated to a github pull request.
 
 ![screenshot of pull request comment](./docs/screenshot-of-pull-request-comment.png)
 
 ## Usage
 
-Waiting for a proper documentation you can check `pull request size impact` step in [.github/workflows/ci.yml](./.github/workflows/ci.yml)
+Waiting for a proper documentation you see how it is integrated in this repository by `pull request size impact` step in [.github/workflows/ci.yml](./.github/workflows/ci.yml)
+
+See also [docs/api.md](./docs/api.md)
