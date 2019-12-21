@@ -24,8 +24,11 @@ const actual = JSON.parse(snapshotFileContent)
 const expected = {
   dist: {
     manifest: null,
-    sizeReport: {
-      "file.js": 21,
+    report: {
+      "file.js": {
+        size: 21,
+        contentHash: '"15-OmSrCmxctJU4IRJ2apSp0zTITUI"',
+      },
     },
     trackingConfig: {
       "./**/*.js": true,
