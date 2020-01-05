@@ -1328,10 +1328,7 @@ const generatePullRequestCommentString = ({
                 diffSize
               };
               hasImpact = true;
-
-              if (diffSize !== 0) {
-                sizeImpact += diffSize;
-              }
+              sizeImpact += diffSize;
             }
           }
     });
@@ -1390,8 +1387,9 @@ const generateSizeImpactTable = ({
   formatSize,
   sizeImpactMap
 }) => `<br />
-event | file | size on \`${pullRequestBase}\` | size on \`${pullRequestHead}\`| size impact
------ | ---- | ------------------------------ | ----------------------------- | ------------
+
+event | file | size on \`${pullRequestBase}\` | size on \`${pullRequestHead}\` | size impact
+----- | ---- | ------------------------------ | ------------------------------ | ------------
 ${Object.keys(sizeImpactMap).map(relativePath => {
   const sizeImpact = sizeImpactMap[relativePath];
   return [generateEventCellText(sizeImpact.why), relativePath, generateBaseCellText({
@@ -1629,7 +1627,7 @@ const sortDirectoryStructure = directoryStructure => {
   return directoryStructureSorted;
 };
 
-const regexForMergingSizeImpact = /Merging .*? into .*? would .*? size/;
+const regexForMergingSizeImpact = /Merging .*? into .*? will .*? overall size/;
 const reportSizeImpactIntoGithubPullRequest = async ({
   logLevel,
   projectDirectoryUrl,
