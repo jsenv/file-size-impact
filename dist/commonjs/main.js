@@ -6,6 +6,7 @@ var fs = require('fs');
 var url$1 = require('url');
 var path = require('path');
 var util = require('util');
+var crypto = require('crypto');
 
 const LOG_LEVEL_OFF = "off";
 const LOG_LEVEL_DEBUG = "debug";
@@ -864,6 +865,24 @@ const jsenvDirectorySizeTrackingConfig = {
   }
 };
 
+const EMPTY_ID = '"0-2jmj7l5rSw0yVb/vlWAYkK/YBwk"';
+const bufferToEtag = buffer => {
+  if (!Buffer.isBuffer(buffer)) {
+    throw new TypeError(`buffer expected, got ${buffer}`);
+  }
+
+  if (buffer.length === 0) {
+    return EMPTY_ID;
+  }
+
+  const hash = crypto.createHash("sha1");
+  hash.update(buffer, "utf8");
+  const hashBase64String = hash.digest("base64");
+  const hashBase64StringSubset = hashBase64String.slice(0, 27);
+  const length = buffer.length;
+  return `"${length.toString(16)}-${hashBase64StringSubset}"`;
+};
+
 const generateSnapshotFile = async ({
   logLevel,
   projectDirectoryUrl,
@@ -890,11 +909,11 @@ const generateSnapshotFile = async ({
     const specifierMetaMap = metaMapToSpecifierMetaMap({
       track: directoryTrackingConfig
     });
-    const [directoryManifest, directorySizeReport] = await Promise.all([manifest ? readDirectoryManifest({
+    const [directoryManifest, directoryFileReport] = await Promise.all([manifest ? readDirectoryManifest({
       logger,
       manifestFilename,
       directoryUrl
-    }) : null, generateDirectorySizeReport({
+    }) : null, generateDirectoryFileReport({
       logger,
       directoryUrl,
       specifierMetaMap,
@@ -903,7 +922,7 @@ const generateSnapshotFile = async ({
     })]);
     snapshot[directoryRelativeUrl] = {
       manifest: directoryManifest,
-      sizeReport: directorySizeReport,
+      report: directoryFileReport,
       trackingConfig: directoryTrackingConfig
     };
   }));
@@ -935,7 +954,7 @@ const readDirectoryManifest = async ({
   }
 };
 
-const generateDirectorySizeReport = async ({
+const generateDirectoryFileReport = async ({
   logger,
   directoryUrl,
   specifierMetaMap,
@@ -943,7 +962,7 @@ const generateDirectorySizeReport = async ({
   manifestFilename
 }) => {
   const directoryPath = urlToFilePath$1(directoryUrl);
-  const directorySizeReport = {};
+  const directoryFileReport = {};
 
   try {
     await collectFiles({
@@ -962,19 +981,26 @@ const generateDirectorySizeReport = async ({
           return;
         }
 
-        directorySizeReport[relativeUrl] = lstat.size;
+        const fileUrl = resolveUrl(relativeUrl, directoryUrl);
+        const filePath = urlToFilePath$1(fileUrl);
+        const fileContent = await readFileContent(filePath);
+        const hash = bufferToEtag(Buffer.from(fileContent));
+        directoryFileReport[relativeUrl] = {
+          size: lstat.size,
+          hash
+        };
       }
     });
   } catch (e) {
     if (e.code === "ENOENT" && e.path === directoryPath) {
       logger.warn(`${directoryPath} does not exists`);
-      return directorySizeReport;
+      return directoryFileReport;
     }
 
     throw e;
   }
 
-  return directorySizeReport;
+  return directoryFileReport;
 };
 
 // eslint-disable-next-line import/no-unresolved
@@ -1254,7 +1280,7 @@ const generatePullRequestCommentString = ({
     const directoryComparison = snapshotComparison[directoryRelativeUrl];
     const sizeImpactMap = {};
     let sizeImpact = 0;
-    let hasSizeImpact = false;
+    let hasImpact = false;
     Object.keys(directoryComparison).forEach(relativeUrl => {
       const {
         base,
@@ -1262,35 +1288,31 @@ const generatePullRequestCommentString = ({
       } = directoryComparison[relativeUrl]; // added
 
       if (!base) {
-        const baseSize = 0;
         const headSize = head.size;
-        const diffSize = headSize - baseSize;
 
-        if (diffSize) {
+        if (headSize !== 0) {
           sizeImpactMap[relativeUrl] = {
-            why: "removed",
-            baseSize,
+            why: "added",
+            baseSize: 0,
             headSize,
-            diffSize
+            diffSize: headSize
           };
-          hasSizeImpact = true;
-          sizeImpact += diffSize;
+          hasImpact = true;
+          sizeImpact += headSize;
         }
       } // removed
       else if (base && !head) {
           const baseSize = base.size;
-          const headSize = 0;
-          const diffSize = headSize - baseSize;
 
-          if (diffSize) {
+          if (baseSize !== 0) {
             sizeImpactMap[relativeUrl] = {
               why: "removed",
               baseSize,
-              headSize,
-              diffSize
+              headSize: 0,
+              diffSize: -baseSize
             };
-            hasSizeImpact = true;
-            sizeImpact += diffSize;
+            hasImpact = true;
+            sizeImpact -= baseSize;
           }
         } // changed
         else if (base && head) {
@@ -1298,15 +1320,18 @@ const generatePullRequestCommentString = ({
             const headSize = head.size;
             const diffSize = headSize - baseSize;
 
-            if (diffSize) {
+            if (base.hash !== head.hash) {
               sizeImpactMap[relativeUrl] = {
                 why: "changed",
                 baseSize,
                 headSize,
                 diffSize
               };
-              hasSizeImpact = true;
-              sizeImpact += diffSize;
+              hasImpact = true;
+
+              if (diffSize !== 0) {
+                sizeImpact += diffSize;
+              }
             }
           }
     });
@@ -1316,13 +1341,14 @@ const generatePullRequestCommentString = ({
       sizeImpact
     });
     return `<details>
-  <summary>Merging <code>${pullRequestHead}</code> into <code>${pullRequestBase}</code> would ${sizeImpactText}</summary>
+  <summary>Merging <code>${pullRequestHead}</code> into <code>${pullRequestBase}</code> will ${sizeImpactText}</summary>
 ${generateSizeImpactDetails({
       pullRequestBase,
       pullRequestHead,
       formatSize,
       sizeImpactMap,
-      hasSizeImpact
+      hasImpact,
+      sizeImpact
     })}
 </details>`;
   });
@@ -1340,19 +1366,22 @@ const generateSizeImpactDetails = ({
   pullRequestHead,
   formatSize,
   sizeImpactMap,
-  hasSizeImpact
+  hasImpact,
+  sizeImpact
 }) => {
-  if (hasSizeImpact) {
-    return generateSizeImpactTable({
+  if (hasImpact) {
+    return `${generateSizeImpactTable({
       pullRequestBase,
       pullRequestHead,
       formatSize,
       sizeImpactMap
-    });
+    })}
+
+**Overall size impact:** ${formatSizeImpact(formatSize, sizeImpact)}.
+**Cache impact:** ${formatCacheImpact(formatSize, sizeImpactMap)}`;
   }
 
-  return `
-changes are not affecting file sizes.`;
+  return `changes don't affect the overall size or cache.`;
 };
 
 const generateSizeImpactTable = ({
@@ -1360,12 +1389,12 @@ const generateSizeImpactTable = ({
   pullRequestHead,
   formatSize,
   sizeImpactMap
-}) => `
-file | size on \`${pullRequestBase}\` | size on \`${pullRequestHead}\`| effect
----- | ----------- | --------------------- | ----------
+}) => `<br />
+event | file | size on \`${pullRequestBase}\` | size on \`${pullRequestHead}\`| size impact
+----- | ---- | ------------------------------ | ----------------------------- | ------------
 ${Object.keys(sizeImpactMap).map(relativePath => {
   const sizeImpact = sizeImpactMap[relativePath];
-  return [relativePath, generateBaseCellText({
+  return [generateEventCellText(sizeImpact.why), relativePath, generateBaseCellText({
     formatSize,
     sizeImpact
   }), generateHeadCellText({
@@ -1374,16 +1403,33 @@ ${Object.keys(sizeImpactMap).map(relativePath => {
   }), generateImpactCellText({
     formatSize,
     sizeImpact
-  })].join("|");
+  })].join(" | ");
 }).join(`
 `)}`;
+
+const generateEventCellText = why => {
+  if (why === "added") {
+    return "file created";
+  }
+
+  if (why === "removed") {
+    return "file deleted";
+  }
+
+  return "content changed";
+};
 
 const generateBaseCellText = ({
   formatSize,
   sizeImpact: {
-    baseSize
+    baseSize,
+    why
   }
 }) => {
+  if (why === "added") {
+    return "---";
+  }
+
   return formatSize(baseSize);
 };
 
@@ -1394,12 +1440,8 @@ const generateHeadCellText = ({
     why
   }
 }) => {
-  if (why === "added") {
-    return `${formatSize(headSize)} (added)`;
-  }
-
   if (why === "removed") {
-    return `${formatSize(headSize)} (removed)`;
+    return "---";
   }
 
   return formatSize(headSize);
@@ -1411,9 +1453,7 @@ const generateImpactCellText = ({
     diffSize
   }
 }) => {
-  if (diffSize > 0) return `+${formatSize(diffSize)}`;
-  if (diffSize < 0) return `-${formatSize(Math.abs(diffSize))}`;
-  return "same";
+  return formatSizeImpact(formatSize, diffSize);
 };
 
 const generateSizeImpactText = ({
@@ -1422,14 +1462,36 @@ const generateSizeImpactText = ({
   sizeImpact
 }) => {
   if (sizeImpact === 0) {
-    return `<b>not impact</b> <code>${directoryRelativeUrl}</code> size.`;
+    return `<b>not impact</b> <code>${directoryRelativeUrl}</code> overall size.`;
   }
 
   if (sizeImpact < 0) {
-    return `<b>decrease</b> <code>${directoryRelativeUrl}</code> size by ${formatSize(Math.abs(sizeImpact))}.`;
+    return `<b>decrease</b> <code>${directoryRelativeUrl}</code> overall size by ${formatSize(Math.abs(sizeImpact))}.`;
   }
 
-  return `<b>increase</b> <code>${directoryRelativeUrl}</code> size by ${formatSize(sizeImpact)}.`;
+  return `<b>increase</b> <code>${directoryRelativeUrl}</code> overall size by ${formatSize(sizeImpact)}.`;
+};
+
+const formatSizeImpact = (formatSize, diffSize) => {
+  if (diffSize > 0) return `+${formatSize(diffSize)}`;
+  if (diffSize < 0) return `-${formatSize(Math.abs(diffSize))}`;
+  return 0;
+};
+
+const formatCacheImpact = (formatSize, sizeImpactMap) => {
+  const changedFiles = Object.keys(sizeImpactMap).filter(relativePath => {
+    return sizeImpactMap[relativePath].why === "changed";
+  });
+  const numberOfChangedFiles = changedFiles.length;
+
+  if (numberOfChangedFiles === 0) {
+    return "none.";
+  }
+
+  const numberOfBytes = changedFiles.reduce((number, relativePath) => {
+    return number + sizeImpactMap[relativePath].baseSize;
+  }, 0);
+  return `${numberOfChangedFiles} files content changed, invalidating a total of ${formatSize(numberOfBytes)}.`;
 };
 
 const compareTwoSnapshots = (baseSnapshot, headSnapshot) => {
@@ -1451,8 +1513,8 @@ const compareDirectorySnapshot = (baseSnapshot, headSnapshot) => {
 
   const baseManifest = baseSnapshot.manifest || {};
   const headManifest = headSnapshot.manifest || {};
-  const baseSizeReport = baseSnapshot.sizeReport;
-  const headSizeReport = headSnapshot.sizeReport;
+  const baseReport = baseSnapshot.report;
+  const headReport = headSnapshot.report;
   const baseMappings = manifestToMappings(baseManifest);
   const headMappings = manifestToMappings(headManifest);
 
@@ -1461,7 +1523,7 @@ const compareDirectorySnapshot = (baseSnapshot, headSnapshot) => {
       base: null,
       head: {
         relativeUrl: headRelativeUrl,
-        size: headSizeReport[headRelativeUrl]
+        ...headReport[headRelativeUrl]
       }
     };
   };
@@ -1470,7 +1532,7 @@ const compareDirectorySnapshot = (baseSnapshot, headSnapshot) => {
     snapshotComparison[relativeUrl] = {
       base: {
         relativeUrl: baseRelativeUrl,
-        size: baseSizeReport[baseRelativeUrl]
+        ...baseReport[baseRelativeUrl]
       },
       head: null
     };
@@ -1480,31 +1542,31 @@ const compareDirectorySnapshot = (baseSnapshot, headSnapshot) => {
     snapshotComparison[relativeUrl] = {
       base: {
         relativeUrl: baseRelativeUrl,
-        size: baseSizeReport[baseRelativeUrl]
+        ...baseReport[baseRelativeUrl]
       },
       head: {
         relativeUrl: headRelativeUrl,
-        size: headSizeReport[headRelativeUrl]
+        ...headReport[headRelativeUrl]
       }
     };
   };
 
-  Object.keys(headSizeReport).forEach(headRelativeUrl => {
+  Object.keys(headReport).forEach(headRelativeUrl => {
     if (headRelativeUrl in headMappings) {
       const headRelativeUrlMapped = headMappings[headRelativeUrl];
 
       if (headRelativeUrlMapped in baseManifest) {
         // the mapping should be the same and already found while iterating
-        // baseSizeReport, otherwise it means the mappings
+        // baseReport, otherwise it means the mappings
         // of heads and base are different right ?
         const baseRelativeUrl = baseManifest[headRelativeUrlMapped];
         updated(headRelativeUrlMapped, baseRelativeUrl, headRelativeUrl);
-      } else if (headRelativeUrl in baseSizeReport) {
+      } else if (headRelativeUrl in baseReport) {
         updated(headRelativeUrlMapped, headRelativeUrl, headRelativeUrl);
       } else {
         added(headRelativeUrlMapped, headRelativeUrl);
       }
-    } else if (headRelativeUrl in baseSizeReport) {
+    } else if (headRelativeUrl in baseReport) {
       updated(headRelativeUrl, headRelativeUrl, headRelativeUrl);
     } else {
       added(headRelativeUrl, headRelativeUrl);
@@ -1515,7 +1577,7 @@ const compareDirectorySnapshot = (baseSnapshot, headSnapshot) => {
   const headSpecifierMetaMap = normalizeSpecifierMetaMap(metaMapToSpecifierMetaMap({
     track: headTrackingConfig
   }), directoryUrl);
-  Object.keys(baseSizeReport).forEach(baseRelativeUrl => {
+  Object.keys(baseReport).forEach(baseRelativeUrl => {
     const baseUrl = resolveUrl(baseRelativeUrl, directoryUrl);
 
     if (!urlToMeta({
@@ -1532,12 +1594,12 @@ const compareDirectorySnapshot = (baseSnapshot, headSnapshot) => {
       if (baseRelativeUrlMapped in headManifest) {
         const headRelativeUrl = headManifest[baseRelativeUrlMapped];
         updated(baseRelativeUrlMapped, baseRelativeUrl, headRelativeUrl);
-      } else if (baseRelativeUrl in headSizeReport) {
+      } else if (baseRelativeUrl in headReport) {
         updated(baseRelativeUrlMapped, baseRelativeUrl, baseRelativeUrl);
       } else {
         removed(baseRelativeUrlMapped, baseRelativeUrl);
       }
-    } else if (baseRelativeUrl in headSizeReport) {
+    } else if (baseRelativeUrl in headReport) {
       updated(baseRelativeUrl, baseRelativeUrl, baseRelativeUrl);
     } else {
       removed(baseRelativeUrl, baseRelativeUrl);

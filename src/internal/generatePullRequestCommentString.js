@@ -16,40 +16,36 @@ export const generatePullRequestCommentString = ({
     const directoryComparison = snapshotComparison[directoryRelativeUrl]
     const sizeImpactMap = {}
     let sizeImpact = 0
-    let hasSizeImpact = false
+    let hasImpact = false
     Object.keys(directoryComparison).forEach((relativeUrl) => {
       const { base, head } = directoryComparison[relativeUrl]
 
       // added
       if (!base) {
-        const baseSize = 0
         const headSize = head.size
-        const diffSize = headSize - baseSize
-        if (diffSize) {
+        if (headSize !== 0) {
           sizeImpactMap[relativeUrl] = {
-            why: "removed",
-            baseSize,
+            why: "added",
+            baseSize: 0,
             headSize,
-            diffSize,
+            diffSize: headSize,
           }
-          hasSizeImpact = true
-          sizeImpact += diffSize
+          hasImpact = true
+          sizeImpact += headSize
         }
       }
       // removed
       else if (base && !head) {
         const baseSize = base.size
-        const headSize = 0
-        const diffSize = headSize - baseSize
-        if (diffSize) {
+        if (baseSize !== 0) {
           sizeImpactMap[relativeUrl] = {
             why: "removed",
             baseSize,
-            headSize,
-            diffSize,
+            headSize: 0,
+            diffSize: -baseSize,
           }
-          hasSizeImpact = true
-          sizeImpact += diffSize
+          hasImpact = true
+          sizeImpact -= baseSize
         }
       }
       // changed
@@ -57,15 +53,17 @@ export const generatePullRequestCommentString = ({
         const baseSize = base.size
         const headSize = head.size
         const diffSize = headSize - baseSize
-        if (diffSize) {
+        if (base.hash !== head.hash) {
           sizeImpactMap[relativeUrl] = {
             why: "changed",
             baseSize,
             headSize,
             diffSize,
           }
-          hasSizeImpact = true
-          sizeImpact += diffSize
+          hasImpact = true
+          if (diffSize !== 0) {
+            sizeImpact += diffSize
+          }
         }
       }
     })
@@ -77,13 +75,14 @@ export const generatePullRequestCommentString = ({
     })
 
     return `<details>
-  <summary>Merging <code>${pullRequestHead}</code> into <code>${pullRequestBase}</code> would ${sizeImpactText}</summary>
+  <summary>Merging <code>${pullRequestHead}</code> into <code>${pullRequestBase}</code> will ${sizeImpactText}</summary>
 ${generateSizeImpactDetails({
   pullRequestBase,
   pullRequestHead,
   formatSize,
   sizeImpactMap,
-  hasSizeImpact,
+  hasImpact,
+  sizeImpact,
 })}
 </details>`
   })
@@ -107,13 +106,21 @@ const generateSizeImpactDetails = ({
   pullRequestHead,
   formatSize,
   sizeImpactMap,
-  hasSizeImpact,
+  hasImpact,
+  sizeImpact,
 }) => {
-  if (hasSizeImpact) {
-    return generateSizeImpactTable({ pullRequestBase, pullRequestHead, formatSize, sizeImpactMap })
+  if (hasImpact) {
+    return `${generateSizeImpactTable({
+      pullRequestBase,
+      pullRequestHead,
+      formatSize,
+      sizeImpactMap,
+    })}
+
+**Overall size impact:** ${formatSizeImpact(formatSize, sizeImpact)}.
+**Cache impact:** ${formatCacheImpact(formatSize, sizeImpactMap)}`
   }
-  return `
-changes are not affecting file sizes.`
+  return `changes don't affect the overall size or cache.`
 }
 
 const generateSizeImpactTable = ({
@@ -121,49 +128,82 @@ const generateSizeImpactTable = ({
   pullRequestHead,
   formatSize,
   sizeImpactMap,
-}) => `
-file | size on \`${pullRequestBase}\` | size on \`${pullRequestHead}\`| effect
----- | ----------- | --------------------- | ----------
+}) => `<br />
+event | file | size on \`${pullRequestBase}\` | size on \`${pullRequestHead}\`| size impact
+----- | ---- | ------------------------------ | ----------------------------- | ------------
 ${Object.keys(sizeImpactMap).map((relativePath) => {
   const sizeImpact = sizeImpactMap[relativePath]
 
   return [
+    generateEventCellText(sizeImpact.why),
     relativePath,
     generateBaseCellText({ formatSize, sizeImpact }),
     generateHeadCellText({ formatSize, sizeImpact }),
     generateImpactCellText({ formatSize, sizeImpact }),
-  ].join("|")
+  ].join(" | ")
 }).join(`
 `)}`
 
-const generateBaseCellText = ({ formatSize, sizeImpact: { baseSize } }) => {
+const generateEventCellText = (why) => {
+  if (why === "added") {
+    return "file created"
+  }
+  if (why === "removed") {
+    return "file deleted"
+  }
+  return "content changed"
+}
+
+const generateBaseCellText = ({ formatSize, sizeImpact: { baseSize, why } }) => {
+  if (why === "added") {
+    return "---"
+  }
   return formatSize(baseSize)
 }
 
 const generateHeadCellText = ({ formatSize, sizeImpact: { headSize, why } }) => {
-  if (why === "added") {
-    return `${formatSize(headSize)} (added)`
-  }
   if (why === "removed") {
-    return `${formatSize(headSize)} (removed)`
+    return "---"
   }
   return formatSize(headSize)
 }
 
 const generateImpactCellText = ({ formatSize, sizeImpact: { diffSize } }) => {
-  if (diffSize > 0) return `+${formatSize(diffSize)}`
-  if (diffSize < 0) return `-${formatSize(Math.abs(diffSize))}`
-  return "same"
+  return formatSizeImpact(formatSize, diffSize)
 }
 
 const generateSizeImpactText = ({ directoryRelativeUrl, formatSize, sizeImpact }) => {
   if (sizeImpact === 0) {
-    return `<b>not impact</b> <code>${directoryRelativeUrl}</code> size.`
+    return `<b>not impact</b> <code>${directoryRelativeUrl}</code> overall size.`
   }
   if (sizeImpact < 0) {
-    return `<b>decrease</b> <code>${directoryRelativeUrl}</code> size by ${formatSize(
+    return `<b>decrease</b> <code>${directoryRelativeUrl}</code> overall size by ${formatSize(
       Math.abs(sizeImpact),
     )}.`
   }
-  return `<b>increase</b> <code>${directoryRelativeUrl}</code> size by ${formatSize(sizeImpact)}.`
+  return `<b>increase</b> <code>${directoryRelativeUrl}</code> overall size by ${formatSize(
+    sizeImpact,
+  )}.`
+}
+
+const formatSizeImpact = (formatSize, diffSize) => {
+  if (diffSize > 0) return `+${formatSize(diffSize)}`
+  if (diffSize < 0) return `-${formatSize(Math.abs(diffSize))}`
+  return 0
+}
+
+const formatCacheImpact = (formatSize, sizeImpactMap) => {
+  const changedFiles = Object.keys(sizeImpactMap).filter((relativePath) => {
+    return sizeImpactMap[relativePath].why === "changed"
+  })
+  const numberOfChangedFiles = changedFiles.length
+  if (numberOfChangedFiles === 0) {
+    return "none."
+  }
+  const numberOfBytes = changedFiles.reduce((number, relativePath) => {
+    return number + sizeImpactMap[relativePath].baseSize
+  }, 0)
+  return `${numberOfChangedFiles} files content changed, invalidating a total of ${formatSize(
+    numberOfBytes,
+  )}.`
 }

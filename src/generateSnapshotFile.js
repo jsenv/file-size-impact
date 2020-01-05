@@ -5,6 +5,7 @@ import { resolveUrl, resolveDirectoryUrl, urlToFilePath } from "./internal/urlUt
 import { writeFileContent, readFileContent } from "./internal/filesystemUtils.js"
 import { normalizeDirectoryUrl } from "./internal/normalizeDirectoryUrl.js"
 import { jsenvDirectorySizeTrackingConfig } from "./jsenvDirectorySizeTrackingConfig.js"
+import { bufferToEtag } from "./internal/bufferToEtag.js"
 
 export const generateSnapshotFile = async ({
   logLevel,
@@ -36,7 +37,7 @@ export const generateSnapshotFile = async ({
         track: directoryTrackingConfig,
       })
 
-      const [directoryManifest, directorySizeReport] = await Promise.all([
+      const [directoryManifest, directoryFileReport] = await Promise.all([
         manifest
           ? readDirectoryManifest({
               logger,
@@ -44,7 +45,7 @@ export const generateSnapshotFile = async ({
               directoryUrl,
             })
           : null,
-        generateDirectorySizeReport({
+        generateDirectoryFileReport({
           logger,
           directoryUrl,
           specifierMetaMap,
@@ -55,7 +56,7 @@ export const generateSnapshotFile = async ({
 
       snapshot[directoryRelativeUrl] = {
         manifest: directoryManifest,
-        sizeReport: directorySizeReport,
+        report: directoryFileReport,
         trackingConfig: directoryTrackingConfig,
       }
     }),
@@ -83,7 +84,7 @@ const readDirectoryManifest = async ({ logger, manifestFilename, directoryUrl })
   }
 }
 
-const generateDirectorySizeReport = async ({
+const generateDirectoryFileReport = async ({
   logger,
   directoryUrl,
   specifierMetaMap,
@@ -91,7 +92,7 @@ const generateDirectorySizeReport = async ({
   manifestFilename,
 }) => {
   const directoryPath = urlToFilePath(directoryUrl)
-  const directorySizeReport = {}
+  const directoryFileReport = {}
   try {
     await collectFiles({
       directoryUrl,
@@ -104,16 +105,24 @@ const generateDirectorySizeReport = async ({
         if (manifest && relativeUrl === manifestFilename) {
           return
         }
-        directorySizeReport[relativeUrl] = lstat.size
+        const fileUrl = resolveUrl(relativeUrl, directoryUrl)
+        const filePath = urlToFilePath(fileUrl)
+        const fileContent = await readFileContent(filePath)
+        const hash = bufferToEtag(Buffer.from(fileContent))
+
+        directoryFileReport[relativeUrl] = {
+          size: lstat.size,
+          hash,
+        }
       },
     })
   } catch (e) {
     if (e.code === "ENOENT" && e.path === directoryPath) {
       logger.warn(`${directoryPath} does not exists`)
-      return directorySizeReport
+      return directoryFileReport
     }
     throw e
   }
 
-  return directorySizeReport
+  return directoryFileReport
 }

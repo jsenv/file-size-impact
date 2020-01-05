@@ -26,8 +26,11 @@ const expected = {
     manifest: {
       "file.js": "file.hash.js",
     },
-    sizeReport: {
-      "file.hash.js": 21,
+    report: {
+      "file.hash.js": {
+        size: 21,
+        hash: '"15-OmSrCmxctJU4IRJ2apSp0zTITUI"',
+      },
     },
     trackingConfig: {
       "./**/*": true,

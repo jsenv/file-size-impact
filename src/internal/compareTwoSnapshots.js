@@ -24,8 +24,8 @@ const compareDirectorySnapshot = (baseSnapshot, headSnapshot) => {
 
   const baseManifest = baseSnapshot.manifest || {}
   const headManifest = headSnapshot.manifest || {}
-  const baseSizeReport = baseSnapshot.sizeReport
-  const headSizeReport = headSnapshot.sizeReport
+  const baseReport = baseSnapshot.report
+  const headReport = headSnapshot.report
   const baseMappings = manifestToMappings(baseManifest)
   const headMappings = manifestToMappings(headManifest)
 
@@ -34,7 +34,7 @@ const compareDirectorySnapshot = (baseSnapshot, headSnapshot) => {
       base: null,
       head: {
         relativeUrl: headRelativeUrl,
-        size: headSizeReport[headRelativeUrl],
+        ...headReport[headRelativeUrl],
       },
     }
   }
@@ -42,7 +42,7 @@ const compareDirectorySnapshot = (baseSnapshot, headSnapshot) => {
     snapshotComparison[relativeUrl] = {
       base: {
         relativeUrl: baseRelativeUrl,
-        size: baseSizeReport[baseRelativeUrl],
+        ...baseReport[baseRelativeUrl],
       },
       head: null,
     }
@@ -51,30 +51,30 @@ const compareDirectorySnapshot = (baseSnapshot, headSnapshot) => {
     snapshotComparison[relativeUrl] = {
       base: {
         relativeUrl: baseRelativeUrl,
-        size: baseSizeReport[baseRelativeUrl],
+        ...baseReport[baseRelativeUrl],
       },
       head: {
         relativeUrl: headRelativeUrl,
-        size: headSizeReport[headRelativeUrl],
+        ...headReport[headRelativeUrl],
       },
     }
   }
 
-  Object.keys(headSizeReport).forEach((headRelativeUrl) => {
+  Object.keys(headReport).forEach((headRelativeUrl) => {
     if (headRelativeUrl in headMappings) {
       const headRelativeUrlMapped = headMappings[headRelativeUrl]
       if (headRelativeUrlMapped in baseManifest) {
         // the mapping should be the same and already found while iterating
-        // baseSizeReport, otherwise it means the mappings
+        // baseReport, otherwise it means the mappings
         // of heads and base are different right ?
         const baseRelativeUrl = baseManifest[headRelativeUrlMapped]
         updated(headRelativeUrlMapped, baseRelativeUrl, headRelativeUrl)
-      } else if (headRelativeUrl in baseSizeReport) {
+      } else if (headRelativeUrl in baseReport) {
         updated(headRelativeUrlMapped, headRelativeUrl, headRelativeUrl)
       } else {
         added(headRelativeUrlMapped, headRelativeUrl)
       }
-    } else if (headRelativeUrl in baseSizeReport) {
+    } else if (headRelativeUrl in baseReport) {
       updated(headRelativeUrl, headRelativeUrl, headRelativeUrl)
     } else {
       added(headRelativeUrl, headRelativeUrl)
@@ -89,7 +89,7 @@ const compareDirectorySnapshot = (baseSnapshot, headSnapshot) => {
     }),
     directoryUrl,
   )
-  Object.keys(baseSizeReport).forEach((baseRelativeUrl) => {
+  Object.keys(baseReport).forEach((baseRelativeUrl) => {
     const baseUrl = resolveUrl(baseRelativeUrl, directoryUrl)
     if (!urlToMeta({ url: baseUrl, specifierMetaMap: headSpecifierMetaMap }).track) {
       // head tracking config is not interested into this file anymore
@@ -101,12 +101,12 @@ const compareDirectorySnapshot = (baseSnapshot, headSnapshot) => {
       if (baseRelativeUrlMapped in headManifest) {
         const headRelativeUrl = headManifest[baseRelativeUrlMapped]
         updated(baseRelativeUrlMapped, baseRelativeUrl, headRelativeUrl)
-      } else if (baseRelativeUrl in headSizeReport) {
+      } else if (baseRelativeUrl in headReport) {
         updated(baseRelativeUrlMapped, baseRelativeUrl, baseRelativeUrl)
       } else {
         removed(baseRelativeUrlMapped, baseRelativeUrl)
       }
-    } else if (baseRelativeUrl in headSizeReport) {
+    } else if (baseRelativeUrl in headReport) {
       updated(baseRelativeUrl, baseRelativeUrl, baseRelativeUrl)
     } else {
       removed(baseRelativeUrl, baseRelativeUrl)
