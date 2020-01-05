@@ -61,9 +61,7 @@ export const generatePullRequestCommentString = ({
             diffSize,
           }
           hasImpact = true
-          if (diffSize !== 0) {
-            sizeImpact += diffSize
-          }
+          sizeImpact += diffSize
         }
       }
     })
