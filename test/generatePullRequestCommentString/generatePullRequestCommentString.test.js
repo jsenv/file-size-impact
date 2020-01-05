@@ -56,7 +56,7 @@ changes don't affect the overall size or cache.
 <br />
 
 event | file | size on \`base\` | size on \`head\` | size impact
------ | ---- | ------------------------------- | ----------------------------- | ------------
+----- | ---- | ------------------------------ | ------------------------------ | ------------
 content changed | file-a.js | 10 bytes | 15 bytes | +5 bytes
 content changed | file-b.js | 15 bytes | 10 bytes | -5 bytes
 
@@ -107,7 +107,7 @@ content changed | file-b.js | 15 bytes | 10 bytes | -5 bytes
 <br />
 
 event | file | size on \`base\` | size on \`head\` | size impact
------ | ---- | ------------------------------- | ----------------------------- | ------------
+----- | ---- | ------------------------------ | ------------------------------ | ------------
 file created | file-added.js | --- | 10 bytes | +10 bytes
 file deleted | file-removed.js | 20 bytes | --- | -20 bytes
 content changed | file-updated.js | 10 bytes | 15 bytes | +5 bytes

@@ -1627,7 +1627,7 @@ const sortDirectoryStructure = directoryStructure => {
   return directoryStructureSorted;
 };
 
-const regexForMergingSizeImpact = /Merging .*? into .*? would .*? size/;
+const regexForMergingSizeImpact = /Merging .*? into .*? will .*? overall size/;
 const reportSizeImpactIntoGithubPullRequest = async ({
   logLevel,
   projectDirectoryUrl,

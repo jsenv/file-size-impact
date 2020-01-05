@@ -8,7 +8,7 @@ import { normalizeDirectoryUrl } from "./internal/normalizeDirectoryUrl.js"
 import { resolveUrl, urlToFilePath } from "./internal/urlUtils.js"
 import { readFileContent } from "./internal/filesystemUtils.js"
 
-const regexForMergingSizeImpact = /Merging .*? into .*? would .*? size/
+const regexForMergingSizeImpact = /Merging .*? into .*? will .*? overall size/
 
 export const reportSizeImpactIntoGithubPullRequest = async ({
   logLevel,
