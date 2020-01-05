@@ -13,9 +13,8 @@ import { generatePullRequestCommentString } from "../../src/internal/generatePul
   })
   const expected = `
 <details>
-  <summary>Merging <code>head</code> into <code>base</code> would <b>not impact</b> <code>dist</code> size.</summary>
-
-changes are not affecting file sizes.
+  <summary>Merging <code>head</code> into <code>base</code> will <b>not impact</b> <code>dist</code> overall size.</summary>
+changes don't affect the overall size or cache.
 </details>`
   assert({ actual, expected })
 }
@@ -30,17 +29,21 @@ changes are not affecting file sizes.
         "file-a.js": {
           base: {
             size: 10,
+            hash: "hash1",
           },
           head: {
             size: 15,
+            hash: "hash2",
           },
         },
         "file-b.js": {
           base: {
             size: 15,
+            hash: "hash3",
           },
           head: {
             size: 10,
+            hash: "hash4",
           },
         },
       },
@@ -49,12 +52,15 @@ changes are not affecting file sizes.
   })
   const expected = `
 <details>
-  <summary>Merging <code>head</code> into <code>base</code> would <b>not impact</b> <code>dist</code> size.</summary>
+  <summary>Merging <code>head</code> into <code>base</code> will <b>not impact</b> <code>dist</code> overall size.</summary>
+<br />
+event | file | size on \`base\` | size on \`head\`| size impact
+----- | ---- | ------------------------------ | ----------------------------- | ------------
+content changed | file-a.js | 10 bytes | 15 bytes | +5 bytes
+content changed | file-b.js | 15 bytes | 10 bytes | -5 bytes
 
-file | size on \`base\` | size on \`head\`| effect
----- | ----------- | --------------------- | ----------
-file-a.js|10 bytes|15 bytes|+5 bytes
-file-b.js|15 bytes|10 bytes|-5 bytes
+**Overall size impact:** 0.
+**Cache impact:** 2 files content changed, invalidating a total of 25 bytes.
 </details>`
   assert({ actual, expected })
 }
@@ -70,20 +76,24 @@ file-b.js|15 bytes|10 bytes|-5 bytes
           base: null,
           head: {
             size: 10,
+            hash: "hash1",
           },
         },
         "file-removed.js": {
           base: {
             size: 20,
+            hash: "hash2",
           },
           head: null,
         },
         "file-updated.js": {
           base: {
             size: 10,
+            hash: "hash3",
           },
           head: {
             size: 15,
+            hash: "hash4",
           },
         },
       },
@@ -92,13 +102,16 @@ file-b.js|15 bytes|10 bytes|-5 bytes
   })
   const expected = `
 <details>
-  <summary>Merging <code>head</code> into <code>base</code> would <b>decrease</b> <code>dist</code> size by 5 bytes.</summary>
+  <summary>Merging <code>head</code> into <code>base</code> will <b>decrease</b> <code>dist</code> overall size by 5 bytes.</summary>
+<br />
+event | file | size on \`base\` | size on \`head\`| size impact
+----- | ---- | ------------------------------ | ----------------------------- | ------------
+file created | file-added.js | --- | 10 bytes | +10 bytes
+file deleted | file-removed.js | 20 bytes | --- | -20 bytes
+content changed | file-updated.js | 10 bytes | 15 bytes | +5 bytes
 
-file | size on \`base\` | size on \`head\`| effect
----- | ----------- | --------------------- | ----------
-file-added.js|0 bytes|10 bytes (removed)|+10 bytes
-file-removed.js|20 bytes|0 bytes (removed)|-20 bytes
-file-updated.js|10 bytes|15 bytes|+5 bytes
+**Overall size impact:** -5 bytes.
+**Cache impact:** 1 files content changed, invalidating a total of 10 bytes.
 </details>`
   assert({ actual, expected })
 }

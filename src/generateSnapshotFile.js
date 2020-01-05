@@ -112,7 +112,7 @@ const generateDirectoryFileReport = async ({
 
         directoryFileReport[relativeUrl] = {
           size: lstat.size,
-          contentHash: hash,
+          hash,
         }
       },
     })

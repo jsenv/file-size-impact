@@ -12,10 +12,10 @@ import { compareTwoSnapshots } from "../../src/internal/compareTwoSnapshots.js"
         trackingConfig: {
           "**/*": true,
         },
-        sizeReport: {
-          "dir/file.base.js": 10,
-          "old.base.js": 20,
-          "whatever.js": 30,
+        report: {
+          "dir/file.base.js": { size: 10, hash: "hash1" },
+          "old.base.js": { size: 20, hash: "hash2" },
+          "whatever.js": { size: 30, hash: "hash3" },
         },
       },
     },
@@ -28,10 +28,10 @@ import { compareTwoSnapshots } from "../../src/internal/compareTwoSnapshots.js"
         trackingConfig: {
           "**/*": true,
         },
-        sizeReport: {
-          "dir/file.head.js": 100,
-          "new.head.js": 200,
-          "whatever.js": 300,
+        report: {
+          "dir/file.head.js": { size: 100, hash: "hash4" },
+          "new.head.js": { size: 200, hash: "hash5" },
+          "whatever.js": { size: 300, hash: "hash6" },
         },
       },
     },
@@ -42,10 +42,12 @@ import { compareTwoSnapshots } from "../../src/internal/compareTwoSnapshots.js"
         base: {
           relativeUrl: "dir/file.base.js",
           size: 10,
+          hash: "hash1",
         },
         head: {
           relativeUrl: "dir/file.head.js",
           size: 100,
+          hash: "hash4",
         },
       },
       "new.js": {
@@ -53,12 +55,14 @@ import { compareTwoSnapshots } from "../../src/internal/compareTwoSnapshots.js"
         head: {
           relativeUrl: "new.head.js",
           size: 200,
+          hash: "hash5",
         },
       },
       "old.js": {
         base: {
           relativeUrl: "old.base.js",
           size: 20,
+          hash: "hash2",
         },
         head: null,
       },
@@ -66,10 +70,12 @@ import { compareTwoSnapshots } from "../../src/internal/compareTwoSnapshots.js"
         base: {
           relativeUrl: "whatever.js",
           size: 30,
+          hash: "hash3",
         },
         head: {
           relativeUrl: "whatever.js",
           size: 300,
+          hash: "hash6",
         },
       },
     },
@@ -82,20 +88,20 @@ import { compareTwoSnapshots } from "../../src/internal/compareTwoSnapshots.js"
   const actual = compareTwoSnapshots(
     {
       dist: {
-        sizeReport: {
-          "file.js": 10,
+        report: {
+          "file.js": { size: 10, hash: "hash1" },
         },
       },
       src: {
-        sizeReport: {
-          "file.js": 10,
+        report: {
+          "file.js": { size: 10, hash: "hash2" },
         },
       },
     },
     {
       dist: {
-        sizeReport: {
-          "file.js": 20,
+        report: {
+          "file.js": { size: 20, hash: "hash3" },
         },
         trackingConfig: {
           "**/*": true,
@@ -109,10 +115,12 @@ import { compareTwoSnapshots } from "../../src/internal/compareTwoSnapshots.js"
         base: {
           relativeUrl: "file.js",
           size: 10,
+          hash: "hash1",
         },
         head: {
           relativeUrl: "file.js",
           size: 20,
+          hash: "hash3",
         },
       },
     },
@@ -125,9 +133,9 @@ import { compareTwoSnapshots } from "../../src/internal/compareTwoSnapshots.js"
   const actual = compareTwoSnapshots(
     {
       dist: {
-        sizeReport: {
-          "foo.js": 10,
-          "bar.js": 20,
+        report: {
+          "foo.js": { size: 10, hash: "hash1" },
+          "bar.js": { size: 20, hash: "hash2" },
         },
         trackingConfig: {
           "foo.js": true,
@@ -137,8 +145,8 @@ import { compareTwoSnapshots } from "../../src/internal/compareTwoSnapshots.js"
     },
     {
       dist: {
-        sizeReport: {
-          "foo.js": 100,
+        report: {
+          "foo.js": { size: 100, hash: "hash3" },
         },
         trackingConfig: {
           "foo.js": true,
@@ -153,10 +161,12 @@ import { compareTwoSnapshots } from "../../src/internal/compareTwoSnapshots.js"
         base: {
           relativeUrl: "foo.js",
           size: 10,
+          hash: "hash1",
         },
         head: {
           relativeUrl: "foo.js",
           size: 100,
+          hash: "hash3",
         },
       },
     },

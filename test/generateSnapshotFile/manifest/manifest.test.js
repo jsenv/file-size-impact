@@ -29,7 +29,7 @@ const expected = {
     report: {
       "file.hash.js": {
         size: 21,
-        contentHash: '"15-OmSrCmxctJU4IRJ2apSp0zTITUI"',
+        hash: '"15-OmSrCmxctJU4IRJ2apSp0zTITUI"',
       },
     },
     trackingConfig: {
