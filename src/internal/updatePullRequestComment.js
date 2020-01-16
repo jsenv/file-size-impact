@@ -1,5 +1,5 @@
 // https://developer.github.com/v3/issues/comments/#edit-a-comment
-const fetch = import.meta.require("node-fetch")
+import { fetchUrl } from "@jsenv/server"
 
 export const updatePullRequestComment = async ({
   githubToken,
@@ -45,7 +45,8 @@ const genericUpdatePullRequestComment = async ({
 }) => {
   const href = `https://api.github.com/repos/${repositoryOwner}/${repositoryName}/issues/comments/${commentId}`
   const body = JSON.stringify({ body: commentBody })
-  const response = await fetch(href, {
+  const response = await fetchUrl(href, {
+    standard: true,
     headers: {
       "authorization": `token ${githubToken}`,
       "content-length": Buffer.byteLength(body),

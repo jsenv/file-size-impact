@@ -1,14 +1,12 @@
 import { assert } from "@jsenv/assert"
+import { resolveUrl, removeFileSystemNode, readFile } from "@jsenv/util"
 import { generateSnapshotFile } from "../../../index.js"
-import { resolveUrl, urlToFilePath } from "../../../src/internal/urlUtils.js"
-import { removeFile, readFileContent } from "../../../src/internal/filesystemUtils.js"
 
-const testDirectoryUrl = import.meta.resolve("./")
+const testDirectoryUrl = resolveUrl("./", import.meta.url)
 const snapshotFileRelativeUrl = "snapshot.json"
 const snapshotFileUrl = resolveUrl(snapshotFileRelativeUrl, testDirectoryUrl)
-const snapshotFilePath = urlToFilePath(snapshotFileUrl)
 
-await removeFile(snapshotFilePath)
+await removeFileSystemNode(snapshotFileUrl)
 await generateSnapshotFile({
   logLevel: "warn",
   projectDirectoryUrl: testDirectoryUrl,
@@ -19,7 +17,7 @@ await generateSnapshotFile({
     },
   },
 })
-const snapshotFileContent = await readFileContent(snapshotFilePath)
+const snapshotFileContent = await readFile(snapshotFileUrl)
 const actual = JSON.parse(snapshotFileContent)
 const expected = {
   dist: {

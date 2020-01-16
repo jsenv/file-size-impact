@@ -1,12 +1,15 @@
 import { createLogger } from "@jsenv/logger"
+import {
+  assertAndNormalizeDirectoryUrl,
+  resolveUrl,
+  readFile,
+  urlToFileSystemPath,
+} from "@jsenv/util"
 import { getPullRequestCommentMatching } from "./internal/getPullRequestCommentMatching.js"
 import { createPullRequestComment } from "./internal/createPullRequestComment.js"
 import { updatePullRequestComment } from "./internal/updatePullRequestComment.js"
 import { generatePullRequestCommentString } from "./internal/generatePullRequestCommentString.js"
 import { compareTwoSnapshots } from "./internal/compareTwoSnapshots.js"
-import { normalizeDirectoryUrl } from "./internal/normalizeDirectoryUrl.js"
-import { resolveUrl, urlToFilePath } from "./internal/urlUtils.js"
-import { readFileContent } from "./internal/filesystemUtils.js"
 
 const regexForMergingSizeImpact = /Merging .*? into .*? will .*? overall size/
 
@@ -20,7 +23,7 @@ export const reportSizeImpactIntoGithubPullRequest = async ({
 }) => {
   const logger = createLogger({ logLevel })
 
-  projectDirectoryUrl = normalizeDirectoryUrl(projectDirectoryUrl)
+  projectDirectoryUrl = assertAndNormalizeDirectoryUrl(projectDirectoryUrl)
 
   if (typeof baseSnapshotFileRelativeUrl !== "string") {
     throw new TypeError(
@@ -44,19 +47,17 @@ export const reportSizeImpactIntoGithubPullRequest = async ({
 
   const baseSnapshotFileUrl = resolveUrl(baseSnapshotFileRelativeUrl, projectDirectoryUrl)
   const headSnapshotFileUrl = resolveUrl(headSnapshotFileRelativeUrl, projectDirectoryUrl)
-  const baseSnapshotFilePath = urlToFilePath(baseSnapshotFileUrl)
-  const headSnapshotFilePath = urlToFilePath(headSnapshotFileUrl)
 
   logger.debug(`
 compare file snapshots
 --- base snapshot file path ---
-${baseSnapshotFilePath}
+${urlToFileSystemPath(baseSnapshotFileUrl)}
 --- head snapshot file path ---
-${headSnapshotFilePath}
+${urlToFileSystemPath(headSnapshotFileUrl)}
 `)
   const snapshotsPromise = Promise.all([
-    readFileContent(baseSnapshotFilePath),
-    readFileContent(headSnapshotFilePath),
+    readFile(baseSnapshotFileUrl),
+    readFile(headSnapshotFileUrl),
   ])
 
   logger.debug(
