@@ -16,6 +16,8 @@ jobs:
       max-parallel: 1 # to ensure windows failure can prevent ubuntu from publishing package
     runs-on: ${{ matrix.os }}
     name: node 12 on ${{ matrix.os }}
+    env:
+      CI: true
     steps:
       - uses: actions/checkout@v1
       - uses: actions/setup-node@v1
