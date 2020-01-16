@@ -100,8 +100,8 @@ const generateDirectoryFileReport = async ({
       directoryUrl,
       specifierMetaMap,
       predicate: (meta) => meta.track === true,
-      matchingFileOperation: async ({ relativeUrl, lstat }) => {
-        if (!lstat.isFile()) {
+      matchingFileOperation: async ({ relativeUrl, fileStats }) => {
+        if (!fileStats.isFile()) {
           return
         }
         if (manifest && relativeUrl === manifestFilename) {
@@ -112,7 +112,7 @@ const generateDirectoryFileReport = async ({
         const hash = bufferToEtag(Buffer.from(fileContent))
 
         directoryFileReport[relativeUrl] = {
-          size: lstat.size,
+          size: fileStats.size,
           hash,
         }
       },

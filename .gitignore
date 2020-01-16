@@ -3,7 +3,7 @@
 /coverage/
 /dist/**/manifest.json
 /node_modules/
-/test/generateSnapshotFile/**/snapshot.json
+/test/**/temp/
 /importMap.json
 /jsconfig.json
 /package-lock.json
