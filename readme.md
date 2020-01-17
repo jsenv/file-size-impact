@@ -38,7 +38,7 @@ The screenshot below shows how it is integrated to a github pull request.
 # Installation
 
 ```console
-npm install --save-dev @jsenv/github-pull-request-filesize-impact@2.1.0
+npm install --save-dev @jsenv/github-pull-request-filesize-impact@2.2.0
 ```
 
 # Documentation

@@ -115,7 +115,7 @@ const generateSizeImpactDetails = ({
       sizeImpactMap,
     })}
 
-**Overall size impact:** ${formatSizeImpact(formatSize, sizeImpact)}.
+**Overall size impact:** ${formatSizeImpact(formatSize, sizeImpact)}.<br />
 **Cache impact:** ${formatCacheImpact(formatSize, sizeImpactMap)}`
   }
   return `changes don't affect the overall size or cache.`
@@ -127,30 +127,46 @@ const generateSizeImpactTable = ({
   formatSize,
   sizeImpactMap,
 }) => `<br />
+${renderTableHeaders({ pullRequestBase, pullRequestHead })}
+${renderTableBody({ sizeImpactMap, formatSize })}`
 
-event | file | size on \`${pullRequestBase}\` | size on \`${pullRequestHead}\` | size impact
------ | ---- | ------------------------------ | ------------------------------ | ------------
-${Object.keys(sizeImpactMap).map((relativePath) => {
-  const sizeImpact = sizeImpactMap[relativePath]
+const renderTableHeaders = ({ pullRequestBase, pullRequestHead }) => {
+  const headerNames = [
+    "event",
+    "file",
+    `size&nbsp;on&nbsp;\`${pullRequestBase}\``,
+    `size&nbsp;on&nbsp;\`${pullRequestHead}\``,
+    "size&nbsp;impact",
+  ]
 
-  return [
-    generateEventCellText(sizeImpact.why),
-    relativePath,
-    generateBaseCellText({ formatSize, sizeImpact }),
-    generateHeadCellText({ formatSize, sizeImpact }),
-    generateImpactCellText({ formatSize, sizeImpact }),
-  ].join(" | ")
-}).join(`
-`)}`
+  return `
+${headerNames.join(" | ")}
+${headerNames.map(() => `---`).join(" | ")}`
+}
+
+const renderTableBody = ({ sizeImpactMap, formatSize }) => {
+  return Object.keys(sizeImpactMap).map((relativePath) => {
+    const sizeImpact = sizeImpactMap[relativePath]
+
+    return [
+      generateEventCellText(sizeImpact.why),
+      relativePath,
+      generateBaseCellText({ formatSize, sizeImpact }),
+      generateHeadCellText({ formatSize, sizeImpact }),
+      generateImpactCellText({ formatSize, sizeImpact }),
+    ].join(" | ")
+  }).join(`
+`)
+}
 
 const generateEventCellText = (why) => {
   if (why === "added") {
-    return "file created"
+    return "file&nbsp;created"
   }
   if (why === "removed") {
-    return "file deleted"
+    return "file&nbsp;deleted"
   }
-  return "content changed"
+  return "content&nbsp;changed"
 }
 
 const generateBaseCellText = ({ formatSize, sizeImpact: { baseSize, why } }) => {

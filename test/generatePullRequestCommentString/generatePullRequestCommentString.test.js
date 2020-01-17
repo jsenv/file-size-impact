@@ -55,12 +55,12 @@ changes don't affect the overall size or cache.
   <summary>Merging <code>head</code> into <code>base</code> will <b>not impact</b> <code>dist</code> overall size.</summary>
 <br />
 
-event | file | size on \`base\` | size on \`head\` | size impact
------ | ---- | ------------------------------ | ------------------------------ | ------------
-content changed | file-a.js | 10 bytes | 15 bytes | +5 bytes
-content changed | file-b.js | 15 bytes | 10 bytes | -5 bytes
+event | file | size&nbsp;on&nbsp;\`base\` | size&nbsp;on&nbsp;\`head\` | size&nbsp;impact
+--- | --- | --- | --- | ---
+content&nbsp;changed | file-a.js | 10 bytes | 15 bytes | +5 bytes
+content&nbsp;changed | file-b.js | 15 bytes | 10 bytes | -5 bytes
 
-**Overall size impact:** 0.
+**Overall size impact:** 0.<br />
 **Cache impact:** 2 files content changed, invalidating a total of 25 bytes.
 </details>`
   assert({ actual, expected })
@@ -106,13 +106,13 @@ content changed | file-b.js | 15 bytes | 10 bytes | -5 bytes
   <summary>Merging <code>head</code> into <code>base</code> will <b>decrease</b> <code>dist</code> overall size by 5 bytes.</summary>
 <br />
 
-event | file | size on \`base\` | size on \`head\` | size impact
------ | ---- | ------------------------------ | ------------------------------ | ------------
-file created | file-added.js | --- | 10 bytes | +10 bytes
-file deleted | file-removed.js | 20 bytes | --- | -20 bytes
-content changed | file-updated.js | 10 bytes | 15 bytes | +5 bytes
+event | file | size&nbsp;on&nbsp;\`base\` | size&nbsp;on&nbsp;\`head\` | size&nbsp;impact
+--- | --- | --- | --- | ---
+file&nbsp;created | file-added.js | --- | 10 bytes | +10 bytes
+file&nbsp;deleted | file-removed.js | 20 bytes | --- | -20 bytes
+content&nbsp;changed | file-updated.js | 10 bytes | 15 bytes | +5 bytes
 
-**Overall size impact:** -5 bytes.
+**Overall size impact:** -5 bytes.<br />
 **Cache impact:** 1 files content changed, invalidating a total of 10 bytes.
 </details>`
   assert({ actual, expected })
