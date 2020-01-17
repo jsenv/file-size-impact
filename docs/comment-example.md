@@ -1,24 +1,30 @@
 <details>
-  <summary>Merging <code>head</code> into <code>base</code> would <b>increase</b> <code>dist/commonjs</code> total size by 120 bytes.</summary>
+  <summary>Merging <code>head</code> into <code>base</code> would <b>increase</b> <code>dist/commonjs</code> overall size by 120 bytes.</summary>
 
-| file        | size on `base` | size on `head`    | effect     |
-| ----------- | -------------- | ----------------- | ---------- |
-| bar.js      | 100 bytes      | 0 bytes (removed) | -100 bytes |
-| foo.js      | 0 bytes        | 120 bytes (added) | +120 bytes |
-| hello.js    | 167 bytes      | 187 bytes         | +20 bytes  |
-| whatever.js | 0 bytes        | 80 bytes (added)  | +80 bytes  |
+| event                | file        | size&nbsp;on&nbsp;`base` | size&nbsp;on&nbsp;`head` | size&nbsp;impact |
+| -------------------- | ----------- | ------------------------ | ------------------------ | ---------------- |
+| file&nbsp;removed    | bar.js      | 100 bytes                | ---                      | -100 bytes       |
+| file&nbsp;added      | foo.js      | ---                      | 120 bytes)               | +120 bytes       |
+| content&nbsp;changed | hello.js    | 167 bytes                | 187 bytes                | +20 bytes        |
+| file&nbsp;added      | whatever.js | ---                      | 80 bytes                 | +80 bytes        |
+
+**Overall size impact:** +120 bytes.<br />
+**Cache impact:** 1 files content changed, invalidating a total of 167 bytes.
 
 </details>
 
 ---
 
 <details>
-  <summary>Merging <code>head</code> into <code>base</code> would <b>decrease</b> <code>dist/systemjs</code> total size by 20 bytes.</summary>
+  <summary>Merging <code>head</code> into <code>base</code> would <b>decrease</b> <code>dist/systemjs</code> overall size by 20 bytes.</summary>
 
-| file   | size on `base` | size on `head` | effect    |
-| ------ | -------------- | -------------- | --------- |
-| bar.js | 60 bytes       | 20 bytes       | -40 bytes |
-| foo.js | 40 bytes       | 60 bytes       | +20 bytes |
+| event                | file   | size&nbsp;on&nbsp;`base` | size&nbsp;on&nbsp;`head` | size&nbsp;impact |
+| -------------------- | ------ | ------------------------ | ------------------------ | ---------------- |
+| content&nbsp;changed | bar.js | 60 bytes                 | 20 bytes                 | -40 bytes        |
+| content&nbsp;changed | foo.js | 40 bytes                 | 60 bytes                 | +20 bytes        |
+
+**Overall size impact:** -20 bytes.<br />
+**Cache impact:** 2 files content changed, invalidating a total of 100 bytes.
 
 </details>
 

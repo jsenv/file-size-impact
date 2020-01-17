@@ -1,11 +1,16 @@
 import { createLogger } from "@jsenv/logger"
-import { metaMapToSpecifierMetaMap } from "@jsenv/url-meta"
-import { collectFiles } from "@jsenv/file-collector"
-import { resolveUrl, resolveDirectoryUrl, urlToFilePath } from "./internal/urlUtils.js"
-import { writeFileContent, readFileContent } from "./internal/filesystemUtils.js"
-import { normalizeDirectoryUrl } from "./internal/normalizeDirectoryUrl.js"
+import {
+  assertAndNormalizeDirectoryUrl,
+  bufferToEtag,
+  resolveUrl,
+  resolveDirectoryUrl,
+  urlToFileSystemPath,
+  writeFile,
+  readFile,
+  metaMapToSpecifierMetaMap,
+  collectFiles,
+} from "@jsenv/util"
 import { jsenvDirectorySizeTrackingConfig } from "./jsenvDirectorySizeTrackingConfig.js"
-import { bufferToEtag } from "./internal/bufferToEtag.js"
 
 export const generateSnapshotFile = async ({
   logLevel,
@@ -18,7 +23,7 @@ export const generateSnapshotFile = async ({
 }) => {
   const logger = createLogger({ logLevel })
 
-  projectDirectoryUrl = normalizeDirectoryUrl(projectDirectoryUrl)
+  projectDirectoryUrl = assertAndNormalizeDirectoryUrl(projectDirectoryUrl)
 
   const directoryRelativeUrlArray = Object.keys(directorySizeTrackingConfig)
   if (directoryRelativeUrlArray.length === 0) {
@@ -62,22 +67,20 @@ export const generateSnapshotFile = async ({
     }),
   )
 
-  const snapshotFilePath = urlToFilePath(snapshotFileUrl)
-  logger.info(`write snapshot file at ${snapshotFilePath}`)
+  logger.info(`write snapshot file at ${urlToFileSystemPath(snapshotFileUrl)}`)
   const snapshotFileContent = JSON.stringify(snapshot, null, "  ")
   logger.debug(snapshotFileContent)
-  await writeFileContent(snapshotFilePath, snapshotFileContent)
+  await writeFile(snapshotFileUrl, snapshotFileContent)
 }
 
 const readDirectoryManifest = async ({ logger, manifestFilename, directoryUrl }) => {
   const manifestFileUrl = resolveUrl(manifestFilename, directoryUrl)
-  const manifestFilePath = urlToFilePath(manifestFileUrl)
   try {
-    const manifestFileContent = await readFileContent(manifestFilePath)
+    const manifestFileContent = await readFile(manifestFileUrl)
     return JSON.parse(manifestFileContent)
   } catch (e) {
     if (e && e.code === "ENOENT") {
-      logger.debug(`manifest file not found at ${manifestFilePath}`)
+      logger.debug(`manifest file not found at ${urlToFileSystemPath(manifestFileUrl)}`)
       return null
     }
     throw e
@@ -91,32 +94,31 @@ const generateDirectoryFileReport = async ({
   manifest,
   manifestFilename,
 }) => {
-  const directoryPath = urlToFilePath(directoryUrl)
   const directoryFileReport = {}
   try {
     await collectFiles({
       directoryUrl,
       specifierMetaMap,
       predicate: (meta) => meta.track === true,
-      matchingFileOperation: async ({ relativeUrl, lstat }) => {
-        if (!lstat.isFile()) {
+      matchingFileOperation: async ({ relativeUrl, fileStats }) => {
+        if (!fileStats.isFile()) {
           return
         }
         if (manifest && relativeUrl === manifestFilename) {
           return
         }
         const fileUrl = resolveUrl(relativeUrl, directoryUrl)
-        const filePath = urlToFilePath(fileUrl)
-        const fileContent = await readFileContent(filePath)
+        const fileContent = await readFile(fileUrl)
         const hash = bufferToEtag(Buffer.from(fileContent))
 
         directoryFileReport[relativeUrl] = {
-          size: lstat.size,
+          size: fileStats.size,
           hash,
         }
       },
     })
   } catch (e) {
+    const directoryPath = urlToFileSystemPath(directoryUrl)
     if (e.code === "ENOENT" && e.path === directoryPath) {
       logger.warn(`${directoryPath} does not exists`)
       return directoryFileReport

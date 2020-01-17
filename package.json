@@ -1,7 +1,7 @@
 {
   "name": "@jsenv/github-pull-request-filesize-impact",
-  "description": "Monitor pull request impact on file sizes",
-  "version": "2.0.0",
+  "version": "2.2.0",
+  "description": "Monitor pull request impact on file sizes.",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -14,48 +14,53 @@
     "access": "public",
     "registry": "https://npm.pkg.github.com"
   },
-  "main": "dist/commonjs/main.js",
+  "type": "module",
+  "exports": "./index.js",
   "module": "index.js",
+  "main": "dist/commonjs/main.js",
   "files": [
     "/dist/",
     "/src/",
     "/index.js"
   ],
-  "imports": {},
   "scripts": {
     "test": "node ./script/test/test.js",
     "test-with-coverage": "node ./script/test/test.js --coverage",
     "eslint-check": "eslint .",
-    "prettier-check": "node ./script/prettier-check/prettier-check.js",
+    "prettier-format": "node ./script/prettier-format/prettier-format.js",
+    "prettier-format-stage": "npm run prettier-format -- --staged",
+    "prettier-check": "npm run prettier-format -- --dry-run",
     "upload-coverage": "node ./script/upload-coverage/upload-coverage.js",
     "generate-commonjs-bundle": "node ./script/generate-commonjs-bundle/generate-commonjs-bundle.js",
     "generate-import-map": "node ./script/generate-import-map/generate-import-map.js",
+    "install-git-hooks": "node ./script/install-git-hooks/install-git-hooks.js",
     "dist": "npm run clean && npm run generate-commonjs-bundle",
     "clean": "rimraf dist && rimraf coverage",
     "reinstall": "npm run clean && rimraf node_modules && npm install",
-    "postinstall": "npm run generate-import-map",
+    "postinstall": "npm run generate-import-map && npm run install-git-hooks",
     "prepublishOnly": "node ./script/transform-package/remove-postinstall.js && npm run dist",
-    "postpublish": "node ./script/transform-package/restore-postinstall.js"
+    "postpublish": "node ./script/transform-package/restore-postinstall.js",
+    "git-hook-pre-commit": "npm run prettier-format-stage"
   },
   "dependencies": {
-    "@jsenv/file-collector": "2.0.0",
-    "@jsenv/logger": "3.1.0",
-    "@jsenv/url-meta": "5.0.0",
-    "node-fetch": "2.6.0"
+    "@jsenv/logger": "3.3.0",
+    "@jsenv/server": "1.4.0",
+    "@jsenv/util": "3.3.2"
   },
   "devDependencies": {
-    "@jsenv/assert": "1.1.1",
-    "@jsenv/codecov-upload": "3.0.0",
-    "@jsenv/core": "10.3.1",
-    "@jsenv/eslint-config": "12.0.0",
+    "@jsenv/assert": "1.2.1",
+    "@jsenv/codecov-upload": "3.1.0",
+    "@jsenv/core": "10.5.0",
+    "@jsenv/eslint-config": "12.1.0",
+    "@jsenv/git-hooks": "1.2.0",
     "@jsenv/github-pull-request-filesize-impact": "2.0.0",
-    "@jsenv/node-module-import-map": "9.4.0",
+    "@jsenv/node-module-import-map": "10.0.1",
     "@jsenv/github-release-package": "1.1.1",
-    "@jsenv/package-publish": "1.1.0",
-    "@jsenv/prettier-check-project": "4.1.0",
+    "@jsenv/package-publish": "1.4.0",
+    "@jsenv/prettier-check-project": "5.3.0",
     "@jsenv/prettier-config": "1.1.0",
     "babel-eslint": "11.0.0-beta.0",
-    "eslint": "6.7.2",
+    "eslint": "6.8.0",
     "prettier": "1.19.1"
   }
 }

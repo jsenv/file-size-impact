@@ -1,6 +1,10 @@
-import { compareFilePath } from "@jsenv/file-collector"
-import { metaMapToSpecifierMetaMap, urlToMeta, normalizeSpecifierMetaMap } from "@jsenv/url-meta"
-import { resolveUrl } from "./urlUtils.js"
+import {
+  resolveUrl,
+  comparePathnames,
+  metaMapToSpecifierMetaMap,
+  urlToMeta,
+  normalizeSpecifierMetaMap,
+} from "@jsenv/util"
 
 export const compareTwoSnapshots = (baseSnapshot, headSnapshot) => {
   const comparison = {}
@@ -127,7 +131,7 @@ const manifestToMappings = (manifest) => {
 }
 
 const sortDirectoryStructure = (directoryStructure) => {
-  const relativeUrlSortedArray = Object.keys(directoryStructure).sort(compareFilePath)
+  const relativeUrlSortedArray = Object.keys(directoryStructure).sort(comparePathnames)
   const directoryStructureSorted = {}
   relativeUrlSortedArray.forEach((relativeUrl) => {
     directoryStructureSorted[relativeUrl] = directoryStructure[relativeUrl]

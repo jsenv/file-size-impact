@@ -2,11 +2,16 @@
 
 Object.defineProperty(exports, '__esModule', { value: true });
 
-var fs = require('fs');
 var url$1 = require('url');
+var fs = require('fs');
+var crypto = require('crypto');
 var path = require('path');
 var util = require('util');
-var crypto = require('crypto');
+var module$1 = require('module');
+require('net');
+require('http');
+require('https');
+require('stream');
 
 const LOG_LEVEL_OFF = "off";
 const LOG_LEVEL_DEBUG = "debug";
@@ -62,14 +67,7 @@ const createLogger = ({
     };
   }
 
-  throw new Error(createUnexpectedLogLevelMessage({
-    logLevel
-  }));
-};
-
-const createUnexpectedLogLevelMessage = ({
-  logLevel
-}) => `unexpected logLevel.
+  throw new Error(`unexpected logLevel.
 --- logLevel ---
 ${logLevel}
 --- allowed log levels ---
@@ -77,9 +75,8 @@ ${LOG_LEVEL_OFF}
 ${LOG_LEVEL_ERROR}
 ${LOG_LEVEL_WARN}
 ${LOG_LEVEL_INFO}
-${LOG_LEVEL_DEBUG}
-`;
-
+${LOG_LEVEL_DEBUG}`);
+};
 const debug = console.debug;
 
 const debugDisabled = () => {};
@@ -116,7 +113,7 @@ const isWindowsPathnameSpecifier = specifier => {
   const secondChar = specifier[1];
   if (secondChar !== ":") return false;
   const thirdChar = specifier[2];
-  return thirdChar === "/";
+  return thirdChar === "/" || thirdChar === "\\";
 };
 
 const hasScheme = specifier => /^[a-zA-Z]+:/.test(specifier);
@@ -543,6 +540,320 @@ url, specifierMetaMap`);
   }, {});
 };
 
+const ensureUrlTrailingSlash = url => {
+  return url.endsWith("/") ? url : `${url}/`;
+};
+
+const isFileSystemPath = value => {
+  if (typeof value !== "string") {
+    throw new TypeError(`isFileSystemPath first arg must be a string, got ${value}`);
+  }
+
+  if (value[0] === "/") return true;
+  return startsWithWindowsDriveLetter(value);
+};
+
+const startsWithWindowsDriveLetter = string => {
+  const firstChar = string[0];
+  if (!/[a-zA-Z]/.test(firstChar)) return false;
+  const secondChar = string[1];
+  if (secondChar !== ":") return false;
+  return true;
+};
+
+const fileSystemPathToUrl = value => {
+  if (!isFileSystemPath(value)) {
+    throw new Error(`received an invalid value for fileSystemPath: ${value}`);
+  }
+
+  return String(url$1.pathToFileURL(value));
+};
+
+const assertAndNormalizeDirectoryUrl = value => {
+  let urlString;
+
+  if (value instanceof URL) {
+    urlString = value.href;
+  } else if (typeof value === "string") {
+    if (isFileSystemPath(value)) {
+      urlString = fileSystemPathToUrl(value);
+    } else {
+      try {
+        urlString = String(new URL(value));
+      } catch (e) {
+        throw new TypeError(`directoryUrl must be a valid url, received ${value}`);
+      }
+    }
+  } else {
+    throw new TypeError(`directoryUrl must be a string or an url, received ${value}`);
+  }
+
+  if (!urlString.startsWith("file://")) {
+    throw new Error(`directoryUrl must starts with file://, received ${value}`);
+  }
+
+  return ensureUrlTrailingSlash(urlString);
+};
+
+const assertAndNormalizeFileUrl = (value, baseUrl) => {
+  let urlString;
+
+  if (value instanceof URL) {
+    urlString = value.href;
+  } else if (typeof value === "string") {
+    if (isFileSystemPath(value)) {
+      urlString = fileSystemPathToUrl(value);
+    } else {
+      try {
+        urlString = String(new URL(value, baseUrl));
+      } catch (e) {
+        throw new TypeError(`fileUrl must be a valid url, received ${value}`);
+      }
+    }
+  } else {
+    throw new TypeError(`fileUrl must be a string or an url, received ${value}`);
+  }
+
+  if (!urlString.startsWith("file://")) {
+    throw new Error(`fileUrl must starts with file://, received ${value}`);
+  }
+
+  return urlString;
+};
+
+const statsToType = stats => {
+  if (stats.isFile()) return "file";
+  if (stats.isDirectory()) return "directory";
+  if (stats.isSymbolicLink()) return "symbolic-link";
+  if (stats.isFIFO()) return "fifo";
+  if (stats.isSocket()) return "socket";
+  if (stats.isCharacterDevice()) return "character-device";
+  if (stats.isBlockDevice()) return "block-device";
+  return undefined;
+};
+
+const urlToFileSystemPath = fileUrl => {
+  if (fileUrl[fileUrl.length - 1] === "/") {
+    // remove trailing / so that nodejs path becomes predictable otherwise it logs
+    // the trailing slash on linux but does not on windows
+    fileUrl = fileUrl.slice(0, -1);
+  }
+
+  const fileSystemPath = url$1.fileURLToPath(fileUrl);
+  return fileSystemPath;
+};
+
+// https://github.com/coderaiser/cloudcmd/issues/63#issuecomment-195478143
+// https://nodejs.org/api/fs.html#fs_file_modes
+// https://github.com/TooTallNate/stat-mode
+// cannot get from fs.constants because they are not available on windows
+const S_IRUSR = 256;
+/* 0000400 read permission, owner */
+
+const S_IWUSR = 128;
+/* 0000200 write permission, owner */
+
+const S_IXUSR = 64;
+/* 0000100 execute/search permission, owner */
+
+const S_IRGRP = 32;
+/* 0000040 read permission, group */
+
+const S_IWGRP = 16;
+/* 0000020 write permission, group */
+
+const S_IXGRP = 8;
+/* 0000010 execute/search permission, group */
+
+const S_IROTH = 4;
+/* 0000004 read permission, others */
+
+const S_IWOTH = 2;
+/* 0000002 write permission, others */
+
+const S_IXOTH = 1;
+const permissionsToBinaryFlags = ({
+  owner,
+  group,
+  others
+}) => {
+  let binaryFlags = 0;
+  if (owner.read) binaryFlags |= S_IRUSR;
+  if (owner.write) binaryFlags |= S_IWUSR;
+  if (owner.execute) binaryFlags |= S_IXUSR;
+  if (group.read) binaryFlags |= S_IRGRP;
+  if (group.write) binaryFlags |= S_IWGRP;
+  if (group.execute) binaryFlags |= S_IXGRP;
+  if (others.read) binaryFlags |= S_IROTH;
+  if (others.write) binaryFlags |= S_IWOTH;
+  if (others.execute) binaryFlags |= S_IXOTH;
+  return binaryFlags;
+};
+
+const writeFileSystemNodePermissions = async (source, permissions) => {
+  const sourceUrl = assertAndNormalizeFileUrl(source);
+  const sourcePath = urlToFileSystemPath(sourceUrl);
+  let binaryFlags;
+
+  if (typeof permissions === "object") {
+    permissions = {
+      owner: {
+        read: getPermissionOrComputeDefault("read", "owner", permissions),
+        write: getPermissionOrComputeDefault("write", "owner", permissions),
+        execute: getPermissionOrComputeDefault("execute", "owner", permissions)
+      },
+      group: {
+        read: getPermissionOrComputeDefault("read", "group", permissions),
+        write: getPermissionOrComputeDefault("write", "group", permissions),
+        execute: getPermissionOrComputeDefault("execute", "group", permissions)
+      },
+      others: {
+        read: getPermissionOrComputeDefault("read", "others", permissions),
+        write: getPermissionOrComputeDefault("write", "others", permissions),
+        execute: getPermissionOrComputeDefault("execute", "others", permissions)
+      }
+    };
+    binaryFlags = permissionsToBinaryFlags(permissions);
+  } else {
+    binaryFlags = permissions;
+  }
+
+  return chmodNaive(sourcePath, binaryFlags);
+};
+
+const chmodNaive = (fileSystemPath, binaryFlags) => {
+  return new Promise((resolve, reject) => {
+    fs.chmod(fileSystemPath, binaryFlags, error => {
+      if (error) {
+        reject(error);
+      } else {
+        resolve();
+      }
+    });
+  });
+};
+
+const actionLevels = {
+  read: 0,
+  write: 1,
+  execute: 2
+};
+const subjectLevels = {
+  others: 0,
+  group: 1,
+  owner: 2
+};
+
+const getPermissionOrComputeDefault = (action, subject, permissions) => {
+  if (subject in permissions) {
+    const subjectPermissions = permissions[subject];
+
+    if (action in subjectPermissions) {
+      return subjectPermissions[action];
+    }
+
+    const actionLevel = actionLevels[action];
+    const actionFallback = Object.keys(actionLevels).find(actionFallbackCandidate => actionLevels[actionFallbackCandidate] > actionLevel && actionFallbackCandidate in subjectPermissions);
+
+    if (actionFallback) {
+      return subjectPermissions[actionFallback];
+    }
+  }
+
+  const subjectLevel = subjectLevels[subject]; // do we have a subject with a stronger level (group or owner)
+  // where we could read the action permission ?
+
+  const subjectFallback = Object.keys(subjectLevels).find(subjectFallbackCandidate => subjectLevels[subjectFallbackCandidate] > subjectLevel && subjectFallbackCandidate in permissions);
+
+  if (subjectFallback) {
+    const subjectPermissions = permissions[subjectFallback];
+    return action in subjectPermissions ? subjectPermissions[action] : getPermissionOrComputeDefault(action, subjectFallback, permissions);
+  }
+
+  return false;
+};
+
+const isWindows = process.platform === "win32";
+const readFileSystemNodeStat = async (source, {
+  nullIfNotFound = false,
+  followLink = true
+} = {}) => {
+  if (source.endsWith("/")) source = source.slice(0, -1);
+  const sourceUrl = assertAndNormalizeFileUrl(source);
+  const sourcePath = urlToFileSystemPath(sourceUrl);
+  const handleNotFoundOption = nullIfNotFound ? {
+    handleNotFoundError: () => null
+  } : {};
+  return readStat(sourcePath, {
+    followLink,
+    ...handleNotFoundOption,
+    ...(isWindows ? {
+      // Windows can EPERM on stat
+      handlePermissionDeniedError: async error => {
+        // unfortunately it means we mutate the permissions
+        // without being able to restore them to the previous value
+        // (because reading current permission would also throw)
+        try {
+          await writeFileSystemNodePermissions(sourceUrl, 0o666);
+          const stats = await readStat(sourcePath, {
+            followLink,
+            ...handleNotFoundOption,
+            // could not fix the permission error, give up and throw original error
+            handlePermissionDeniedError: () => {
+              throw error;
+            }
+          });
+          return stats;
+        } catch (e) {
+          // failed to write permission or readState, throw original error as well
+          throw error;
+        }
+      }
+    } : {})
+  });
+};
+
+const readStat = (sourcePath, {
+  followLink,
+  handleNotFoundError = null,
+  handlePermissionDeniedError = null
+} = {}) => {
+  const nodeMethod = followLink ? fs.stat : fs.lstat;
+  return new Promise((resolve, reject) => {
+    nodeMethod(sourcePath, (error, statsObject) => {
+      if (error) {
+        if (handlePermissionDeniedError && (error.code === "EPERM" || error.code === "EACCES")) {
+          resolve(handlePermissionDeniedError(error));
+        } else if (handleNotFoundError && error.code === "ENOENT") {
+          resolve(handleNotFoundError(error));
+        } else {
+          reject(error);
+        }
+      } else {
+        resolve(statsObject);
+      }
+    });
+  });
+};
+
+const ETAG_FOR_EMPTY_CONTENT = '"0-2jmj7l5rSw0yVb/vlWAYkK/YBwk"';
+const bufferToEtag = buffer => {
+  if (!Buffer.isBuffer(buffer)) {
+    throw new TypeError(`buffer expected, got ${buffer}`);
+  }
+
+  if (buffer.length === 0) {
+    return ETAG_FOR_EMPTY_CONTENT;
+  }
+
+  const hash = crypto.createHash("sha1");
+  hash.update(buffer, "utf8");
+  const hashBase64String = hash.digest("base64");
+  const hashBase64StringSubset = hashBase64String.slice(0, 27);
+  const length = buffer.length;
+  return `"${length.toString(16)}-${hashBase64StringSubset}"`;
+};
+
 const createCancellationToken = () => {
   const register = callback => {
     if (typeof callback !== "function") {
@@ -595,48 +906,160 @@ start`);
   return operationPromise;
 };
 
-const ensureUrlTrailingSlash = url => {
-  return url.endsWith("/") ? url : `${url}/`;
+const readDirectory = async (url, {
+  emfileMaxWait = 1000
+} = {}) => {
+  const directoryUrl = assertAndNormalizeDirectoryUrl(url);
+  const directoryPath = urlToFileSystemPath(directoryUrl);
+  const startMs = Date.now();
+  let attemptCount = 0;
+
+  const attempt = () => {
+    return readdirNaive(directoryPath, {
+      handleTooManyFilesOpenedError: async error => {
+        attemptCount++;
+        const nowMs = Date.now();
+        const timeSpentWaiting = nowMs - startMs;
+
+        if (timeSpentWaiting > emfileMaxWait) {
+          throw error;
+        }
+
+        return new Promise(resolve => {
+          setTimeout(() => {
+            resolve(attempt());
+          }, attemptCount);
+        });
+      }
+    });
+  };
+
+  return attempt();
 };
-const urlToFilePath = fileUrl => {
-  return url$1.fileURLToPath(fileUrl);
+
+const readdirNaive = (directoryPath, {
+  handleTooManyFilesOpenedError = null
+} = {}) => {
+  return new Promise((resolve, reject) => {
+    fs.readdir(directoryPath, (error, names) => {
+      if (error) {
+        // https://nodejs.org/dist/latest-v13.x/docs/api/errors.html#errors_common_system_errors
+        if (handleTooManyFilesOpenedError && (error.code === "EMFILE" || error.code === "ENFILE")) {
+          resolve(handleTooManyFilesOpenedError(error));
+        } else {
+          reject(error);
+        }
+      } else {
+        resolve(names);
+      }
+    });
+  });
 };
-const hasScheme$1 = string => {
-  return /^[a-zA-Z]{2,}:/.test(string);
-};
-const urlToRelativeUrl = (url, baseUrl) => {
-  if (typeof baseUrl !== "string") {
-    throw new TypeError(`baseUrl must be a string, got ${baseUrl}`);
+
+const getCommonPathname = (pathname, otherPathname) => {
+  const firstDifferentCharacterIndex = findFirstDifferentCharacterIndex(pathname, otherPathname); // pathname and otherpathname are exactly the same
+
+  if (firstDifferentCharacterIndex === -1) {
+    return pathname;
   }
 
-  if (url.startsWith(baseUrl)) {
-    return url.slice(baseUrl.length);
+  const commonString = pathname.slice(0, firstDifferentCharacterIndex + 1); // the first different char is at firstDifferentCharacterIndex
+
+  if (pathname.charAt(firstDifferentCharacterIndex) === "/") {
+    return commonString;
   }
 
-  return url;
+  if (otherPathname.charAt(firstDifferentCharacterIndex) === "/") {
+    return commonString;
+  }
+
+  const firstDifferentSlashIndex = commonString.lastIndexOf("/");
+  return pathname.slice(0, firstDifferentSlashIndex + 1);
 };
 
-const normalizeDirectoryUrl = value => {
-  if (value instanceof URL) {
-    value = value.href;
-  }
+const findFirstDifferentCharacterIndex = (string, otherString) => {
+  const maxCommonLength = Math.min(string.length, otherString.length);
+  let i = 0;
 
-  if (typeof value === "string") {
-    const url = hasScheme$1(value) ? value : urlToFilePath(value);
+  while (i < maxCommonLength) {
+    const char = string.charAt(i);
+    const otherChar = otherString.charAt(i);
 
-    if (!url.startsWith("file://")) {
-      throw new Error(`directoryUrl must starts with file://, received ${value}`);
+    if (char !== otherChar) {
+      return i;
     }
 
-    return ensureUrlTrailingSlash(url);
+    i++;
   }
 
-  throw new TypeError(`directoryUrl must be a string or an url, received ${value}`);
+  if (string.length === otherString.length) {
+    return -1;
+  } // they differ at maxCommonLength
+
+
+  return maxCommonLength;
 };
 
-const compareFilePath = (leftPath, rightPath) => {
-  const leftPartArray = leftPath.split("/");
-  const rightPartArray = rightPath.split("/");
+const pathnameToDirectoryPathname = pathname => {
+  if (pathname.endsWith("/")) {
+    return pathname;
+  }
+
+  const slashLastIndex = pathname.lastIndexOf("/");
+
+  if (slashLastIndex === -1) {
+    return "";
+  }
+
+  return pathname.slice(0, slashLastIndex + 1);
+};
+
+const urlToRelativeUrl = (urlArg, baseUrlArg) => {
+  const url = new URL(urlArg);
+  const baseUrl = new URL(baseUrlArg);
+
+  if (url.protocol !== baseUrl.protocol) {
+    return urlArg;
+  }
+
+  if (url.username !== baseUrl.username || url.password !== baseUrl.password) {
+    return urlArg.slice(url.protocol.length);
+  }
+
+  if (url.host !== baseUrl.host) {
+    return urlArg.slice(url.protocol.length);
+  }
+
+  const {
+    pathname,
+    hash,
+    search
+  } = url;
+
+  if (pathname === "/") {
+    return baseUrl.pathname.slice(1);
+  }
+
+  const {
+    pathname: basePathname
+  } = baseUrl;
+  const commonPathname = getCommonPathname(pathname, basePathname);
+
+  if (!commonPathname) {
+    return urlArg;
+  }
+
+  const specificPathname = pathname.slice(commonPathname.length);
+  const baseSpecificPathname = basePathname.slice(commonPathname.length);
+  const baseSpecificDirectoryPathname = pathnameToDirectoryPathname(baseSpecificPathname);
+  const relativeDirectoriesNotation = baseSpecificDirectoryPathname.replace(/.*?\//g, "../");
+  const relativePathname = `${relativeDirectoriesNotation}${specificPathname}`;
+  return `${relativePathname}${search}${hash}`;
+};
+
+const comparePathnames = (leftPathame, rightPathname) => {
+  const leftPartArray = leftPathame.split("/");
+  const rightPartArray = rightPathname.split("/");
   const leftLength = leftPartArray.length;
   const rightLength = rightPartArray.length;
   const maxLength = Math.max(leftLength, rightLength);
@@ -673,7 +1096,7 @@ const collectFiles = async ({
   predicate,
   matchingFileOperation = () => null
 }) => {
-  const rootDirectoryUrl = normalizeDirectoryUrl(directoryUrl);
+  const rootDirectoryUrl = assertAndNormalizeDirectoryUrl(directoryUrl);
 
   if (typeof predicate !== "function") {
     throw new TypeError(`predicate must be a function, got ${predicate}`);
@@ -687,21 +1110,27 @@ const collectFiles = async ({
   const matchingFileResultArray = [];
 
   const visitDirectory = async directoryUrl => {
-    const directoryPath = urlToFilePath(directoryUrl);
     const directoryItems = await createOperation({
       cancellationToken,
-      start: () => readDirectory(directoryPath)
+      start: () => readDirectory(directoryUrl)
     });
     await Promise.all(directoryItems.map(async directoryItem => {
-      const directoryItemUrl = `${directoryUrl}${directoryItem}`;
-      const directoryItemPath = urlToFilePath(directoryItemUrl);
-      const lstat = await createOperation({
+      const directoryChildNodeUrl = `${directoryUrl}${directoryItem}`;
+      const directoryChildNodeStats = await createOperation({
         cancellationToken,
-        start: () => readLStat(directoryItemPath)
+        start: () => readFileSystemNodeStat(directoryChildNodeUrl, {
+          // we ignore symlink because recursively traversed
+          // so symlinked file will be discovered.
+          // Moreover if they lead outside of directoryPath it can become a problem
+          // like infinite recursion of whatever.
+          // that we could handle using an object of pathname already seen but it will be useless
+          // because directoryPath is recursively traversed
+          followLink: false
+        })
       });
 
-      if (lstat.isDirectory()) {
-        const subDirectoryUrl = `${directoryItemUrl}/`;
+      if (directoryChildNodeStats.isDirectory()) {
+        const subDirectoryUrl = `${directoryChildNodeUrl}/`;
 
         if (!urlCanContainsMetaMatching({
           url: subDirectoryUrl,
@@ -715,36 +1144,30 @@ const collectFiles = async ({
         return;
       }
 
-      if (lstat.isFile()) {
+      if (directoryChildNodeStats.isFile()) {
         const meta = urlToMeta({
-          url: directoryItemUrl,
+          url: directoryChildNodeUrl,
           specifierMetaMap: specifierMetaMapNormalized
         });
         if (!predicate(meta)) return;
-        const relativeUrl = urlToRelativeUrl(directoryItemUrl, rootDirectoryUrl);
+        const relativeUrl = urlToRelativeUrl(directoryChildNodeUrl, rootDirectoryUrl);
         const operationResult = await createOperation({
           cancellationToken,
           start: () => matchingFileOperation({
             cancellationToken,
             relativeUrl,
             meta,
-            lstat
+            fileStats: directoryChildNodeStats
           })
         });
         matchingFileResultArray.push({
           relativeUrl,
           meta,
-          lstat,
+          fileStats: directoryChildNodeStats,
           operationResult
         });
         return;
-      } // we ignore symlink because recursively traversed
-      // so symlinked file will be discovered.
-      // Moreover if they lead outside of directoryPath it can become a problem
-      // like infinite recursion of whatever.
-      // that we could handle using an object of pathname already seen but it will be useless
-      // because directoryPath is recursively traversed
-
+      }
     }));
   };
 
@@ -754,104 +1177,110 @@ const collectFiles = async ({
   // For that reason we sort matchingFileResultArray
 
   matchingFileResultArray.sort((leftFile, rightFile) => {
-    return compareFilePath(leftFile.relativeUrl, rightFile.relativeUrl);
+    return comparePathnames(leftFile.relativeUrl, rightFile.relativeUrl);
   });
   return matchingFileResultArray;
 };
 
-const readDirectory = filePath => new Promise((resolve, reject) => {
-  fs.readdir(filePath, (error, names) => {
-    if (error) {
-      reject(error);
-    } else {
-      resolve(names);
-    }
+const {
+  mkdir
+} = fs.promises;
+const writeDirectory = async (destination, {
+  recursive = true,
+  allowUseless = false
+} = {}) => {
+  const destinationUrl = assertAndNormalizeDirectoryUrl(destination);
+  const destinationPath = urlToFileSystemPath(destinationUrl);
+  const destinationStats = await readFileSystemNodeStat(destinationUrl, {
+    nullIfNotFound: true,
+    followLink: false
   });
-});
 
-const readLStat = filePath => new Promise((resolve, reject) => {
-  fs.lstat(filePath, (error, stat) => {
-    if (error) {
-      reject(error);
-    } else {
-      resolve(stat);
+  if (destinationStats) {
+    if (destinationStats.isDirectory()) {
+      if (allowUseless) {
+        return;
+      }
+
+      throw new Error(`directory already exists at ${destinationPath}`);
     }
-  });
-});
 
-const ensureUrlTrailingSlash$1 = url => {
-  return url.endsWith("/") ? url : `${url}/`;
-};
-const urlToFilePath$1 = fileUrl => {
-  return url$1.fileURLToPath(fileUrl);
-};
-const resolveDirectoryUrl = (specifier, baseUrl) => {
-  const directoryUrl = String(new URL(specifier, baseUrl));
-
-  if (directoryUrl.endsWith("/")) {
-    return directoryUrl;
+    const destinationType = statsToType(destinationStats);
+    throw new Error(`cannot write directory at ${destinationPath} because there is a ${destinationType}`);
   }
 
-  return `${directoryUrl}/`;
+  try {
+    await mkdir(destinationPath, {
+      recursive
+    });
+  } catch (error) {
+    if (allowUseless && error.code === "EEXIST") {
+      return;
+    }
+
+    throw error;
+  }
 };
 
-const hasScheme$2 = string => {
-  return /^[a-zA-Z]{2,}:/.test(string);
-};
 const resolveUrl = (specifier, baseUrl) => {
   if (typeof baseUrl === "undefined") {
-    throw new TypeError(`baseUrl missing`);
+    throw new TypeError(`baseUrl missing to resolve ${specifier}`);
   }
 
   return String(new URL(specifier, baseUrl));
 };
 
-const readFilePromisified = util.promisify(fs.readFile);
-const readFileContent = async filePath => {
-  const buffer = await readFilePromisified(filePath);
-  return buffer.toString();
-};
-const writeFilePromisified = util.promisify(fs.writeFile);
-const writeFileContent = async (filePath, content) => {
-  await createFileDirectories(filePath);
-  return writeFilePromisified(filePath, content);
-};
-const createFileDirectories = filePath => {
-  return new Promise((resolve, reject) => {
-    fs.mkdir(path.dirname(filePath), {
-      recursive: true
-    }, error => {
-      if (error) {
-        if (error.code === "EEXIST") {
-          resolve();
-          return;
-        }
+const isWindows$1 = process.platform === "win32";
+const baseUrlFallback = fileSystemPathToUrl(process.cwd());
 
-        reject(error);
-        return;
-      }
-
-      resolve();
-    });
+const ensureParentDirectories = async destination => {
+  const destinationUrl = assertAndNormalizeFileUrl(destination);
+  const destinationPath = urlToFileSystemPath(destinationUrl);
+  const destinationParentPath = path.dirname(destinationPath);
+  return writeDirectory(destinationParentPath, {
+    recursive: true,
+    allowUseless: true
   });
 };
 
-const normalizeDirectoryUrl$1 = (value, name = "projectDirectoryUrl") => {
-  if (value instanceof URL) {
-    value = value.href;
-  }
+const isWindows$2 = process.platform === "win32";
 
-  if (typeof value === "string") {
-    const url = hasScheme$2(value) ? value : urlToFilePath$1(value);
+const readFilePromisified = util.promisify(fs.readFile);
+const readFile = async value => {
+  const fileUrl = assertAndNormalizeFileUrl(value);
+  const filePath = urlToFileSystemPath(fileUrl);
+  const buffer = await readFilePromisified(filePath);
+  return buffer.toString();
+};
 
-    if (!url.startsWith("file://")) {
-      throw new Error(`${name} must starts with file://, received ${value}`);
+const isWindows$3 = process.platform === "win32";
+
+/* eslint-disable import/max-dependencies */
+const isLinux = process.platform === "linux"; // linux does not support recursive option
+
+const resolveDirectoryUrl = (specifier, baseUrl) => {
+  const url = resolveUrl(specifier, baseUrl);
+  return ensureUrlTrailingSlash(url);
+};
+
+const {
+  writeFile: writeFileNode
+} = fs.promises;
+const writeFile = async (destination, content = "") => {
+  const destinationUrl = assertAndNormalizeFileUrl(destination);
+  const destinationPath = urlToFileSystemPath(destinationUrl);
+
+  try {
+    await writeFileNode(destinationPath, content);
+  } catch (error) {
+    if (error.code === "ENOENT") {
+      await ensureParentDirectories(destinationUrl);
+      await writeFileNode(destinationPath, content);
+      return;
     }
 
-    return ensureUrlTrailingSlash$1(url);
+    throw error;
   }
-
-  throw new TypeError(`${name} must be a string or an url, received ${value}`);
 };
 
 const jsenvDirectorySizeTrackingConfig = {
@@ -865,24 +1294,6 @@ const jsenvDirectorySizeTrackingConfig = {
   }
 };
 
-const EMPTY_ID = '"0-2jmj7l5rSw0yVb/vlWAYkK/YBwk"';
-const bufferToEtag = buffer => {
-  if (!Buffer.isBuffer(buffer)) {
-    throw new TypeError(`buffer expected, got ${buffer}`);
-  }
-
-  if (buffer.length === 0) {
-    return EMPTY_ID;
-  }
-
-  const hash = crypto.createHash("sha1");
-  hash.update(buffer, "utf8");
-  const hashBase64String = hash.digest("base64");
-  const hashBase64StringSubset = hashBase64String.slice(0, 27);
-  const length = buffer.length;
-  return `"${length.toString(16)}-${hashBase64StringSubset}"`;
-};
-
 const generateSnapshotFile = async ({
   logLevel,
   projectDirectoryUrl,
@@ -894,7 +1305,7 @@ const generateSnapshotFile = async ({
   const logger = createLogger({
     logLevel
   });
-  projectDirectoryUrl = normalizeDirectoryUrl$1(projectDirectoryUrl);
+  projectDirectoryUrl = assertAndNormalizeDirectoryUrl(projectDirectoryUrl);
   const directoryRelativeUrlArray = Object.keys(directorySizeTrackingConfig);
 
   if (directoryRelativeUrlArray.length === 0) {
@@ -926,11 +1337,10 @@ const generateSnapshotFile = async ({
       trackingConfig: directoryTrackingConfig
     };
   }));
-  const snapshotFilePath = urlToFilePath$1(snapshotFileUrl);
-  logger.info(`write snapshot file at ${snapshotFilePath}`);
+  logger.info(`write snapshot file at ${urlToFileSystemPath(snapshotFileUrl)}`);
   const snapshotFileContent = JSON.stringify(snapshot, null, "  ");
   logger.debug(snapshotFileContent);
-  await writeFileContent(snapshotFilePath, snapshotFileContent);
+  await writeFile(snapshotFileUrl, snapshotFileContent);
 };
 
 const readDirectoryManifest = async ({
@@ -939,14 +1349,13 @@ const readDirectoryManifest = async ({
   directoryUrl
 }) => {
   const manifestFileUrl = resolveUrl(manifestFilename, directoryUrl);
-  const manifestFilePath = urlToFilePath$1(manifestFileUrl);
 
   try {
-    const manifestFileContent = await readFileContent(manifestFilePath);
+    const manifestFileContent = await readFile(manifestFileUrl);
     return JSON.parse(manifestFileContent);
   } catch (e) {
     if (e && e.code === "ENOENT") {
-      logger.debug(`manifest file not found at ${manifestFilePath}`);
+      logger.debug(`manifest file not found at ${urlToFileSystemPath(manifestFileUrl)}`);
       return null;
     }
 
@@ -961,7 +1370,6 @@ const generateDirectoryFileReport = async ({
   manifest,
   manifestFilename
 }) => {
-  const directoryPath = urlToFilePath$1(directoryUrl);
   const directoryFileReport = {};
 
   try {
@@ -971,9 +1379,9 @@ const generateDirectoryFileReport = async ({
       predicate: meta => meta.track === true,
       matchingFileOperation: async ({
         relativeUrl,
-        lstat
+        fileStats
       }) => {
-        if (!lstat.isFile()) {
+        if (!fileStats.isFile()) {
           return;
         }
 
@@ -982,16 +1390,17 @@ const generateDirectoryFileReport = async ({
         }
 
         const fileUrl = resolveUrl(relativeUrl, directoryUrl);
-        const filePath = urlToFilePath$1(fileUrl);
-        const fileContent = await readFileContent(filePath);
+        const fileContent = await readFile(fileUrl);
         const hash = bufferToEtag(Buffer.from(fileContent));
         directoryFileReport[relativeUrl] = {
-          size: lstat.size,
+          size: fileStats.size,
           hash
         };
       }
     });
   } catch (e) {
+    const directoryPath = urlToFileSystemPath(directoryUrl);
+
     if (e.code === "ENOENT" && e.path === directoryPath) {
       logger.warn(`${directoryPath} does not exists`);
       return directoryFileReport;
@@ -1003,12 +1412,473 @@ const generateDirectoryFileReport = async ({
   return directoryFileReport;
 };
 
+const convertFileSystemErrorToResponseProperties = error => {
+  // https://iojs.org/api/errors.html#errors_eacces_permission_denied
+  if (isErrorWithCode(error, "EACCES")) {
+    return {
+      status: 403,
+      statusText: "no permission to read file"
+    };
+  }
+
+  if (isErrorWithCode(error, "EPERM")) {
+    return {
+      status: 403,
+      statusText: "no permission to read file"
+    };
+  }
+
+  if (isErrorWithCode(error, "ENOENT")) {
+    return {
+      status: 404,
+      statusText: "file not found"
+    };
+  } // file access may be temporarily blocked
+  // (by an antivirus scanning it because recently modified for instance)
+
+
+  if (isErrorWithCode(error, "EBUSY")) {
+    return {
+      status: 503,
+      statusText: "file is busy",
+      headers: {
+        "retry-after": 0.01 // retry in 10ms
+
+      }
+    };
+  } // emfile means there is too many files currently opened
+
+
+  if (isErrorWithCode(error, "EMFILE")) {
+    return {
+      status: 503,
+      statusText: "too many file opened",
+      headers: {
+        "retry-after": 0.1 // retry in 100ms
+
+      }
+    };
+  }
+
+  if (isErrorWithCode(error, "EISDIR")) {
+    return {
+      status: 500,
+      statusText: "Unexpected directory operation"
+    };
+  }
+
+  return Promise.reject(error);
+};
+
+const isErrorWithCode = (error, code) => {
+  return typeof error === "object" && error.code === code;
+};
+
+if ("observable" in Symbol === false) {
+  Symbol.observable = Symbol.for("observable");
+}
+
 // eslint-disable-next-line import/no-unresolved
 const nodeRequire = require;
 const filenameContainsBackSlashes = __filename.indexOf("\\") > -1;
 const url = filenameContainsBackSlashes ? `file:///${__filename.replace(/\\/g, "/")}` : `file://${__filename}`;
 
-const fetch = nodeRequire("node-fetch");
+const createCancellationToken$1 = () => {
+  const register = callback => {
+    if (typeof callback !== "function") {
+      throw new Error(`callback must be a function, got ${callback}`);
+    }
+
+    return {
+      callback,
+      unregister: () => {}
+    };
+  };
+
+  const throwIfRequested = () => undefined;
+
+  return {
+    register,
+    cancellationRequested: false,
+    throwIfRequested
+  };
+};
+
+const createOperation$1 = ({
+  cancellationToken = createCancellationToken$1(),
+  start,
+  ...rest
+}) => {
+  const unknownArgumentNames = Object.keys(rest);
+
+  if (unknownArgumentNames.length) {
+    throw new Error(`createOperation called with unknown argument names.
+--- unknown argument names ---
+${unknownArgumentNames}
+--- possible argument names ---
+cancellationToken
+start`);
+  }
+
+  cancellationToken.throwIfRequested();
+  const promise = new Promise(resolve => {
+    resolve(start());
+  });
+  const cancelPromise = new Promise((resolve, reject) => {
+    const cancelRegistration = cancellationToken.register(cancelError => {
+      cancelRegistration.unregister();
+      reject(cancelError);
+    });
+    promise.then(cancelRegistration.unregister, () => {});
+  });
+  const operationPromise = Promise.race([promise, cancelPromise]);
+  return operationPromise;
+};
+
+const jsenvContentTypeMap = {
+  "application/javascript": {
+    extensions: ["js", "mjs", "ts", "jsx"]
+  },
+  "application/json": {
+    extensions: ["json"]
+  },
+  "application/octet-stream": {},
+  "application/pdf": {
+    extensions: ["pdf"]
+  },
+  "application/xml": {
+    extensions: ["xml"]
+  },
+  "application/x-gzip": {
+    extensions: ["gz"]
+  },
+  "application/wasm": {
+    extensions: ["wasm"]
+  },
+  "application/zip": {
+    extensions: ["zip"]
+  },
+  "audio/basic": {
+    extensions: ["au", "snd"]
+  },
+  "audio/mpeg": {
+    extensions: ["mpga", "mp2", "mp2a", "mp3", "m2a", "m3a"]
+  },
+  "audio/midi": {
+    extensions: ["midi", "mid", "kar", "rmi"]
+  },
+  "audio/mp4": {
+    extensions: ["m4a", "mp4a"]
+  },
+  "audio/ogg": {
+    extensions: ["oga", "ogg", "spx"]
+  },
+  "audio/webm": {
+    extensions: ["weba"]
+  },
+  "audio/x-wav": {
+    extensions: ["wav"]
+  },
+  "font/ttf": {
+    extensions: ["ttf"]
+  },
+  "font/woff": {
+    extensions: ["woff"]
+  },
+  "font/woff2": {
+    extensions: ["woff2"]
+  },
+  "image/png": {
+    extensions: ["png"]
+  },
+  "image/gif": {
+    extensions: ["gif"]
+  },
+  "image/jpeg": {
+    extensions: ["jpg"]
+  },
+  "image/svg+xml": {
+    extensions: ["svg", "svgz"]
+  },
+  "text/plain": {
+    extensions: ["txt"]
+  },
+  "text/html": {
+    extensions: ["html"]
+  },
+  "text/css": {
+    extensions: ["css"]
+  },
+  "text/cache-manifest": {
+    extensions: ["appcache"]
+  },
+  "video/mp4": {
+    extensions: ["mp4", "mp4v", "mpg4"]
+  },
+  "video/mpeg": {
+    extensions: ["mpeg", "mpg", "mpe", "m1v", "m2v"]
+  },
+  "video/ogg": {
+    extensions: ["ogv"]
+  },
+  "video/webm": {
+    extensions: ["webm"]
+  }
+};
+
+// https://github.com/jshttp/mime-db/blob/master/src/apache-types.json
+const urlToContentType = (url, contentTypeMap = jsenvContentTypeMap, contentTypeDefault = "application/octet-stream") => {
+  if (typeof contentTypeMap !== "object") {
+    throw new TypeError(`contentTypeMap must be an object, got ${contentTypeMap}`);
+  }
+
+  const pathname = new URL(url).pathname;
+  const extensionWithDot = path.extname(pathname);
+
+  if (!extensionWithDot || extensionWithDot === ".") {
+    return contentTypeDefault;
+  }
+
+  const extension = extensionWithDot.slice(1);
+  const availableContentTypes = Object.keys(contentTypeMap);
+  const contentTypeForExtension = availableContentTypes.find(contentTypeName => {
+    const contentType = contentTypeMap[contentTypeName];
+    return contentType.extensions && contentType.extensions.indexOf(extension) > -1;
+  });
+  return contentTypeForExtension || contentTypeDefault;
+};
+
+const {
+  readFile: readFile$1
+} = fs.promises;
+const serveFile = async (source, {
+  cancellationToken = createCancellationToken$1(),
+  method = "GET",
+  headers = {},
+  canReadDirectory = false,
+  cacheStrategy = "etag",
+  contentTypeMap = jsenvContentTypeMap
+} = {}) => {
+  if (method !== "GET" && method !== "HEAD") {
+    return {
+      status: 501
+    };
+  }
+
+  const sourceUrl = assertAndNormalizeFileUrl(source);
+  const clientCacheDisabled = headers["cache-control"] === "no-cache";
+
+  try {
+    const cacheWithMtime = !clientCacheDisabled && cacheStrategy === "mtime";
+    const cacheWithETag = !clientCacheDisabled && cacheStrategy === "etag";
+    const cachedDisabled = clientCacheDisabled || cacheStrategy === "none";
+    const sourceStat = await createOperation$1({
+      cancellationToken,
+      start: () => readFileSystemNodeStat(sourceUrl)
+    });
+
+    if (sourceStat.isDirectory()) {
+      if (canReadDirectory === false) {
+        return {
+          status: 403,
+          statusText: "not allowed to read directory",
+          headers: { ...(cachedDisabled ? {
+              "cache-control": "no-store"
+            } : {})
+          }
+        };
+      }
+
+      const directoryContentArray = await createOperation$1({
+        cancellationToken,
+        start: () => readDirectory(sourceUrl)
+      });
+      const directoryContentJson = JSON.stringify(directoryContentArray);
+      return {
+        status: 200,
+        headers: { ...(cachedDisabled ? {
+            "cache-control": "no-store"
+          } : {}),
+          "content-type": "application/json",
+          "content-length": directoryContentJson.length
+        },
+        body: directoryContentJson
+      };
+    } // not a file, give up
+
+
+    if (!sourceStat.isFile()) {
+      return {
+        status: 404,
+        headers: { ...(cachedDisabled ? {
+            "cache-control": "no-store"
+          } : {})
+        }
+      };
+    }
+
+    if (cacheWithETag) {
+      const fileContentAsBuffer = await createOperation$1({
+        cancellationToken,
+        start: () => readFile$1(urlToFileSystemPath(sourceUrl))
+      });
+      const fileContentEtag = bufferToEtag(fileContentAsBuffer);
+
+      if ("if-none-match" in headers && headers["if-none-match"] === fileContentEtag) {
+        return {
+          status: 304,
+          headers: { ...(cachedDisabled ? {
+              "cache-control": "no-store"
+            } : {})
+          }
+        };
+      }
+
+      return {
+        status: 200,
+        headers: { ...(cachedDisabled ? {
+            "cache-control": "no-store"
+          } : {}),
+          "content-length": sourceStat.size,
+          "content-type": urlToContentType(sourceUrl, contentTypeMap),
+          "etag": fileContentEtag
+        },
+        body: fileContentAsBuffer
+      };
+    }
+
+    if (cacheWithMtime && "if-modified-since" in headers) {
+      let cachedModificationDate;
+
+      try {
+        cachedModificationDate = new Date(headers["if-modified-since"]);
+      } catch (e) {
+        return {
+          status: 400,
+          statusText: "if-modified-since header is not a valid date"
+        };
+      }
+
+      const actualModificationDate = dateToSecondsPrecision(sourceStat.mtime);
+
+      if (Number(cachedModificationDate) >= Number(actualModificationDate)) {
+        return {
+          status: 304
+        };
+      }
+    }
+
+    return {
+      status: 200,
+      headers: { ...(cachedDisabled ? {
+          "cache-control": "no-store"
+        } : {}),
+        ...(cacheWithMtime ? {
+          "last-modified": dateToUTCString(sourceStat.mtime)
+        } : {}),
+        "content-length": sourceStat.size,
+        "content-type": urlToContentType(sourceUrl, contentTypeMap)
+      },
+      body: fs.createReadStream(urlToFileSystemPath(sourceUrl))
+    };
+  } catch (e) {
+    return convertFileSystemErrorToResponseProperties(e);
+  }
+}; // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/toUTCString
+
+const dateToUTCString = date => date.toUTCString();
+
+const dateToSecondsPrecision = date => {
+  const dateWithSecondsPrecision = new Date(date);
+  dateWithSecondsPrecision.setMilliseconds(0);
+  return dateWithSecondsPrecision;
+};
+
+const require$1 = module$1.createRequire(url);
+
+const nodeFetch = require$1("node-fetch");
+
+const AbortController = require$1("abort-controller");
+
+const {
+  Response
+} = nodeFetch;
+const fetchUrl = async (url, {
+  cancellationToken = createCancellationToken$1(),
+  standard = false,
+  canReadDirectory,
+  contentTypeMap,
+  cacheStrategy,
+  ...options
+} = {}) => {
+  try {
+    url = String(new URL(url));
+  } catch (e) {
+    throw new Error(`fetchUrl first argument must be an absolute url, received ${url}`);
+  }
+
+  if (url.startsWith("file://")) {
+    const {
+      status,
+      statusText,
+      headers,
+      body
+    } = await serveFile(url, {
+      cancellationToken,
+      cacheStrategy,
+      canReadDirectory,
+      contentTypeMap,
+      ...options
+    });
+    const response = new Response(typeof body === "string" ? Buffer.from(body) : body, {
+      url,
+      status,
+      statusText,
+      headers
+    });
+    return standard ? response : standardResponseToSimplifiedResponse(response);
+  }
+
+  const response = await createOperation$1({
+    cancellationToken,
+    start: () => nodeFetch(url, {
+      signal: cancellationTokenToAbortSignal(cancellationToken),
+      ...options
+    })
+  });
+  return standard ? response : standardResponseToSimplifiedResponse(response);
+}; // https://github.com/bitinn/node-fetch#request-cancellation-with-abortsignal
+
+const cancellationTokenToAbortSignal = cancellationToken => {
+  const abortController = new AbortController();
+  cancellationToken.register(reason => {
+    abortController.abort(reason);
+  });
+  return abortController.signal;
+};
+
+const standardResponseToSimplifiedResponse = async response => {
+  const text = await response.text();
+  return {
+    url: response.url,
+    status: response.status,
+    statusText: response.statusText,
+    headers: responseToHeaders(response),
+    body: text
+  };
+};
+
+const responseToHeaders = response => {
+  const headers = {};
+  response.headers.forEach((value, name) => {
+    headers[name] = value;
+  });
+  return headers;
+};
+
+const require$2 = module$1.createRequire(url);
+
+const killPort = require$2("kill-port");
 
 const getPullRequestCommentMatching = async ({
   repositoryOwner,
@@ -1059,7 +1929,8 @@ const listPullRequestComment = async ({
   pullRequestNumber,
   githubToken
 }) => {
-  const response = await fetch(`https://api.github.com/repos/${repositoryOwner}/${repositoryName}/issues/${pullRequestNumber}/comments`, {
+  const response = await fetchUrl(`https://api.github.com/repos/${repositoryOwner}/${repositoryName}/issues/${pullRequestNumber}/comments`, {
+    standard: true,
     headers: {
       authorization: `token ${githubToken}`
     },
@@ -1091,8 +1962,6 @@ ${response.status}
 ${(JSON.stringify(responseBodyAsJson), "  ")}`);
 
 // https://developer.github.com/v3/issues/comments/#edit-a-comment
-const fetch$1 = nodeRequire("node-fetch");
-
 const createPullRequestComment = async ({
   githubToken,
   repositoryOwner,
@@ -1140,7 +2009,8 @@ const genericCreatePullRequestComment = async ({
   const body = JSON.stringify({
     body: commentBody
   });
-  const response = await fetch$1(`https://api.github.com/repos/${repositoryOwner}/${repositoryName}/issues/${pullRequestNumber}/comments`, {
+  const response = await fetchUrl(`https://api.github.com/repos/${repositoryOwner}/${repositoryName}/issues/${pullRequestNumber}/comments`, {
+    standard: true,
     headers: {
       "authorization": `token ${githubToken}`,
       "content-length": Buffer.byteLength(body)
@@ -1174,8 +2044,6 @@ ${response.status}
 ${(JSON.stringify(responseBodyAsJson), "  ")}`);
 
 // https://developer.github.com/v3/issues/comments/#edit-a-comment
-const fetch$2 = nodeRequire("node-fetch");
-
 const updatePullRequestComment = async ({
   githubToken,
   repositoryName,
@@ -1225,7 +2093,8 @@ const genericUpdatePullRequestComment = async ({
   const body = JSON.stringify({
     body: commentBody
   });
-  const response = await fetch$2(href, {
+  const response = await fetchUrl(href, {
+    standard: true,
     headers: {
       "authorization": `token ${githubToken}`,
       "content-length": Buffer.byteLength(body)
@@ -1374,7 +2243,7 @@ const generateSizeImpactDetails = ({
       sizeImpactMap
     })}
 
-**Overall size impact:** ${formatSizeImpact(formatSize, sizeImpact)}.
+**Overall size impact:** ${formatSizeImpact(formatSize, sizeImpact)}.<br />
 **Cache impact:** ${formatCacheImpact(formatSize, sizeImpactMap)}`;
   }
 
@@ -1387,34 +2256,55 @@ const generateSizeImpactTable = ({
   formatSize,
   sizeImpactMap
 }) => `<br />
+${renderTableHeaders({
+  pullRequestBase,
+  pullRequestHead
+})}
+${renderTableBody({
+  sizeImpactMap,
+  formatSize
+})}`;
 
-event | file | size on \`${pullRequestBase}\` | size on \`${pullRequestHead}\` | size impact
------ | ---- | ------------------------------ | ------------------------------ | ------------
-${Object.keys(sizeImpactMap).map(relativePath => {
-  const sizeImpact = sizeImpactMap[relativePath];
-  return [generateEventCellText(sizeImpact.why), relativePath, generateBaseCellText({
-    formatSize,
-    sizeImpact
-  }), generateHeadCellText({
-    formatSize,
-    sizeImpact
-  }), generateImpactCellText({
-    formatSize,
-    sizeImpact
-  })].join(" | ");
-}).join(`
-`)}`;
+const renderTableHeaders = ({
+  pullRequestBase,
+  pullRequestHead
+}) => {
+  const headerNames = ["event", "file", `size&nbsp;on&nbsp;\`${pullRequestBase}\``, `size&nbsp;on&nbsp;\`${pullRequestHead}\``, "size&nbsp;impact"];
+  return `
+${headerNames.join(" | ")}
+${headerNames.map(() => `---`).join(" | ")}`;
+};
+
+const renderTableBody = ({
+  sizeImpactMap,
+  formatSize
+}) => {
+  return Object.keys(sizeImpactMap).map(relativePath => {
+    const sizeImpact = sizeImpactMap[relativePath];
+    return [generateEventCellText(sizeImpact.why), relativePath, generateBaseCellText({
+      formatSize,
+      sizeImpact
+    }), generateHeadCellText({
+      formatSize,
+      sizeImpact
+    }), generateImpactCellText({
+      formatSize,
+      sizeImpact
+    })].join(" | ");
+  }).join(`
+`);
+};
 
 const generateEventCellText = why => {
   if (why === "added") {
-    return "file created";
+    return "file&nbsp;created";
   }
 
   if (why === "removed") {
-    return "file deleted";
+    return "file&nbsp;deleted";
   }
 
-  return "content changed";
+  return "content&nbsp;changed";
 };
 
 const generateBaseCellText = ({
@@ -1619,7 +2509,7 @@ const manifestToMappings = manifest => {
 };
 
 const sortDirectoryStructure = directoryStructure => {
-  const relativeUrlSortedArray = Object.keys(directoryStructure).sort(compareFilePath);
+  const relativeUrlSortedArray = Object.keys(directoryStructure).sort(comparePathnames);
   const directoryStructureSorted = {};
   relativeUrlSortedArray.forEach(relativeUrl => {
     directoryStructureSorted[relativeUrl] = directoryStructure[relativeUrl];
@@ -1639,7 +2529,7 @@ const reportSizeImpactIntoGithubPullRequest = async ({
   const logger = createLogger({
     logLevel
   });
-  projectDirectoryUrl = normalizeDirectoryUrl$1(projectDirectoryUrl);
+  projectDirectoryUrl = assertAndNormalizeDirectoryUrl(projectDirectoryUrl);
 
   if (typeof baseSnapshotFileRelativeUrl !== "string") {
     throw new TypeError(`baseSnapshotFileRelativeUrl must be a string, got ${baseSnapshotFileRelativeUrl}`);
@@ -1659,16 +2549,14 @@ const reportSizeImpactIntoGithubPullRequest = async ({
   } = getOptionsFromGithubAction();
   const baseSnapshotFileUrl = resolveUrl(baseSnapshotFileRelativeUrl, projectDirectoryUrl);
   const headSnapshotFileUrl = resolveUrl(headSnapshotFileRelativeUrl, projectDirectoryUrl);
-  const baseSnapshotFilePath = urlToFilePath$1(baseSnapshotFileUrl);
-  const headSnapshotFilePath = urlToFilePath$1(headSnapshotFileUrl);
   logger.debug(`
 compare file snapshots
 --- base snapshot file path ---
-${baseSnapshotFilePath}
+${urlToFileSystemPath(baseSnapshotFileUrl)}
 --- head snapshot file path ---
-${headSnapshotFilePath}
+${urlToFileSystemPath(headSnapshotFileUrl)}
 `);
-  const snapshotsPromise = Promise.all([readFileContent(baseSnapshotFilePath), readFileContent(headSnapshotFilePath)]);
+  const snapshotsPromise = Promise.all([readFile(baseSnapshotFileUrl), readFile(headSnapshotFileUrl)]);
   logger.debug(`
 search for existing comment inside pull request.
 --- pull request url ---

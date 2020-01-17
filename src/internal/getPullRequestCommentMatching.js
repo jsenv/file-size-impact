@@ -1,4 +1,4 @@
-const fetch = import.meta.require("node-fetch")
+import { fetchUrl } from "@jsenv/server"
 
 export const getPullRequestCommentMatching = async ({
   repositoryOwner,
@@ -45,9 +45,10 @@ const listPullRequestComment = async ({
   pullRequestNumber,
   githubToken,
 }) => {
-  const response = await fetch(
+  const response = await fetchUrl(
     `https://api.github.com/repos/${repositoryOwner}/${repositoryName}/issues/${pullRequestNumber}/comments`,
     {
+      standard: true,
       headers: {
         authorization: `token ${githubToken}`,
       },
