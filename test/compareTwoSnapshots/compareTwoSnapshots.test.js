@@ -83,6 +83,55 @@ import { compareTwoSnapshots } from "../../src/internal/compareTwoSnapshots.js"
   assert({ actual, expected })
 }
 
+// mapped + ignored file
+{
+  const actual = compareTwoSnapshots(
+    {
+      dist: {
+        manifest: {
+          "foo.html": "bar.html",
+        },
+        trackingConfig: {
+          "foo.html": false,
+        },
+        report: {
+          "whatever.js": { size: 10, hash: "hash" },
+        },
+      },
+    },
+    {
+      dist: {
+        manifest: {
+          "foo.html": "bar.html",
+        },
+        trackingConfig: {
+          "foo.html": false,
+        },
+        report: {
+          "whatever.js": { size: 11, hash: "hash2" },
+        },
+      },
+    },
+  )
+  const expected = {
+    dist: {
+      "whatever.js": {
+        base: {
+          relativeUrl: "whatever.js",
+          size: 10,
+          hash: "hash",
+        },
+        head: {
+          relativeUrl: "whatever.js",
+          size: 11,
+          hash: "hash2",
+        },
+      },
+    },
+  }
+  assert({ actual, expected })
+}
+
 // pull request untracks a previously tracked directory
 {
   const actual = compareTwoSnapshots(
