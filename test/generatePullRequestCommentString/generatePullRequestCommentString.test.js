@@ -11,10 +11,10 @@ import { generatePullRequestCommentString } from "../../src/internal/generatePul
     },
     generatedByLink: false,
   })
-  const expected = `
-<details>
-  <summary>Merging <code>head</code> into <code>base</code> will <b>not impact</b> <code>dist</code> overall size.</summary>
-changes don't affect the overall size or cache.
+  const expected = `<details>
+  <summary>Merging <code>head</code> into <code>base</code> will <strong>not impact</strong> <code>dist</code> overall size.</summary>
+  <br />
+  <blockquote>changes don't affect the overall size or cache.<blockquote>
 </details>`
   assert({ actual, expected })
 }
@@ -50,18 +50,42 @@ changes don't affect the overall size or cache.
     },
     generatedByLink: false,
   })
-  const expected = `
-<details>
-  <summary>Merging <code>head</code> into <code>base</code> will <b>not impact</b> <code>dist</code> overall size.</summary>
-<br />
+  const expected = `<details>
+  <summary>Merging <code>head</code> into <code>base</code> will <strong>not impact</strong> <code>dist</code> overall size.</summary>
 
-event | file | size&nbsp;on&nbsp;\`base\` | size&nbsp;on&nbsp;\`head\` | size&nbsp;impact
---- | --- | --- | --- | ---
-content&nbsp;changed | file-a.js | 10 bytes | 15 bytes | +5 bytes
-content&nbsp;changed | file-b.js | 15 bytes | 10 bytes | -5 bytes
+  <br />
+  <table>
+    <thead>
+    <tr>
+      <td nowrap>event</td>
+      <td nowrap>file</td>
+      <td nowrap><code>base</code> size</td>
+      <td nowrap><code>head</code> size</td>
+      <td nowrap>size impact</td>
+    </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td nowrap>file-a.js</td>
+        <td nowrap>content changed</td>
+        <td nowrap>10 bytes</td>
+        <td nowrap>15 bytes</td>
+        <td nowrap>+5 bytes</td>
+      </tr>
+      <tr>
+        <td nowrap>file-b.js</td>
+        <td nowrap>content changed</td>
+        <td nowrap>15 bytes</td>
+        <td nowrap>10 bytes</td>
+        <td nowrap>-5 bytes</td>
+      </tr>
+    </tbody>
+  </table>
 
-**Overall size impact:** 0.<br />
-**Cache impact:** 2 files content changed, invalidating a total of 25 bytes.
+  <blockquote>
+    <strong>Overall size impact:</strong> 0.<br />
+    <strong>Cache impact:</strong> 2 files content changed, invalidating a total of 25 bytes.
+  </blockquote>
 </details>`
   assert({ actual, expected })
 }
@@ -101,19 +125,46 @@ content&nbsp;changed | file-b.js | 15 bytes | 10 bytes | -5 bytes
     },
     generatedByLink: false,
   })
-  const expected = `
-<details>
-  <summary>Merging <code>head</code> into <code>base</code> will <b>decrease</b> <code>dist</code> overall size by 5 bytes.</summary>
+  const expected = `<details>
+  <summary>Merging <code>head</code> into <code>base</code> will <strong>decrease</strong> <code>dist</code> overall size by 5 bytes.</summary>
 <br />
+<table>
+  <thead>
+  <tr>
+    <td nowrap>event</td>
+    <td nowrap>file</td>
+    <td nowrap><code>base</code> size</td>
+    <td nowrap><code>head</code> size</td>
+    <td nowrap>size impact</td>
+  </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td nowrap>file-added.js</td>
+      <td nowrap>file created</td>
+      <td nowrap>---</td>
+      <td nowrap>10 bytes</td>
+      <td nowrap>+10 bytes</td>
+    </tr>
+    <tr>
+      <td nowrap>file-removed.js</td>
+      <td nowrap>file deleted</td>
+      <td nowrap>20 bytes</td>
+      <td nowrap>---</td>
+      <td nowrap>-20 bytes</td>
+    </tr>
+    <tr>
+      <td nowrap>file-updated.js</td>
+      <td nowrap>content changed</td>
+      <td nowrap>10 bytes</td>
+      <td nowrap>15 bytes</td>
+      <td nowrap>+5 bytes</td>
+    </tr>
+  </tbody>
+</table>
 
-event | file | size&nbsp;on&nbsp;\`base\` | size&nbsp;on&nbsp;\`head\` | size&nbsp;impact
---- | --- | --- | --- | ---
-file&nbsp;created | file-added.js | --- | 10 bytes | +10 bytes
-file&nbsp;deleted | file-removed.js | 20 bytes | --- | -20 bytes
-content&nbsp;changed | file-updated.js | 10 bytes | 15 bytes | +5 bytes
-
-**Overall size impact:** -5 bytes.<br />
-**Cache impact:** 1 files content changed, invalidating a total of 10 bytes.
+<strong>Overall size impact:</strong> -5 bytes.<br />
+<strong>Cache impact:</strong> 1 files content changed, invalidating a total of 10 bytes.
 </details>`
   assert({ actual, expected })
 }

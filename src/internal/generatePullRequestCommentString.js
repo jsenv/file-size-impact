@@ -74,22 +74,21 @@ export const generatePullRequestCommentString = ({
 
     return `<details>
   <summary>Merging <code>${pullRequestHead}</code> into <code>${pullRequestBase}</code> will ${sizeImpactText}</summary>
-${generateSizeImpactDetails({
-  pullRequestBase,
-  pullRequestHead,
-  formatSize,
-  sizeImpactMap,
-  hasImpact,
-  sizeImpact,
-})}
+  <br />${generateSizeImpactDetails({
+    pullRequestBase,
+    pullRequestHead,
+    formatSize,
+    sizeImpactMap,
+    hasImpact,
+    sizeImpact,
+  })}
 </details>`
   })
 
   if (directoryMessages.length === 0) return null
 
-  return `
-${directoryMessages.join(`
----
+  return `${directoryMessages.join(`
+
 `)}${
     generatedByLink
       ? `
@@ -115,10 +114,13 @@ const generateSizeImpactDetails = ({
       sizeImpactMap,
     })}
 
-**Overall size impact:** ${formatSizeImpact(formatSize, sizeImpact)}.<br />
-**Cache impact:** ${formatCacheImpact(formatSize, sizeImpactMap)}`
+  <blockquote>
+    <strong>Overall size impact:</strong> ${formatSizeImpact(formatSize, sizeImpact)}.<br />
+    <strong>Cache impact:</strong> ${formatCacheImpact(formatSize, sizeImpactMap)}
+  <blockquote>`
   }
-  return `changes don't affect the overall size or cache.`
+  return `
+  <blockquote>changes don't affect the overall size or cache.<blockquote>`
 }
 
 const generateSizeImpactTable = ({
@@ -126,47 +128,50 @@ const generateSizeImpactTable = ({
   pullRequestHead,
   formatSize,
   sizeImpactMap,
-}) => `<br />
-${renderTableHeaders({ pullRequestBase, pullRequestHead })}
-${renderTableBody({ sizeImpactMap, formatSize })}`
-
-const renderTableHeaders = ({ pullRequestBase, pullRequestHead }) => {
-  const headerNames = [
-    "event",
-    "file",
-    `size&nbsp;on&nbsp;\`${pullRequestBase}\``,
-    `size&nbsp;on&nbsp;\`${pullRequestHead}\``,
-    "size&nbsp;impact",
-  ]
-
-  return `
-${headerNames.join(" | ")}
-${headerNames.map(() => `---`).join(" | ")}`
-}
+}) => `
+  <table>
+    <thead>
+      <tr>
+        <td nowrap>event</td>
+        <td nowrap>file</td>
+        <td nowrap><code>${pullRequestBase}</code> size</td>
+        <td nowrap><code>${pullRequestHead}</code> size</td>
+        <td nowrap>size impact</td>
+      </tr>
+    </thead>
+    <tbody>
+      ${renderTableBody({ sizeImpactMap, formatSize })}
+    </tbody>
+  </table>`
 
 const renderTableBody = ({ sizeImpactMap, formatSize }) => {
-  return Object.keys(sizeImpactMap).map((relativePath) => {
+  const lines = Object.keys(sizeImpactMap).map((relativePath) => {
     const sizeImpact = sizeImpactMap[relativePath]
 
-    return [
-      generateEventCellText(sizeImpact.why),
-      relativePath,
-      generateBaseCellText({ formatSize, sizeImpact }),
-      generateHeadCellText({ formatSize, sizeImpact }),
-      generateImpactCellText({ formatSize, sizeImpact }),
-    ].join(" | ")
-  }).join(`
-`)
+    return `
+        <td nowrap>${relativePath}</td>
+        <td nowrap>${generateEventCellText(sizeImpact.why)}</td>
+        <td nowrap>${generateBaseCellText({ formatSize, sizeImpact })}</td>
+        <td nowrap>${generateHeadCellText({ formatSize, sizeImpact })}</td>
+        <td nowrap>${generateImpactCellText({ formatSize, sizeImpact })}</td>`
+  })
+
+  if (lines.length === 0) return ""
+
+  return `<tr>${lines.join(`
+      </tr>
+      <tr>`)}
+      </tr>`
 }
 
 const generateEventCellText = (why) => {
   if (why === "added") {
-    return "file&nbsp;created"
+    return "file created"
   }
   if (why === "removed") {
-    return "file&nbsp;deleted"
+    return "file deleted"
   }
-  return "content&nbsp;changed"
+  return "content changed"
 }
 
 const generateBaseCellText = ({ formatSize, sizeImpact: { baseSize, why } }) => {
@@ -189,14 +194,14 @@ const generateImpactCellText = ({ formatSize, sizeImpact: { diffSize } }) => {
 
 const generateSizeImpactText = ({ directoryRelativeUrl, formatSize, sizeImpact }) => {
   if (sizeImpact === 0) {
-    return `<b>not impact</b> <code>${directoryRelativeUrl}</code> overall size.`
+    return `<strong>not impact</strong> <code>${directoryRelativeUrl}</code> overall size.`
   }
   if (sizeImpact < 0) {
-    return `<b>decrease</b> <code>${directoryRelativeUrl}</code> overall size by ${formatSize(
+    return `<strong>decrease</strong> <code>${directoryRelativeUrl}</code> overall size by ${formatSize(
       Math.abs(sizeImpact),
     )}.`
   }
-  return `<b>increase</b> <code>${directoryRelativeUrl}</code> overall size by ${formatSize(
+  return `<strong>increase</strong> <code>${directoryRelativeUrl}</code> overall size by ${formatSize(
     sizeImpact,
   )}.`
 }
