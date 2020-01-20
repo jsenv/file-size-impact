@@ -142,6 +142,7 @@ ${existingComment.html_url}`)
   return comment
 }
 
+// https://help.github.com/en/actions/automating-your-workflow-with-github-actions/using-environment-variables
 const getOptionsFromGithubAction = () => {
   const eventName = process.env.GITHUB_EVENT_NAME
   if (!eventName) {
