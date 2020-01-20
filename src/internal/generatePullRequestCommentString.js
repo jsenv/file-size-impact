@@ -117,10 +117,10 @@ const generateSizeImpactDetails = ({
   <blockquote>
     <strong>Overall size impact:</strong> ${formatSizeImpact(formatSize, sizeImpact)}.<br />
     <strong>Cache impact:</strong> ${formatCacheImpact(formatSize, sizeImpactMap)}
-  <blockquote>`
+  </blockquote>`
   }
   return `
-  <blockquote>changes don't affect the overall size or cache.<blockquote>`
+  <blockquote>changes don't affect the overall size or cache.</blockquote>`
 }
 
 const generateSizeImpactTable = ({

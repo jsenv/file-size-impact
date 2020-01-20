@@ -1,6 +1,5 @@
 <details>
   <summary>Merging <code>head</code> into <code>base</code> would <strong>increase</strong> <code>dist/commonjs</code> overall size by 120 bytes.</summary>
-
   <br />
   <table>
     <thead>
@@ -52,7 +51,6 @@
 
 <details>
   <summary>Merging <code>head</code> into <code>base</code> would <strong>decrease</strong> <code>dist/systemjs</code> overall size by 20 bytes.</summary>
-
   <br />
   <table>
     <thead>
