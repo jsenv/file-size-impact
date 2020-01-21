@@ -132,11 +132,11 @@ const generateSizeImpactTable = ({
   <table>
     <thead>
       <tr>
-        <td nowrap>event</td>
-        <td nowrap>file</td>
-        <td nowrap><code>${pullRequestBase}</code> size</td>
-        <td nowrap><code>${pullRequestHead}</code> size</td>
-        <td nowrap>size impact</td>
+        <th nowrap>file</th>
+        <th nowrap>event</th>
+        <th nowrap><code>${pullRequestBase}</code> size</th>
+        <th nowrap><code>${pullRequestHead}</code> size</th>
+        <th nowrap>size impact</th>
       </tr>
     </thead>
     <tbody>

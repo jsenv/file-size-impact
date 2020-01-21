@@ -56,11 +56,11 @@ import { generatePullRequestCommentString } from "../../src/internal/generatePul
   <table>
     <thead>
       <tr>
-        <td nowrap>event</td>
-        <td nowrap>file</td>
-        <td nowrap><code>base</code> size</td>
-        <td nowrap><code>head</code> size</td>
-        <td nowrap>size impact</td>
+        <th nowrap>file</th>
+        <th nowrap>event</th>
+        <th nowrap><code>base</code> size</th>
+        <th nowrap><code>head</code> size</th>
+        <th nowrap>size impact</th>
       </tr>
     </thead>
     <tbody>
@@ -130,11 +130,11 @@ import { generatePullRequestCommentString } from "../../src/internal/generatePul
   <table>
     <thead>
       <tr>
-        <td nowrap>event</td>
-        <td nowrap>file</td>
-        <td nowrap><code>base</code> size</td>
-        <td nowrap><code>head</code> size</td>
-        <td nowrap>size impact</td>
+        <th nowrap>file</th>
+        <th nowrap>event</th>
+        <th nowrap><code>base</code> size</th>
+        <th nowrap><code>head</code> size</th>
+        <th nowrap>size impact</th>
       </tr>
     </thead>
     <tbody>
