@@ -5,6 +5,8 @@ import {
   readFile,
   urlToFileSystemPath,
 } from "@jsenv/util"
+import { createCancellationTokenForProcessSIGINT } from "@jsenv/cancellation"
+import { wrapAsyncFunction } from "./internal/wrapAsyncFunction.js"
 import { getPullRequestCommentMatching } from "./internal/getPullRequestCommentMatching.js"
 import { createPullRequestComment } from "./internal/createPullRequestComment.js"
 import { updatePullRequestComment } from "./internal/updatePullRequestComment.js"
@@ -14,54 +16,58 @@ import { compareTwoSnapshots } from "./internal/compareTwoSnapshots.js"
 const regexForMergingSizeImpact = /Merging .*? into .*? will .*? overall size/
 
 export const reportSizeImpactIntoGithubPullRequest = async ({
+  cancellationToken = createCancellationTokenForProcessSIGINT(),
   logLevel,
   projectDirectoryUrl,
   baseSnapshotFileRelativeUrl,
   headSnapshotFileRelativeUrl,
   formatSize,
   generatedByLink,
+  updateProcessExitCode,
 }) => {
-  const logger = createLogger({ logLevel })
+  return wrapAsyncFunction(
+    async () => {
+      const logger = createLogger({ logLevel })
 
-  projectDirectoryUrl = assertAndNormalizeDirectoryUrl(projectDirectoryUrl)
+      projectDirectoryUrl = assertAndNormalizeDirectoryUrl(projectDirectoryUrl)
 
-  if (typeof baseSnapshotFileRelativeUrl !== "string") {
-    throw new TypeError(
-      `baseSnapshotFileRelativeUrl must be a string, got ${baseSnapshotFileRelativeUrl}`,
-    )
-  }
-  if (typeof headSnapshotFileRelativeUrl !== "string") {
-    throw new TypeError(
-      `headSnapshotFileRelativeUrl must be a string, got ${headSnapshotFileRelativeUrl}`,
-    )
-  }
+      if (typeof baseSnapshotFileRelativeUrl !== "string") {
+        throw new TypeError(
+          `baseSnapshotFileRelativeUrl must be a string, got ${baseSnapshotFileRelativeUrl}`,
+        )
+      }
+      if (typeof headSnapshotFileRelativeUrl !== "string") {
+        throw new TypeError(
+          `headSnapshotFileRelativeUrl must be a string, got ${headSnapshotFileRelativeUrl}`,
+        )
+      }
 
-  const {
-    repositoryOwner,
-    repositoryName,
-    pullRequestNumber,
-    pullRequestBase,
-    pullRequestHead,
-    githubToken,
-  } = getOptionsFromGithubAction()
+      const {
+        repositoryOwner,
+        repositoryName,
+        pullRequestNumber,
+        pullRequestBase,
+        pullRequestHead,
+        githubToken,
+      } = getOptionsFromGithubAction()
 
-  const baseSnapshotFileUrl = resolveUrl(baseSnapshotFileRelativeUrl, projectDirectoryUrl)
-  const headSnapshotFileUrl = resolveUrl(headSnapshotFileRelativeUrl, projectDirectoryUrl)
+      const baseSnapshotFileUrl = resolveUrl(baseSnapshotFileRelativeUrl, projectDirectoryUrl)
+      const headSnapshotFileUrl = resolveUrl(headSnapshotFileRelativeUrl, projectDirectoryUrl)
 
-  logger.debug(`
+      logger.debug(`
 compare file snapshots
 --- base snapshot file path ---
 ${urlToFileSystemPath(baseSnapshotFileUrl)}
 --- head snapshot file path ---
 ${urlToFileSystemPath(headSnapshotFileUrl)}
 `)
-  const snapshotsPromise = Promise.all([
-    readFile(baseSnapshotFileUrl),
-    readFile(headSnapshotFileUrl),
-  ])
+      const snapshotsPromise = Promise.all([
+        readFile(baseSnapshotFileUrl),
+        readFile(headSnapshotFileUrl),
+      ])
 
-  logger.debug(
-    `
+      logger.debug(
+        `
 search for existing comment inside pull request.
 --- pull request url ---
 ${getPullRequestHref({
@@ -70,76 +76,81 @@ ${getPullRequestHref({
   pullRequestNumber,
 })}
 `,
-  )
-  const existingCommentPromise = getPullRequestCommentMatching({
-    repositoryOwner,
-    repositoryName,
-    pullRequestNumber,
-    githubToken,
-    regex: regexForMergingSizeImpact,
-  })
+      )
+      const existingCommentPromise = getPullRequestCommentMatching({
+        repositoryOwner,
+        repositoryName,
+        pullRequestNumber,
+        githubToken,
+        regex: regexForMergingSizeImpact,
+      })
 
-  const [[baseSnapshotFileContent, headSnapshotFileContent], existingComment] = await Promise.all([
-    snapshotsPromise,
-    existingCommentPromise,
-  ])
+      const [
+        [baseSnapshotFileContent, headSnapshotFileContent],
+        existingComment,
+      ] = await Promise.all([snapshotsPromise, existingCommentPromise])
 
-  logger.debug(`
+      cancellationToken.throwIfRequested()
+
+      logger.debug(`
 --- base snapshot file content ---
 ${baseSnapshotFileContent}
 `)
 
-  logger.debug(`
+      logger.debug(`
 --- head snapshot file content ---
 ${headSnapshotFileContent}
 `)
 
-  const snapshotComparison = compareTwoSnapshots(
-    JSON.parse(baseSnapshotFileContent),
-    JSON.parse(headSnapshotFileContent),
-  )
+      const snapshotComparison = compareTwoSnapshots(
+        JSON.parse(baseSnapshotFileContent),
+        JSON.parse(headSnapshotFileContent),
+      )
 
-  const pullRequestCommentString = generatePullRequestCommentString({
-    pullRequestBase,
-    pullRequestHead,
-    snapshotComparison,
-    formatSize,
-    generatedByLink,
-  })
+      const pullRequestCommentString = generatePullRequestCommentString({
+        pullRequestBase,
+        pullRequestHead,
+        snapshotComparison,
+        formatSize,
+        generatedByLink,
+      })
 
-  if (!pullRequestCommentString) {
-    logger.warn(`
+      if (!pullRequestCommentString) {
+        logger.warn(`
 aborting because the pull request comment would be empty.
 May happen whem a snapshot file is empty for instance
 `)
-  }
+      }
 
-  if (existingComment) {
-    logger.debug(`comment found, updating it
+      if (existingComment) {
+        logger.debug(`comment found, updating it
 --- comment href ---
 ${existingComment.html_url}`)
-    const comment = await updatePullRequestComment({
-      githubToken,
-      repositoryOwner,
-      repositoryName,
-      pullRequestNumber,
-      commentId: existingComment.id,
-      commentBody: pullRequestCommentString,
-    })
-    logger.info(`comment updated at ${existingComment.html_url}`)
-    return comment
-  }
+        const comment = await updatePullRequestComment({
+          githubToken,
+          repositoryOwner,
+          repositoryName,
+          pullRequestNumber,
+          commentId: existingComment.id,
+          commentBody: pullRequestCommentString,
+        })
+        logger.info(`comment updated at ${existingComment.html_url}`)
+        return comment
+      }
 
-  logger.debug(`comment not found, creating a comment`)
-  const comment = await createPullRequestComment({
-    repositoryOwner,
-    repositoryName,
-    pullRequestNumber,
-    githubToken,
-    commentBody: pullRequestCommentString,
-  })
-  logger.info(`comment created at ${comment.html_url}`)
-  return comment
+      logger.debug(`comment not found, creating a comment`)
+      const comment = await createPullRequestComment({
+        repositoryOwner,
+        repositoryName,
+        pullRequestNumber,
+        githubToken,
+        commentBody: pullRequestCommentString,
+      })
+      logger.info(`comment created at ${comment.html_url}`)
+      return comment
+    },
+    { updateProcessExitCode },
+  )
 }
 
 // https://help.github.com/en/actions/automating-your-workflow-with-github-actions/using-environment-variables
