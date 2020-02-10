@@ -46,7 +46,6 @@ const genericUpdatePullRequestComment = async ({
   const href = `https://api.github.com/repos/${repositoryOwner}/${repositoryName}/issues/comments/${commentId}`
   const body = JSON.stringify({ body: commentBody })
   const response = await fetchUrl(href, {
-    standard: true,
     headers: {
       "authorization": `token ${githubToken}`,
       "content-length": Buffer.byteLength(body),

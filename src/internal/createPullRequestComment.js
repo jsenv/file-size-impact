@@ -47,7 +47,6 @@ const genericCreatePullRequestComment = async ({
   const response = await fetchUrl(
     `https://api.github.com/repos/${repositoryOwner}/${repositoryName}/issues/${pullRequestNumber}/comments`,
     {
-      standard: true,
       headers: {
         "authorization": `token ${githubToken}`,
         "content-length": Buffer.byteLength(body),

@@ -4,4 +4,5 @@ const jsenvConfig = require("../../jsenv.config.js")
 generateCommonJsBundleForNode({
   ...jsenvConfig,
   manifestFile: true,
+  bundleDirectoryClean: true,
 })

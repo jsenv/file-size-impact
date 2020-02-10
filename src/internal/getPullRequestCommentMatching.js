@@ -48,7 +48,6 @@ const listPullRequestComment = async ({
   const response = await fetchUrl(
     `https://api.github.com/repos/${repositoryOwner}/${repositoryName}/issues/${pullRequestNumber}/comments`,
     {
-      standard: true,
       headers: {
         authorization: `token ${githubToken}`,
       },

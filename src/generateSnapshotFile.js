@@ -9,13 +9,13 @@ import {
   readFile,
   metaMapToSpecifierMetaMap,
   collectFiles,
+  catchCancellation,
+  createCancellationTokenForProcess,
 } from "@jsenv/util"
-import { createCancellationTokenForProcessSIGINT } from "@jsenv/cancellation"
-import { wrapAsyncFunction } from "./internal/wrapAsyncFunction.js"
 import { jsenvDirectorySizeTrackingConfig } from "./jsenvDirectorySizeTrackingConfig.js"
 
 export const generateSnapshotFile = async ({
-  cancellationToken = createCancellationTokenForProcessSIGINT(),
+  cancellationToken = createCancellationTokenForProcess(),
   logLevel,
   projectDirectoryUrl,
   directorySizeTrackingConfig = jsenvDirectorySizeTrackingConfig,
@@ -23,65 +23,67 @@ export const generateSnapshotFile = async ({
 
   manifest = true,
   manifestFilename = "manifest.json",
-  updateProcessExitCode,
 }) => {
-  return wrapAsyncFunction(
-    async () => {
-      const logger = createLogger({ logLevel })
+  return catchCancellation(async () => {
+    const logger = createLogger({ logLevel })
 
-      projectDirectoryUrl = assertAndNormalizeDirectoryUrl(projectDirectoryUrl)
+    projectDirectoryUrl = assertAndNormalizeDirectoryUrl(projectDirectoryUrl)
 
-      const directoryRelativeUrlArray = Object.keys(directorySizeTrackingConfig)
-      if (directoryRelativeUrlArray.length === 0) {
-        logger.warn(`directorySizeTrackingConfig is empty`)
-      }
+    const directoryRelativeUrlArray = Object.keys(directorySizeTrackingConfig)
+    if (directoryRelativeUrlArray.length === 0) {
+      logger.warn(`directorySizeTrackingConfig is empty`)
+    }
 
-      const snapshotFileUrl = resolveUrl(snapshotFileRelativeUrl, projectDirectoryUrl)
+    const snapshotFileUrl = resolveUrl(snapshotFileRelativeUrl, projectDirectoryUrl)
 
-      const snapshot = {}
+    const snapshot = {}
 
-      await Promise.all(
-        directoryRelativeUrlArray.map(async (directoryRelativeUrl) => {
-          const directoryUrl = resolveDirectoryUrl(directoryRelativeUrl, projectDirectoryUrl)
-          const directoryTrackingConfig = directorySizeTrackingConfig[directoryRelativeUrl]
-          const specifierMetaMap = metaMapToSpecifierMetaMap({
-            track: directoryTrackingConfig,
-          })
+    await Promise.all(
+      directoryRelativeUrlArray.map(async (directoryRelativeUrl) => {
+        const directoryUrl = resolveDirectoryUrl(directoryRelativeUrl, projectDirectoryUrl)
+        const directoryTrackingConfig = directorySizeTrackingConfig[directoryRelativeUrl]
+        const specifierMetaMap = metaMapToSpecifierMetaMap({
+          track: directoryTrackingConfig,
+        })
 
-          const [directoryManifest, directoryFileReport] = await Promise.all([
-            manifest
-              ? readDirectoryManifest({
-                  logger,
-                  manifestFilename,
-                  directoryUrl,
-                })
-              : null,
-            generateDirectoryFileReport({
-              logger,
-              directoryUrl,
-              specifierMetaMap,
-              manifest,
-              manifestFilename,
-            }),
-          ])
+        const [directoryManifest, directoryFileReport] = await Promise.all([
+          manifest
+            ? readDirectoryManifest({
+                logger,
+                manifestFilename,
+                directoryUrl,
+              })
+            : null,
+          generateDirectoryFileReport({
+            logger,
+            directoryUrl,
+            specifierMetaMap,
+            manifest,
+            manifestFilename,
+          }),
+        ])
 
-          cancellationToken.throwIfRequested()
+        cancellationToken.throwIfRequested()
 
-          snapshot[directoryRelativeUrl] = {
-            manifest: directoryManifest,
-            report: directoryFileReport,
-            trackingConfig: directoryTrackingConfig,
-          }
-        }),
-      )
+        snapshot[directoryRelativeUrl] = {
+          manifest: directoryManifest,
+          report: directoryFileReport,
+          trackingConfig: directoryTrackingConfig,
+        }
+      }),
+    )
 
-      logger.info(`write snapshot file at ${urlToFileSystemPath(snapshotFileUrl)}`)
-      const snapshotFileContent = JSON.stringify(snapshot, null, "  ")
-      logger.debug(snapshotFileContent)
-      await writeFile(snapshotFileUrl, snapshotFileContent)
-    },
-    { updateProcessExitCode },
-  )
+    logger.info(`write snapshot file at ${urlToFileSystemPath(snapshotFileUrl)}`)
+    const snapshotFileContent = JSON.stringify(snapshot, null, "  ")
+    logger.debug(snapshotFileContent)
+    await writeFile(snapshotFileUrl, snapshotFileContent)
+  }).catch((e) => {
+    // this is required to ensure unhandledRejection will still
+    // set process.exitCode to 1 marking the process execution as errored
+    // preventing further command to run
+    process.exitCode = 1
+    throw e
+  })
 }
 
 const readDirectoryManifest = async ({ logger, manifestFilename, directoryUrl }) => {
