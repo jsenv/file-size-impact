@@ -11,21 +11,20 @@ Monitor pull request impact on file sizes.
 
 - [Presentation](#Presentation)
 - [Installation](#Installation)
-- [Documentation](#Documentation)
-  - [Usage inside github workflow](#Usage-inside-github-workflow)
-  - [Usage outside github workflow](#Usage-outside-github-workflow)
-  - [generateSnapshotFile](#generateSnapshotFile)
-    - [projectDirectoryUrl](#projectDirectoryUrl)
-    - [logLevel](#loglevel)
-    - [directorySizeTrackingConfig](#directorySizeTrackingConfig)
-    - [manifest](#manifest)
-  - [reportSizeImpactIntoGithubPullRequest](#reportSizeImpactIntoGithubPullRequest)
-    - [projectDirectoryUrl](#projectDirectoryUrl)
-    - [logLevel](#loglevel)
-    - [baseSnapshotFileRelativeUrl](#baseSnapshotFileRelativeUrl)
-    - [headSnapshotFileRelativeUrl](#headSnapshotFileRelativeUrl)
-    - [formatSize](#formatsize)
-    - [generatedByLink](#generatedByLink)
+- [Usage inside github workflow](#Usage-inside-github-workflow)
+- [Usage outside github workflow](#Usage-outside-github-workflow)
+- [generateSnapshotFile](#generateSnapshotFile)
+  - [projectDirectoryUrl](#projectDirectoryUrl)
+  - [logLevel](#loglevel)
+  - [directorySizeTrackingConfig](#directorySizeTrackingConfig)
+  - [manifest](#manifest)
+- [reportSizeImpactIntoGithubPullRequest](#reportSizeImpactIntoGithubPullRequest)
+  - [projectDirectoryUrl](#projectDirectoryUrl)
+  - [logLevel](#loglevel)
+  - [baseSnapshotFileRelativeUrl](#baseSnapshotFileRelativeUrl)
+  - [headSnapshotFileRelativeUrl](#headSnapshotFileRelativeUrl)
+  - [formatSize](#formatsize)
+  - [generatedByLink](#generatedByLink)
 
 # Presentation
 
@@ -41,14 +40,12 @@ The screenshot below shows how it is integrated to a github pull request.
 npm install --save-dev @jsenv/github-pull-request-filesize-impact@2.4.0
 ```
 
-# Documentation
-
-## Usage inside github workflow
+# Usage inside github workflow
 
 You can see how this can be integrated in a github workflow at
 — see [.github/workflows/ci.yml#pull-request-size-impact](https://github.com/jsenv/jsenv-github-pull-request-filesize-impact/blob/6edbd6f7b32d10f674140c45d14946765955598f/.github/workflows/ci.yml#L39)
 
-## Usage outside github workflow
+# Usage outside github workflow
 
 You can set process.env variables required by `reportSizeImpactIntoGithubPullRequest` yourself to use it outside a github workflow.
 
@@ -82,7 +79,7 @@ The exact code to write is up to you according to your execution environment.
 
 Also be sure `githubToken` has the right to read/write comments on issues.
 
-## generateSnapshotFile
+# generateSnapshotFile
 
 `generateSnapshotFile` is an async function analysing file sizes per directory and saving the result into a json file.
 
@@ -102,17 +99,17 @@ await generateSnapshotFile({
 
 — source code at [src/generateSnapshotFile.js](./src/generateSnapshotFile.js).
 
-### projectDirectoryUrl
+## projectDirectoryUrl
 
 `projectDirectoryUrl` parameter is a string leading to your project root directory. This parameter is **required**.
 
-### logLevel
+## logLevel
 
 `logLevel` parameter controls verbosity of logs during the function execution.
 
 The list of available logLevel values can be found on [@jsenv/logger documentation](https://github.com/jsenv/jsenv-logger#list-of-log-levels)
 
-### directorySizeTrackingConfig
+## directorySizeTrackingConfig
 
 `directorySizeTrackingConfig` parameter is an object used to configure directories and files you want to track. This parameter is optional with a default value exported in [src/jsenvDirectorySizeTrackingConfig.js](../src/jsenvDirectorySizeTrackingConfig.js)
 
@@ -121,7 +118,7 @@ The list of available logLevel values can be found on [@jsenv/logger documentati
 
 For every directory you track there will be a corresponding line in the generated pull request comment as visible in [docs/comment-example.md](./comment-example.md)
 
-### manifest
+## manifest
 
 `manifest` parameter is a boolean controlling if a manifest json file will be taken into account when generating snapshot. This parameter is optional with a default value of `true`.
 
@@ -131,9 +128,11 @@ The concept is to be able to remap generated file like `file.4798774987w97er9847
 
 Without this, comparison of directories accross branches would consider generated files as always new because of their dynamic names.
 
----
+## manifestFileRelativeUrl
 
-## reportSizeImpactIntoGithubPullRequest
+`manifestFileRelativeUrl` parameter is a string used to find the manifest json file. This parameter is optional with a default value of `"./manifest.json"`.
+
+# reportSizeImpactIntoGithubPullRequest
 
 `reportSizeImpactIntoGithubPullRequest` is an async function comparing two directory snapshots and commenting a github pull request with the comparison result.
 
@@ -152,19 +151,19 @@ await reportSizeImpactIntoGithubPullRequest({
 
 — source code at [src/reportSizeImpactIntoGithubPullRequest.js](./src/reportSizeImpactIntoGithubPullRequest.js).
 
-### baseSnapshotFileRelativeUrl
+## baseSnapshotFileRelativeUrl
 
 `baseSnapshotFileRelativeUrl` parameter is a string leading to the base snapshot file. This parameter is **required**.
 
-### headSnapshotFileRelativeUrl
+## headSnapshotFileRelativeUrl
 
 `headSnapshotFileRelativeUrl` parameter is a string leading to the head snapshot file. This parameter is **required**.
 
-### formatSize
+## formatSize
 
 `formatSize` parameter controls the display of file size. This parameter is optionnal, the default value doing an english formatting of a number.
 
-### generatedByLink
+## generatedByLink
 
 `generatedByLink` parameter controls if pull request comment contains a generated by message. This parameter is optionnal, the default value is `true`.
 
