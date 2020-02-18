@@ -11,6 +11,7 @@ import {
   collectFiles,
   catchCancellation,
   createCancellationTokenForProcess,
+  urlToRelativeUrl,
 } from "@jsenv/util"
 import { jsenvDirectorySizeTrackingConfig } from "./jsenvDirectorySizeTrackingConfig.js"
 
@@ -22,7 +23,7 @@ export const generateSnapshotFile = async ({
   snapshotFileRelativeUrl = "./filesize-snapshot.json",
 
   manifest = true,
-  manifestFilename = "manifest.json",
+  manifestFileRelativeUrl = "./manifest.json",
 }) => {
   return catchCancellation(async () => {
     const logger = createLogger({ logLevel })
@@ -46,12 +47,15 @@ export const generateSnapshotFile = async ({
           track: directoryTrackingConfig,
         })
 
+        const manifestFileUrl = resolveUrl(manifestFileRelativeUrl, directoryUrl)
+        // ensure manifestFileRelativeUrl is normalized
+        manifestFileRelativeUrl = urlToRelativeUrl(manifestFileUrl, directoryUrl)
+
         const [directoryManifest, directoryFileReport] = await Promise.all([
           manifest
             ? readDirectoryManifest({
                 logger,
-                manifestFilename,
-                directoryUrl,
+                manifestFileUrl,
               })
             : null,
           generateDirectoryFileReport({
@@ -59,7 +63,7 @@ export const generateSnapshotFile = async ({
             directoryUrl,
             specifierMetaMap,
             manifest,
-            manifestFilename,
+            manifestFileRelativeUrl,
           }),
         ])
 
@@ -86,8 +90,7 @@ export const generateSnapshotFile = async ({
   })
 }
 
-const readDirectoryManifest = async ({ logger, manifestFilename, directoryUrl }) => {
-  const manifestFileUrl = resolveUrl(manifestFilename, directoryUrl)
+const readDirectoryManifest = async ({ logger, manifestFileUrl }) => {
   try {
     const manifestFileContent = await readFile(manifestFileUrl)
     return JSON.parse(manifestFileContent)
@@ -105,7 +108,7 @@ const generateDirectoryFileReport = async ({
   directoryUrl,
   specifierMetaMap,
   manifest,
-  manifestFilename,
+  manifestFileRelativeUrl,
 }) => {
   const directoryFileReport = {}
   try {
@@ -117,7 +120,7 @@ const generateDirectoryFileReport = async ({
         if (!fileStats.isFile()) {
           return
         }
-        if (manifest && relativeUrl === manifestFilename) {
+        if (manifest && relativeUrl === manifestFileRelativeUrl) {
           return
         }
         const fileUrl = resolveUrl(relativeUrl, directoryUrl)
