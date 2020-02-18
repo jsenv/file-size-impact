@@ -1,21 +1,22 @@
 const enDecimalFormatter = new Intl.NumberFormat("en", { style: "decimal" })
 
 const formatSizeFallback = (sizeNumber, { diff = false, unit = false } = {}) => {
-  let sizeString = enDecimalFormatter.format(sizeNumber > 0 ? Math.abs(sizeNumber) : sizeNumber)
+  const sizeNumberAbsolute = Math.abs(sizeNumber)
+  let sizeString = enDecimalFormatter.format(sizeNumberAbsolute)
 
   if (diff) {
-    if (sizeNumber > 0) {
-      sizeString = `+${sizeString}`
-    } else if (sizeNumber < 0) {
-      sizeString = `-${sizeString}`
+    if (sizeNumber < 0) {
+      sizeString = `-${sizeNumberAbsolute}`
+    } else if (sizeNumber > 0) {
+      sizeString = `+${sizeNumberAbsolute}`
     }
   }
 
   if (unit) {
-    if (sizeNumber === 0) {
-    } else if (sizeNumber === 1) {
+    if (sizeNumberAbsolute === 0) {
+    } else if (sizeNumberAbsolute === 1) {
       sizeString = `${sizeString} byte`
-    } else if (sizeNumber > 1) {
+    } else if (sizeNumberAbsolute > 1) {
       sizeString = `${sizeString} bytes`
     }
   }
