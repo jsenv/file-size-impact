@@ -1,6 +1,27 @@
 const enDecimalFormatter = new Intl.NumberFormat("en", { style: "decimal" })
 
-const formatSizeFallback = (size) => `${enDecimalFormatter.format(size)} bytes`
+const formatSizeFallback = (sizeNumber, { diff = false, unit = false } = {}) => {
+  let sizeString = enDecimalFormatter.format(sizeNumber > 0 ? Math.abs(sizeNumber) : sizeNumber)
+
+  if (diff) {
+    if (sizeNumber > 0) {
+      sizeString = `+${sizeString}`
+    } else if (sizeNumber < 0) {
+      sizeString = `-${sizeString}`
+    }
+  }
+
+  if (unit) {
+    if (sizeNumber === 0) {
+    } else if (sizeNumber === 1) {
+      sizeString = `${sizeString} byte`
+    } else if (sizeNumber > 1) {
+      sizeString = `${sizeString} bytes`
+    }
+  }
+
+  return sizeString
+}
 
 export const generatePullRequestCommentString = ({
   pullRequestBase,
@@ -73,7 +94,7 @@ export const generatePullRequestCommentString = ({
     })
 
     return `<details>
-  <summary>Merging <code>${pullRequestHead}</code> into <code>${pullRequestBase}</code> will ${sizeImpactText}</summary>
+  <summary>${sizeImpactText}</summary>
   <br />${generateSizeImpactDetails({
     pullRequestBase,
     pullRequestHead,
@@ -115,8 +136,11 @@ const generateSizeImpactDetails = ({
     })}
 
   <blockquote>
-    <strong>Overall size impact:</strong> ${formatSizeImpact(formatSize, sizeImpact)}.<br />
-    <strong>Cache impact:</strong> ${formatCacheImpact(formatSize, sizeImpactMap)}
+    <strong>Overall size impact:</strong> ${formatSize(sizeImpact, {
+      diff: true,
+      unit: true,
+    })}.<br />
+    <strong>Cache impact:</strong> ${formatCacheImpact(sizeImpactMap, formatSize)}
   </blockquote>`
   }
   return `
@@ -134,26 +158,26 @@ const generateSizeImpactTable = ({
       <tr>
         <th nowrap>file</th>
         <th nowrap>event</th>
-        <th nowrap><code>${pullRequestBase}</code> size</th>
-        <th nowrap><code>${pullRequestHead}</code> size</th>
-        <th nowrap>size impact</th>
+        <th nowrap>diff</th>
+        <th nowrap><code>${pullRequestBase}</code></th>
+        <th nowrap><code>${pullRequestHead}</code></th>
       </tr>
     </thead>
     <tbody>
-      ${renderTableBody({ sizeImpactMap, formatSize })}
+      ${renderTableBody(sizeImpactMap, formatSize)}
     </tbody>
   </table>`
 
-const renderTableBody = ({ sizeImpactMap, formatSize }) => {
+const renderTableBody = (sizeImpactMap, formatSize) => {
   const lines = Object.keys(sizeImpactMap).map((relativePath) => {
     const sizeImpact = sizeImpactMap[relativePath]
 
     return `
         <td nowrap>${relativePath}</td>
         <td nowrap>${generateEventCellText(sizeImpact.why)}</td>
-        <td nowrap>${generateBaseCellText({ formatSize, sizeImpact })}</td>
-        <td nowrap>${generateHeadCellText({ formatSize, sizeImpact })}</td>
-        <td nowrap>${generateImpactCellText({ formatSize, sizeImpact })}</td>`
+        <td nowrap>${generateImpactCellText(sizeImpact, formatSize)}</td>
+        <td nowrap>${generateBaseCellText(sizeImpact, formatSize)}</td>
+        <td nowrap>${generateHeadCellText(sizeImpact, formatSize)}</td>`
   })
 
   if (lines.length === 0) return ""
@@ -171,48 +195,35 @@ const generateEventCellText = (why) => {
   if (why === "removed") {
     return "file deleted"
   }
-  return "content changed"
+  return "changed"
 }
 
-const generateBaseCellText = ({ formatSize, sizeImpact: { baseSize, why } }) => {
+const generateBaseCellText = ({ baseSize, why }, formatSize) => {
   if (why === "added") {
     return "---"
   }
   return formatSize(baseSize)
 }
 
-const generateHeadCellText = ({ formatSize, sizeImpact: { headSize, why } }) => {
+const generateHeadCellText = ({ headSize, why }, formatSize) => {
   if (why === "removed") {
     return "---"
   }
   return formatSize(headSize)
 }
 
-const generateImpactCellText = ({ formatSize, sizeImpact: { diffSize } }) => {
-  return formatSizeImpact(formatSize, diffSize)
+const generateImpactCellText = ({ diffSize }, formatSize) => {
+  return formatSize(diffSize, { diff: true })
 }
 
 const generateSizeImpactText = ({ directoryRelativeUrl, formatSize, sizeImpact }) => {
-  if (sizeImpact === 0) {
-    return `<strong>not impact</strong> <code>${directoryRelativeUrl}</code> overall size.`
-  }
-  if (sizeImpact < 0) {
-    return `<strong>decrease</strong> <code>${directoryRelativeUrl}</code> overall size by ${formatSize(
-      Math.abs(sizeImpact),
-    )}.`
-  }
-  return `<strong>increase</strong> <code>${directoryRelativeUrl}</code> overall size by ${formatSize(
-    sizeImpact,
-  )}.`
+  return `Overall size impact on <code>${directoryRelativeUrl}</code>: ${formatSize(sizeImpact, {
+    diff: true,
+    unit: true,
+  })}.`
 }
 
-const formatSizeImpact = (formatSize, diffSize) => {
-  if (diffSize > 0) return `+${formatSize(diffSize)}`
-  if (diffSize < 0) return `-${formatSize(Math.abs(diffSize))}`
-  return 0
-}
-
-const formatCacheImpact = (formatSize, sizeImpactMap) => {
+const formatCacheImpact = (sizeImpactMap, formatSize) => {
   const changedFiles = Object.keys(sizeImpactMap).filter((relativePath) => {
     return sizeImpactMap[relativePath].why === "changed"
   })
@@ -225,5 +236,6 @@ const formatCacheImpact = (formatSize, sizeImpactMap) => {
   }, 0)
   return `${numberOfChangedFiles} files content changed, invalidating a total of ${formatSize(
     numberOfBytes,
+    { unit: true },
   )}.`
 }

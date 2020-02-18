@@ -1,44 +1,44 @@
 <details>
-  <summary>Merging <code>head</code> into <code>base</code> would <strong>increase</strong> <code>dist/commonjs</code> overall size by 120 bytes.</summary>
+  <summary>Expected size impact on <code>dist/commonjs</code>: +120 bytes.</summary>
   <br />
   <table>
     <thead>
       <tr>
         <th nowrap>file</th>
         <th nowrap>event</th>
-        <th nowrap><code>base</code> size</th>
-        <th nowrap><code>head</code> size</th>
-        <th nowrap>size impact</th>
+        <th nowrap>diff</th>
+        <th nowrap><code>base</code></th>
+        <th nowrap><code>head</code></th>
       </tr>
     </thead>
     <tbody>
       <tr>
         <td nowrap>bar.js</td>
         <td nowrap>file removed</td>
-        <td nowrap>100 bytes</td>
+        <td nowrap>-100</td>
+        <td nowrap>100</td>
         <td nowrap>---</td>
-        <td nowrap>-100 bytes</td>
       </tr>
       <tr>
         <td nowrap>foo.js</td>
         <td nowrap>file added</td>
+        <td nowrap>+120</td>
         <td nowrap>---</td>
-        <td nowrap>120 bytes</td>
-        <td nowrap>+120 bytes</td>
+        <td nowrap>120</td>
       </tr>
       <tr>
         <td nowrap>hello.js</td>
-        <td nowrap>content changed</td>
-        <td nowrap>167 bytes</td>
-        <td nowrap>187 bytes</td>
-        <td nowrap>+20 bytes</td>
+        <td nowrap>changed</td>
+        <td nowrap>+20</td>
+        <td nowrap>167</td>
+        <td nowrap>187</td>
       </tr>
       <tr>
         <td nowrap>whatever.js</td>
         <td nowrap>file added</td>
+        <td nowrap>+80</td>
         <td nowrap>---</td>
-        <td nowrap>80 bytes</td>
-        <td nowrap>+80 bytes</td>
+        <td nowrap>80</td>
       </tr>
     </tbody>
   </table>
@@ -50,32 +50,32 @@
 </details>
 
 <details>
-  <summary>Merging <code>head</code> into <code>base</code> would <strong>decrease</strong> <code>dist/systemjs</code> overall size by 20 bytes.</summary>
+  <summary>Expected size impact on <code>dist/systemjs</code>: -20 bytes.</summary>
   <br />
   <table>
     <thead>
       <tr>
         <th nowrap>file</th>
         <th nowrap>event</th>
-        <th nowrap><code>base</code> size</th>
-        <th nowrap><code>head</code> size</th>
-        <th nowrap>size impact</th>
+        <th nowrap>diff</th>
+        <th nowrap><code>base</code></th>
+        <th nowrap><code>head</code></th>
       </tr>
     </thead>
     <tbody>
       <tr>
         <td nowrap>bar.js</td>
-        <td nowrap>content changed</td>
-        <td nowrap>60 bytes</td>
-        <td nowrap>20 bytes</td>
-        <td nowrap>-40 bytes</td>
+        <td nowrap>changed</td>
+        <td nowrap>-40</td>
+        <td nowrap>60</td>
+        <td nowrap>20</td>
       </tr>
       <tr>
         <td nowrap>foo.js</td>
-        <td nowrap>content changed</td>
-        <td nowrap>40 bytes</td>
-        <td nowrap>60 bytes</td>
-        <td nowrap>+20 bytes</td>
+        <td nowrap>changed</td>
+        <td nowrap>+20</td>
+        <td nowrap>40</td>
+        <td nowrap>60</td>
       </tr>
     </tbody>
   </table>
