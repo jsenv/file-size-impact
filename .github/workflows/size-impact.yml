@@ -5,7 +5,7 @@ on:
     # every root file and thoose inside src
     paths:
       - "!*/**"
-      - "src/*"
+      - "src/**/*"
 
 jobs:
   size-impact:
