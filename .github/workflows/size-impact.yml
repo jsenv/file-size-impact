@@ -25,7 +25,7 @@ jobs:
         run: |
           cd ./.github/size-impact
           npm install
-          git clone ${{ github.repositoryUrl }}
+          git clone git@github.com:jsenv/jsenv-github-pull-request-filesize-impact.git
           cd jsenv-github-pull-request-filesize-impact
       - name: generate base snapshot
         run: |
