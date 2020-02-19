@@ -28,7 +28,7 @@ jobs:
           npm run dist
           node ./.github/size-impact/generate-size-snapshot.js ../snapshot.base.json
       # this step is used the first pull request introducing changes
-      # to fail. Instead we generated an empty snapshot file
+      # to fail. Instead we generated an empty snapshot file, retry
       - name: catch base snapshot failure
         if: failure()
         run: echo "{}" > ../snapshot.base.json
