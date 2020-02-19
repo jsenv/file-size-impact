@@ -12,14 +12,12 @@ jobs:
     name: node ${{ matrix.node }} on ${{ matrix.os }}
     env:
       CI: true
-      SIZE_IMPACT_DIR: .github/size-impact
+      SIZE_IMPACT_DIR: ./.github/size-impact
     steps:
       - uses: actions/checkout@v1
       - uses: actions/setup-node@v1
         with:
           node-version: ${{ matrix.node }}
-      - name: Dump RUNNER_WORKSPACE
-        run: echo "$RUNNER_WORKSPACE"
       - name: npm config
         run: npm config set //npm.pkg.github.com/:_authToken ${{ secrets.GITHUB_TOKEN }}
         env:
