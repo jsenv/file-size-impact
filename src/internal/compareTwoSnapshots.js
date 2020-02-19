@@ -9,9 +9,14 @@ import {
 export const compareTwoSnapshots = (baseSnapshot, headSnapshot) => {
   const comparison = {}
   Object.keys(headSnapshot).forEach((directoryRelativeUrl) => {
+    // || {} exists in case directory was not tracked in base branch
+    // and is now tracked in head branch.
+    // compareDirectorySnapshot will handle the empty object and consider everything as added
+    const baseDirectorySnapshot = baseSnapshot[directoryRelativeUrl] || {}
+    const headDirectorySnapshot = headSnapshot[directoryRelativeUrl]
     comparison[directoryRelativeUrl] = compareDirectorySnapshot(
-      baseSnapshot[directoryRelativeUrl],
-      headSnapshot[directoryRelativeUrl],
+      baseDirectorySnapshot,
+      headDirectorySnapshot,
     )
   })
   return comparison
@@ -20,16 +25,10 @@ export const compareTwoSnapshots = (baseSnapshot, headSnapshot) => {
 const compareDirectorySnapshot = (baseSnapshot, headSnapshot) => {
   const snapshotComparison = {}
 
-  if (!baseSnapshot) {
-    // may happen when a key in directorySizeTrackingConfig was deleted
-    // in that case we don't care about this directory anymore
-    return snapshotComparison
-  }
-
   const baseManifest = baseSnapshot.manifest || {}
   const headManifest = headSnapshot.manifest || {}
-  const baseReport = baseSnapshot.report
-  const headReport = headSnapshot.report
+  const baseReport = baseSnapshot.report || {}
+  const headReport = headSnapshot.report || {}
   const baseMappings = manifestToMappings(baseManifest)
   const headMappings = manifestToMappings(headManifest)
 
