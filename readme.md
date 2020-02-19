@@ -37,12 +37,12 @@ The screenshot below shows how it is integrated to a github pull request.
 # Installation
 
 ```console
-npm install --save-dev @jsenv/github-pull-request-filesize-impact@2.5.3
+npm install --save-dev @jsenv/github-pull-request-filesize-impact@2.5.4
 ```
 
 # Usage inside github workflow
 
-You can see how this can be integrated in a github workflow in [.github/workflows/size-impact.yml](https://github.com/jsenv/jsenv-github-pull-request-filesize-impact/blob/a9b5ac66c59dc82931cf5446e833ef2d5146ca07/.github/workflows/size-impact.yml)
+You can see how this can be integrated in a github workflow in [.github/workflows/size-impact.yml](https://github.com/jsenv/jsenv-github-pull-request-filesize-impact/blob/7318a582a18760794dfb86ec37c0a2c0b28430a4/.github/workflows/size-impact.yml)
 
 And also see several runs for this workflow at https://github.com/jsenv/jsenv-github-pull-request-filesize-impact/actions?workflow=size-impact
 
