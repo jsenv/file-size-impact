@@ -42,8 +42,9 @@ npm install --save-dev @jsenv/github-pull-request-filesize-impact@2.5.3
 
 # Usage inside github workflow
 
-You can see how this can be integrated in a github workflow at
-— see [.github/workflows/size-impact.yml](TODO)
+You can see how this can be integrated in a github workflow in [.github/workflows/size-impact.yml](https://github.com/jsenv/jsenv-github-pull-request-filesize-impact/blob/a9b5ac66c59dc82931cf5446e833ef2d5146ca07/.github/workflows/size-impact.yml)
+
+And also see several runs for this workflow at https://github.com/jsenv/jsenv-github-pull-request-filesize-impact/actions?workflow=size-impact
 
 # Usage outside github workflow
 
