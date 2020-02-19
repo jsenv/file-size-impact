@@ -13,7 +13,7 @@ jobs:
     env:
       CI: true
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v1
       - uses: actions/setup-node@v1
         with:
           node-version: ${{ matrix.node }}
@@ -21,8 +21,6 @@ jobs:
         run: npm config set //npm.pkg.github.com/:_authToken ${{ secrets.GITHUB_TOKEN }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: echo repo
-        run: echo 'repo ${{ github.respositoryUrl }}.'
       - name: generate base snapshot
         run: |
           git checkout -f $GITHUB_BASE_REF
