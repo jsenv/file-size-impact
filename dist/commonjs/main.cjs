@@ -8,9 +8,9 @@ var crypto = require('crypto');
 var path = require('path');
 var util = require('util');
 var module$1 = require('module');
+var https = require('https');
 require('net');
 require('http');
-require('https');
 require('stream');
 
 const LOG_LEVEL_OFF = "off";
@@ -185,9 +185,16 @@ const applyPatternMatching = (pattern, string) => {
 
     if (remainingPattern === "/") {
       // pass because trailing slash matches remaining
-      return pass({
-        patternIndex: patternIndex + 1,
-        index: string.length
+      if (remainingString[0] === "/") {
+        return pass({
+          patternIndex: patternIndex + 1,
+          index: string.length
+        });
+      }
+
+      return fail({
+        patternIndex,
+        index
       });
     } // fast path trailing '**'
 
@@ -420,15 +427,26 @@ ${1 + rest.length}
   return specifierMetaMap;
 };
 
-const assertSpecifierMetaMap = value => {
+const assertSpecifierMetaMap = (value, checkComposition = true) => {
   if (!isPlainObject(value)) {
     throw new TypeError(`specifierMetaMap must be a plain object, got ${value}`);
-  } // we could ensure it's key/value pair of url like key/object or null values
+  }
 
+  if (checkComposition) {
+    const plainObject = value;
+    Object.keys(plainObject).forEach(key => {
+      assertUrlLike(key, "specifierMetaMap key");
+      const value = plainObject[key];
+
+      if (value !== null && !isPlainObject(value)) {
+        throw new TypeError(`specifierMetaMap value must be a plain object or null, got ${value} under key ${key}`);
+      }
+    });
+  }
 };
 
 const normalizeSpecifierMetaMap = (specifierMetaMap, url, ...rest) => {
-  assertSpecifierMetaMap(specifierMetaMap);
+  assertSpecifierMetaMap(specifierMetaMap, false);
   assertUrlLike(url, "url");
 
   if (rest.length) {
@@ -906,6 +924,107 @@ start`);
   return operationPromise;
 };
 
+const createCancelError = reason => {
+  const cancelError = new Error(`canceled because ${reason}`);
+  cancelError.name = "CANCEL_ERROR";
+  cancelError.reason = reason;
+  return cancelError;
+};
+const isCancelError = value => {
+  return value && typeof value === "object" && value.name === "CANCEL_ERROR";
+};
+
+const arrayWithout = (array, item) => {
+  const arrayWithoutItem = [];
+  let i = 0;
+
+  while (i < array.length) {
+    const value = array[i];
+    i++;
+
+    if (value === item) {
+      continue;
+    }
+
+    arrayWithoutItem.push(value);
+  }
+
+  return arrayWithoutItem;
+};
+
+// https://github.com/tc39/proposal-cancellation/tree/master/stage0
+const createCancellationSource = () => {
+  let requested = false;
+  let cancelError;
+  let registrationArray = [];
+
+  const cancel = reason => {
+    if (requested) return;
+    requested = true;
+    cancelError = createCancelError(reason);
+    const registrationArrayCopy = registrationArray.slice();
+    registrationArray.length = 0;
+    registrationArrayCopy.forEach(registration => {
+      registration.callback(cancelError); // const removedDuringCall = registrationArray.indexOf(registration) === -1
+    });
+  };
+
+  const register = callback => {
+    if (typeof callback !== "function") {
+      throw new Error(`callback must be a function, got ${callback}`);
+    }
+
+    const existingRegistration = registrationArray.find(registration => {
+      return registration.callback === callback;
+    }); // don't register twice
+
+    if (existingRegistration) {
+      return existingRegistration;
+    }
+
+    const registration = {
+      callback,
+      unregister: () => {
+        registrationArray = arrayWithout(registrationArray, registration);
+      }
+    };
+    registrationArray = [registration, ...registrationArray];
+    return registration;
+  };
+
+  const throwIfRequested = () => {
+    if (requested) {
+      throw cancelError;
+    }
+  };
+
+  return {
+    token: {
+      register,
+
+      get cancellationRequested() {
+        return requested;
+      },
+
+      throwIfRequested
+    },
+    cancel
+  };
+};
+
+const catchCancellation = asyncFn => {
+  return asyncFn().catch(error => {
+    if (isCancelError(error)) {
+      // it means consume of the function will resolve with a cancelError
+      // but when you cancel it means you're not interested in the result anymore
+      // thanks to this it avoid unhandledRejection
+      return error;
+    }
+
+    throw error;
+  });
+};
+
 const readDirectory = async (url, {
   emfileMaxWait = 1000
 } = {}) => {
@@ -1245,6 +1364,223 @@ const ensureParentDirectories = async destination => {
 
 const isWindows$2 = process.platform === "win32";
 
+const addCallback = callback => {
+  const triggerHangUpOrDeath = () => callback(); // SIGHUP http://man7.org/linux/man-pages/man7/signal.7.html
+
+
+  process.once("SIGUP", triggerHangUpOrDeath);
+  return () => {
+    process.removeListener("SIGUP", triggerHangUpOrDeath);
+  };
+};
+
+const SIGUPSignal = {
+  addCallback
+};
+
+const addCallback$1 = callback => {
+  // SIGINT is CTRL+C from keyboard also refered as keyboard interruption
+  // http://man7.org/linux/man-pages/man7/signal.7.html
+  // may also be sent by vscode https://github.com/Microsoft/vscode-node-debug/issues/1#issuecomment-405185642
+  process.once("SIGINT", callback);
+  return () => {
+    process.removeListener("SIGINT", callback);
+  };
+};
+
+const SIGINTSignal = {
+  addCallback: addCallback$1
+};
+
+const addCallback$2 = callback => {
+  if (process.platform === "win32") {
+    console.warn(`SIGTERM is not supported on windows`);
+    return () => {};
+  }
+
+  const triggerTermination = () => callback(); // SIGTERM http://man7.org/linux/man-pages/man7/signal.7.html
+
+
+  process.once("SIGTERM", triggerTermination);
+  return () => {
+    process.removeListener("SIGTERM", triggerTermination);
+  };
+};
+
+const SIGTERMSignal = {
+  addCallback: addCallback$2
+};
+
+let beforeExitCallbackArray = [];
+let uninstall;
+
+const addCallback$3 = callback => {
+  if (beforeExitCallbackArray.length === 0) uninstall = install();
+  beforeExitCallbackArray = [...beforeExitCallbackArray, callback];
+  return () => {
+    if (beforeExitCallbackArray.length === 0) return;
+    beforeExitCallbackArray = beforeExitCallbackArray.filter(beforeExitCallback => beforeExitCallback !== callback);
+    if (beforeExitCallbackArray.length === 0) uninstall();
+  };
+};
+
+const install = () => {
+  const onBeforeExit = () => {
+    return beforeExitCallbackArray.reduce(async (previous, callback) => {
+      await previous;
+      return callback();
+    }, Promise.resolve());
+  };
+
+  process.once("beforeExit", onBeforeExit);
+  return () => {
+    process.removeListener("beforeExit", onBeforeExit);
+  };
+};
+
+const beforeExitSignal = {
+  addCallback: addCallback$3
+};
+
+const addCallback$4 = (callback, {
+  collectExceptions = false
+} = {}) => {
+  if (!collectExceptions) {
+    const exitCallback = () => {
+      callback();
+    };
+
+    process.on("exit", exitCallback);
+    return () => {
+      process.removeListener("exit", exitCallback);
+    };
+  }
+
+  const {
+    getExceptions,
+    stop
+  } = trackExceptions();
+
+  const exitCallback = () => {
+    process.removeListener("exit", exitCallback);
+    stop();
+    callback({
+      exceptionArray: getExceptions().map(({
+        exception,
+        origin
+      }) => {
+        return {
+          exception,
+          origin
+        };
+      })
+    });
+  };
+
+  process.on("exit", exitCallback);
+  return () => {
+    process.removeListener("exit", exitCallback);
+  };
+};
+
+const trackExceptions = () => {
+  let exceptionArray = [];
+
+  const unhandledRejectionCallback = (unhandledRejection, promise) => {
+    exceptionArray = [...exceptionArray, {
+      origin: "unhandledRejection",
+      exception: unhandledRejection,
+      promise
+    }];
+  };
+
+  const rejectionHandledCallback = promise => {
+    exceptionArray = exceptionArray.filter(exceptionArray => exceptionArray.promise !== promise);
+  };
+
+  const uncaughtExceptionCallback = (uncaughtException, origin) => {
+    // since node 12.4 https://nodejs.org/docs/latest-v12.x/api/process.html#process_event_uncaughtexception
+    if (origin === "unhandledRejection") return;
+    exceptionArray = [...exceptionArray, {
+      origin: "uncaughtException",
+      exception: uncaughtException
+    }];
+  };
+
+  process.on("unhandledRejection", unhandledRejectionCallback);
+  process.on("rejectionHandled", rejectionHandledCallback);
+  process.on("uncaughtException", uncaughtExceptionCallback);
+  return {
+    getExceptions: () => exceptionArray,
+    stop: () => {
+      process.removeListener("unhandledRejection", unhandledRejectionCallback);
+      process.removeListener("rejectionHandled", rejectionHandledCallback);
+      process.removeListener("uncaughtException", uncaughtExceptionCallback);
+    }
+  };
+};
+
+const exitSignal = {
+  addCallback: addCallback$4
+};
+
+const addCallback$5 = callback => {
+  return eventRace({
+    SIGHUP: {
+      register: SIGUPSignal.addCallback,
+      callback: () => callback("SIGHUP")
+    },
+    SIGINT: {
+      register: SIGINTSignal.addCallback,
+      callback: () => callback("SIGINT")
+    },
+    ...(process.platform === "win32" ? {} : {
+      SIGTERM: {
+        register: SIGTERMSignal.addCallback,
+        callback: () => callback("SIGTERM")
+      }
+    }),
+    beforeExit: {
+      register: beforeExitSignal.addCallback,
+      callback: () => callback("beforeExit")
+    },
+    exit: {
+      register: exitSignal.addCallback,
+      callback: () => callback("exit")
+    }
+  });
+};
+
+const eventRace = eventMap => {
+  const unregisterMap = {};
+
+  const unregisterAll = reason => {
+    return Object.keys(unregisterMap).map(name => unregisterMap[name](reason));
+  };
+
+  Object.keys(eventMap).forEach(name => {
+    const {
+      register,
+      callback
+    } = eventMap[name];
+    unregisterMap[name] = register((...args) => {
+      unregisterAll();
+      callback(...args);
+    });
+  });
+  return unregisterAll;
+};
+
+const teardownSignal = {
+  addCallback: addCallback$5
+};
+
+const createCancellationTokenForProcess = () => {
+  const teardownCancelSource = createCancellationSource();
+  teardownSignal.addCallback(reason => teardownCancelSource.cancel(`process ${reason}`));
+  return teardownCancelSource.token;
+};
+
 const readFilePromisified = util.promisify(fs.readFile);
 const readFile = async value => {
   const fileUrl = assertAndNormalizeFileUrl(value);
@@ -1295,61 +1631,70 @@ const jsenvDirectorySizeTrackingConfig = {
 };
 
 const generateSnapshotFile = async ({
+  cancellationToken = createCancellationTokenForProcess(),
   logLevel,
   projectDirectoryUrl,
   directorySizeTrackingConfig = jsenvDirectorySizeTrackingConfig,
   snapshotFileRelativeUrl = "./filesize-snapshot.json",
   manifest = true,
-  manifestFilename = "manifest.json"
+  manifestFileRelativeUrl = "./manifest.json"
 }) => {
-  const logger = createLogger({
-    logLevel
-  });
-  projectDirectoryUrl = assertAndNormalizeDirectoryUrl(projectDirectoryUrl);
-  const directoryRelativeUrlArray = Object.keys(directorySizeTrackingConfig);
-
-  if (directoryRelativeUrlArray.length === 0) {
-    logger.warn(`directorySizeTrackingConfig is empty`);
-  }
-
-  const snapshotFileUrl = resolveUrl(snapshotFileRelativeUrl, projectDirectoryUrl);
-  const snapshot = {};
-  await Promise.all(directoryRelativeUrlArray.map(async directoryRelativeUrl => {
-    const directoryUrl = resolveDirectoryUrl(directoryRelativeUrl, projectDirectoryUrl);
-    const directoryTrackingConfig = directorySizeTrackingConfig[directoryRelativeUrl];
-    const specifierMetaMap = metaMapToSpecifierMetaMap({
-      track: directoryTrackingConfig
+  return catchCancellation(async () => {
+    const logger = createLogger({
+      logLevel
     });
-    const [directoryManifest, directoryFileReport] = await Promise.all([manifest ? readDirectoryManifest({
-      logger,
-      manifestFilename,
-      directoryUrl
-    }) : null, generateDirectoryFileReport({
-      logger,
-      directoryUrl,
-      specifierMetaMap,
-      manifest,
-      manifestFilename
-    })]);
-    snapshot[directoryRelativeUrl] = {
-      manifest: directoryManifest,
-      report: directoryFileReport,
-      trackingConfig: directoryTrackingConfig
-    };
-  }));
-  logger.info(`write snapshot file at ${urlToFileSystemPath(snapshotFileUrl)}`);
-  const snapshotFileContent = JSON.stringify(snapshot, null, "  ");
-  logger.debug(snapshotFileContent);
-  await writeFile(snapshotFileUrl, snapshotFileContent);
+    projectDirectoryUrl = assertAndNormalizeDirectoryUrl(projectDirectoryUrl);
+    const directoryRelativeUrlArray = Object.keys(directorySizeTrackingConfig);
+
+    if (directoryRelativeUrlArray.length === 0) {
+      logger.warn(`directorySizeTrackingConfig is empty`);
+    }
+
+    const snapshotFileUrl = resolveUrl(snapshotFileRelativeUrl, projectDirectoryUrl);
+    const snapshot = {};
+    await Promise.all(directoryRelativeUrlArray.map(async directoryRelativeUrl => {
+      const directoryUrl = resolveDirectoryUrl(directoryRelativeUrl, projectDirectoryUrl);
+      const directoryTrackingConfig = directorySizeTrackingConfig[directoryRelativeUrl];
+      const specifierMetaMap = metaMapToSpecifierMetaMap({
+        track: directoryTrackingConfig
+      });
+      const manifestFileUrl = resolveUrl(manifestFileRelativeUrl, directoryUrl); // ensure manifestFileRelativeUrl is normalized
+
+      manifestFileRelativeUrl = urlToRelativeUrl(manifestFileUrl, directoryUrl);
+      const [directoryManifest, directoryFileReport] = await Promise.all([manifest ? readDirectoryManifest({
+        logger,
+        manifestFileUrl
+      }) : null, generateDirectoryFileReport({
+        logger,
+        directoryUrl,
+        specifierMetaMap,
+        manifest,
+        manifestFileRelativeUrl
+      })]);
+      cancellationToken.throwIfRequested();
+      snapshot[directoryRelativeUrl] = {
+        manifest: directoryManifest,
+        report: directoryFileReport,
+        trackingConfig: directoryTrackingConfig
+      };
+    }));
+    logger.info(`write snapshot file at ${urlToFileSystemPath(snapshotFileUrl)}`);
+    const snapshotFileContent = JSON.stringify(snapshot, null, "  ");
+    logger.debug(snapshotFileContent);
+    await writeFile(snapshotFileUrl, snapshotFileContent);
+  }).catch(e => {
+    // this is required to ensure unhandledRejection will still
+    // set process.exitCode to 1 marking the process execution as errored
+    // preventing further command to run
+    process.exitCode = 1;
+    throw e;
+  });
 };
 
 const readDirectoryManifest = async ({
   logger,
-  manifestFilename,
-  directoryUrl
+  manifestFileUrl
 }) => {
-  const manifestFileUrl = resolveUrl(manifestFilename, directoryUrl);
-
   try {
     const manifestFileContent = await readFile(manifestFileUrl);
     return JSON.parse(manifestFileContent);
@@ -1368,7 +1713,7 @@ const generateDirectoryFileReport = async ({
   directoryUrl,
   specifierMetaMap,
   manifest,
-  manifestFilename
+  manifestFileRelativeUrl
 }) => {
   const directoryFileReport = {};
 
@@ -1385,7 +1730,7 @@ const generateDirectoryFileReport = async ({
           return;
         }
 
-        if (manifest && relativeUrl === manifestFilename) {
+        if (manifest && relativeUrl === manifestFileRelativeUrl) {
           return;
         }
 
@@ -1478,66 +1823,14 @@ if ("observable" in Symbol === false) {
   Symbol.observable = Symbol.for("observable");
 }
 
-// eslint-disable-next-line import/no-unresolved
+/* global require, __filename */
 const nodeRequire = require;
 const filenameContainsBackSlashes = __filename.indexOf("\\") > -1;
 const url = filenameContainsBackSlashes ? `file:///${__filename.replace(/\\/g, "/")}` : `file://${__filename}`;
 
-const createCancellationToken$1 = () => {
-  const register = callback => {
-    if (typeof callback !== "function") {
-      throw new Error(`callback must be a function, got ${callback}`);
-    }
-
-    return {
-      callback,
-      unregister: () => {}
-    };
-  };
-
-  const throwIfRequested = () => undefined;
-
-  return {
-    register,
-    cancellationRequested: false,
-    throwIfRequested
-  };
-};
-
-const createOperation$1 = ({
-  cancellationToken = createCancellationToken$1(),
-  start,
-  ...rest
-}) => {
-  const unknownArgumentNames = Object.keys(rest);
-
-  if (unknownArgumentNames.length) {
-    throw new Error(`createOperation called with unknown argument names.
---- unknown argument names ---
-${unknownArgumentNames}
---- possible argument names ---
-cancellationToken
-start`);
-  }
-
-  cancellationToken.throwIfRequested();
-  const promise = new Promise(resolve => {
-    resolve(start());
-  });
-  const cancelPromise = new Promise((resolve, reject) => {
-    const cancelRegistration = cancellationToken.register(cancelError => {
-      cancelRegistration.unregister();
-      reject(cancelError);
-    });
-    promise.then(cancelRegistration.unregister, () => {});
-  });
-  const operationPromise = Promise.race([promise, cancelPromise]);
-  return operationPromise;
-};
-
 const jsenvContentTypeMap = {
   "application/javascript": {
-    extensions: ["js", "mjs", "ts", "jsx"]
+    extensions: ["js", "cjs", "mjs", "ts", "jsx"]
   },
   "application/json": {
     extensions: ["json"]
@@ -1652,7 +1945,7 @@ const {
   readFile: readFile$1
 } = fs.promises;
 const serveFile = async (source, {
-  cancellationToken = createCancellationToken$1(),
+  cancellationToken = createCancellationToken(),
   method = "GET",
   headers = {},
   canReadDirectory = false,
@@ -1672,7 +1965,7 @@ const serveFile = async (source, {
     const cacheWithMtime = !clientCacheDisabled && cacheStrategy === "mtime";
     const cacheWithETag = !clientCacheDisabled && cacheStrategy === "etag";
     const cachedDisabled = clientCacheDisabled || cacheStrategy === "none";
-    const sourceStat = await createOperation$1({
+    const sourceStat = await createOperation({
       cancellationToken,
       start: () => readFileSystemNodeStat(sourceUrl)
     });
@@ -1689,7 +1982,7 @@ const serveFile = async (source, {
         };
       }
 
-      const directoryContentArray = await createOperation$1({
+      const directoryContentArray = await createOperation({
         cancellationToken,
         start: () => readDirectory(sourceUrl)
       });
@@ -1718,7 +2011,7 @@ const serveFile = async (source, {
     }
 
     if (cacheWithETag) {
-      const fileContentAsBuffer = await createOperation$1({
+      const fileContentAsBuffer = await createOperation({
         cancellationToken,
         start: () => readFile$1(urlToFileSystemPath(sourceUrl))
       });
@@ -1804,8 +2097,9 @@ const {
   Response
 } = nodeFetch;
 const fetchUrl = async (url, {
-  cancellationToken = createCancellationToken$1(),
-  standard = false,
+  cancellationToken = createCancellationToken(),
+  simplified = false,
+  ignoreHttpsError = false,
   canReadDirectory,
   contentTypeMap,
   cacheStrategy,
@@ -1836,25 +2130,40 @@ const fetchUrl = async (url, {
       statusText,
       headers
     });
-    return standard ? response : standardResponseToSimplifiedResponse(response);
-  }
+    return simplified ? standardResponseToSimplifiedResponse(response) : response;
+  } // cancellation might be requested early, abortController does not support that
+  // so we have to throw if requested right away
 
-  const response = await createOperation$1({
-    cancellationToken,
-    start: () => nodeFetch(url, {
-      signal: cancellationTokenToAbortSignal(cancellationToken),
-      ...options
-    })
-  });
-  return standard ? response : standardResponseToSimplifiedResponse(response);
-}; // https://github.com/bitinn/node-fetch#request-cancellation-with-abortsignal
 
-const cancellationTokenToAbortSignal = cancellationToken => {
+  cancellationToken.throwIfRequested(); // https://github.com/bitinn/node-fetch#request-cancellation-with-abortsignal
+
   const abortController = new AbortController();
+  let cancelError;
   cancellationToken.register(reason => {
+    cancelError = reason;
     abortController.abort(reason);
   });
-  return abortController.signal;
+  let response;
+
+  try {
+    response = await nodeFetch(url, {
+      signal: abortController.signal,
+      ...(ignoreHttpsError && url.startsWith("https") ? {
+        agent: new https.Agent({
+          rejectUnauthorized: false
+        })
+      } : {}),
+      ...options
+    });
+  } catch (e) {
+    if (cancelError && e.name === "AbortError") {
+      throw cancelError;
+    }
+
+    throw e;
+  }
+
+  return simplified ? standardResponseToSimplifiedResponse(response) : response;
 };
 
 const standardResponseToSimplifiedResponse = async response => {
@@ -1930,7 +2239,6 @@ const listPullRequestComment = async ({
   githubToken
 }) => {
   const response = await fetchUrl(`https://api.github.com/repos/${repositoryOwner}/${repositoryName}/issues/${pullRequestNumber}/comments`, {
-    standard: true,
     headers: {
       authorization: `token ${githubToken}`
     },
@@ -2010,7 +2318,6 @@ const genericCreatePullRequestComment = async ({
     body: commentBody
   });
   const response = await fetchUrl(`https://api.github.com/repos/${repositoryOwner}/${repositoryName}/issues/${pullRequestNumber}/comments`, {
-    standard: true,
     headers: {
       "authorization": `token ${githubToken}`,
       "content-length": Buffer.byteLength(body)
@@ -2094,7 +2401,6 @@ const genericUpdatePullRequestComment = async ({
     body: commentBody
   });
   const response = await fetchUrl(href, {
-    standard: true,
     headers: {
       "authorization": `token ${githubToken}`,
       "content-length": Buffer.byteLength(body)
@@ -2133,7 +2439,31 @@ const enDecimalFormatter = new Intl.NumberFormat("en", {
   style: "decimal"
 });
 
-const formatSizeFallback = size => `${enDecimalFormatter.format(size)} bytes`;
+const formatSizeFallback = (sizeNumber, {
+  diff = false,
+  unit = false
+} = {}) => {
+  const sizeNumberAbsolute = Math.abs(sizeNumber);
+  let sizeString = enDecimalFormatter.format(sizeNumberAbsolute);
+
+  if (diff) {
+    if (sizeNumber < 0) {
+      sizeString = `-${sizeString}`;
+    } else if (sizeNumber > 0) {
+      sizeString = `+${sizeString}`;
+    }
+  }
+
+  if (unit) {
+    if (sizeNumberAbsolute === 0) ; else if (sizeNumberAbsolute === 1) {
+      sizeString = `${sizeString} byte`;
+    } else if (sizeNumberAbsolute > 1) {
+      sizeString = `${sizeString} bytes`;
+    }
+  }
+
+  return sizeString;
+};
 
 const generatePullRequestCommentString = ({
   pullRequestBase,
@@ -2206,9 +2536,9 @@ const generatePullRequestCommentString = ({
       formatSize,
       sizeImpact
     });
-    return `<details>
-  <summary>Merging <code>${pullRequestHead}</code> into <code>${pullRequestBase}</code> will ${sizeImpactText}</summary>
-${generateSizeImpactDetails({
+    return `<!-- Generated by @jsenv/github-pull-request-filesize-impact --><details>
+  <summary>${sizeImpactText}</summary>
+  <br />${generateSizeImpactDetails({
       pullRequestBase,
       pullRequestHead,
       formatSize,
@@ -2219,9 +2549,8 @@ ${generateSizeImpactDetails({
 </details>`;
   });
   if (directoryMessages.length === 0) return null;
-  return `
-${directoryMessages.join(`
----
+  return `${directoryMessages.join(`
+
 `)}${generatedByLink ? `
 
 <sub>Generated by [github pull request filesize impact](https://github.com/jsenv/jsenv-github-pull-request-filesize-impact)</sub>` : ""}`;
@@ -2243,11 +2572,17 @@ const generateSizeImpactDetails = ({
       sizeImpactMap
     })}
 
-**Overall size impact:** ${formatSizeImpact(formatSize, sizeImpact)}.<br />
-**Cache impact:** ${formatCacheImpact(formatSize, sizeImpactMap)}`;
+  <blockquote>
+    <strong>Overall size impact:</strong> ${formatSize(sizeImpact, {
+      diff: true,
+      unit: true
+    })}.<br />
+    <strong>Cache impact:</strong> ${formatCacheImpact(sizeImpactMap, formatSize)}
+  </blockquote>`;
   }
 
-  return `changes don't affect the overall size or cache.`;
+  return `
+  <blockquote>changes don't affect the overall size or cache.</blockquote>`;
 };
 
 const generateSizeImpactTable = ({
@@ -2255,65 +2590,55 @@ const generateSizeImpactTable = ({
   pullRequestHead,
   formatSize,
   sizeImpactMap
-}) => `<br />
-${renderTableHeaders({
-  pullRequestBase,
-  pullRequestHead
-})}
-${renderTableBody({
-  sizeImpactMap,
-  formatSize
-})}`;
+}) => `
+  <table>
+    <thead>
+      <tr>
+        <th nowrap>file</th>
+        <th nowrap>event</th>
+        <th nowrap>diff</th>
+        <th nowrap><code>${pullRequestBase}</code></th>
+        <th nowrap><code>${pullRequestHead}</code></th>
+      </tr>
+    </thead>
+    <tbody>
+      ${renderTableBody(sizeImpactMap, formatSize)}
+    </tbody>
+  </table>`;
 
-const renderTableHeaders = ({
-  pullRequestBase,
-  pullRequestHead
-}) => {
-  const headerNames = ["event", "file", `size&nbsp;on&nbsp;\`${pullRequestBase}\``, `size&nbsp;on&nbsp;\`${pullRequestHead}\``, "size&nbsp;impact"];
-  return `
-${headerNames.join(" | ")}
-${headerNames.map(() => `---`).join(" | ")}`;
-};
-
-const renderTableBody = ({
-  sizeImpactMap,
-  formatSize
-}) => {
-  return Object.keys(sizeImpactMap).map(relativePath => {
+const renderTableBody = (sizeImpactMap, formatSize) => {
+  const lines = Object.keys(sizeImpactMap).map(relativePath => {
     const sizeImpact = sizeImpactMap[relativePath];
-    return [generateEventCellText(sizeImpact.why), relativePath, generateBaseCellText({
-      formatSize,
-      sizeImpact
-    }), generateHeadCellText({
-      formatSize,
-      sizeImpact
-    }), generateImpactCellText({
-      formatSize,
-      sizeImpact
-    })].join(" | ");
-  }).join(`
-`);
+    return `
+        <td nowrap>${relativePath}</td>
+        <td nowrap>${generateEventCellText(sizeImpact.why)}</td>
+        <td nowrap>${generateImpactCellText(sizeImpact, formatSize)}</td>
+        <td nowrap>${generateBaseCellText(sizeImpact, formatSize)}</td>
+        <td nowrap>${generateHeadCellText(sizeImpact, formatSize)}</td>`;
+  });
+  if (lines.length === 0) return "";
+  return `<tr>${lines.join(`
+      </tr>
+      <tr>`)}
+      </tr>`;
 };
 
 const generateEventCellText = why => {
   if (why === "added") {
-    return "file&nbsp;created";
+    return "file created";
   }
 
   if (why === "removed") {
-    return "file&nbsp;deleted";
+    return "file deleted";
   }
 
-  return "content&nbsp;changed";
+  return "changed";
 };
 
 const generateBaseCellText = ({
-  formatSize,
-  sizeImpact: {
-    baseSize,
-    why
-  }
-}) => {
+  baseSize,
+  why
+}, formatSize) => {
   if (why === "added") {
     return "---";
   }
@@ -2322,12 +2647,9 @@ const generateBaseCellText = ({
 };
 
 const generateHeadCellText = ({
-  formatSize,
-  sizeImpact: {
-    headSize,
-    why
-  }
-}) => {
+  headSize,
+  why
+}, formatSize) => {
   if (why === "removed") {
     return "---";
   }
@@ -2336,12 +2658,11 @@ const generateHeadCellText = ({
 };
 
 const generateImpactCellText = ({
-  formatSize,
-  sizeImpact: {
-    diffSize
-  }
-}) => {
-  return formatSizeImpact(formatSize, diffSize);
+  diffSize
+}, formatSize) => {
+  return formatSize(diffSize, {
+    diff: true
+  });
 };
 
 const generateSizeImpactText = ({
@@ -2349,24 +2670,13 @@ const generateSizeImpactText = ({
   formatSize,
   sizeImpact
 }) => {
-  if (sizeImpact === 0) {
-    return `<b>not impact</b> <code>${directoryRelativeUrl}</code> overall size.`;
-  }
-
-  if (sizeImpact < 0) {
-    return `<b>decrease</b> <code>${directoryRelativeUrl}</code> overall size by ${formatSize(Math.abs(sizeImpact))}.`;
-  }
-
-  return `<b>increase</b> <code>${directoryRelativeUrl}</code> overall size by ${formatSize(sizeImpact)}.`;
+  return `Overall size impact on <code>${directoryRelativeUrl}</code>: ${formatSize(sizeImpact, {
+    diff: true,
+    unit: true
+  })}.`;
 };
 
-const formatSizeImpact = (formatSize, diffSize) => {
-  if (diffSize > 0) return `+${formatSize(diffSize)}`;
-  if (diffSize < 0) return `-${formatSize(Math.abs(diffSize))}`;
-  return 0;
-};
-
-const formatCacheImpact = (formatSize, sizeImpactMap) => {
+const formatCacheImpact = (sizeImpactMap, formatSize) => {
   const changedFiles = Object.keys(sizeImpactMap).filter(relativePath => {
     return sizeImpactMap[relativePath].why === "changed";
   });
@@ -2379,7 +2689,9 @@ const formatCacheImpact = (formatSize, sizeImpactMap) => {
   const numberOfBytes = changedFiles.reduce((number, relativePath) => {
     return number + sizeImpactMap[relativePath].baseSize;
   }, 0);
-  return `${numberOfChangedFiles} files content changed, invalidating a total of ${formatSize(numberOfBytes)}.`;
+  return `${numberOfChangedFiles} files content changed, invalidating a total of ${formatSize(numberOfBytes, {
+    unit: true
+  })}.`;
 };
 
 const compareTwoSnapshots = (baseSnapshot, headSnapshot) => {
@@ -2517,8 +2829,9 @@ const sortDirectoryStructure = directoryStructure => {
   return directoryStructureSorted;
 };
 
-const regexForMergingSizeImpact = /Merging .*? into .*? will .*? overall size/;
+const regexForMergingSizeImpact = /<!-- Generated by @jsenv\/github-pull-request-filesize-impact -->/;
 const reportSizeImpactIntoGithubPullRequest = async ({
+  cancellationToken = createCancellationTokenForProcess(),
   logLevel,
   projectDirectoryUrl,
   baseSnapshotFileRelativeUrl,
@@ -2526,105 +2839,114 @@ const reportSizeImpactIntoGithubPullRequest = async ({
   formatSize,
   generatedByLink
 }) => {
-  const logger = createLogger({
-    logLevel
-  });
-  projectDirectoryUrl = assertAndNormalizeDirectoryUrl(projectDirectoryUrl);
+  return catchCancellation(async () => {
+    const logger = createLogger({
+      logLevel
+    });
+    projectDirectoryUrl = assertAndNormalizeDirectoryUrl(projectDirectoryUrl);
 
-  if (typeof baseSnapshotFileRelativeUrl !== "string") {
-    throw new TypeError(`baseSnapshotFileRelativeUrl must be a string, got ${baseSnapshotFileRelativeUrl}`);
-  }
+    if (typeof baseSnapshotFileRelativeUrl !== "string") {
+      throw new TypeError(`baseSnapshotFileRelativeUrl must be a string, got ${baseSnapshotFileRelativeUrl}`);
+    }
 
-  if (typeof headSnapshotFileRelativeUrl !== "string") {
-    throw new TypeError(`headSnapshotFileRelativeUrl must be a string, got ${headSnapshotFileRelativeUrl}`);
-  }
+    if (typeof headSnapshotFileRelativeUrl !== "string") {
+      throw new TypeError(`headSnapshotFileRelativeUrl must be a string, got ${headSnapshotFileRelativeUrl}`);
+    }
 
-  const {
-    repositoryOwner,
-    repositoryName,
-    pullRequestNumber,
-    pullRequestBase,
-    pullRequestHead,
-    githubToken
-  } = getOptionsFromGithubAction();
-  const baseSnapshotFileUrl = resolveUrl(baseSnapshotFileRelativeUrl, projectDirectoryUrl);
-  const headSnapshotFileUrl = resolveUrl(headSnapshotFileRelativeUrl, projectDirectoryUrl);
-  logger.debug(`
+    const {
+      repositoryOwner,
+      repositoryName,
+      pullRequestNumber,
+      pullRequestBase,
+      pullRequestHead,
+      githubToken
+    } = getOptionsFromGithubAction();
+    const baseSnapshotFileUrl = resolveUrl(baseSnapshotFileRelativeUrl, projectDirectoryUrl);
+    const headSnapshotFileUrl = resolveUrl(headSnapshotFileRelativeUrl, projectDirectoryUrl);
+    logger.debug(`
 compare file snapshots
 --- base snapshot file path ---
 ${urlToFileSystemPath(baseSnapshotFileUrl)}
 --- head snapshot file path ---
 ${urlToFileSystemPath(headSnapshotFileUrl)}
 `);
-  const snapshotsPromise = Promise.all([readFile(baseSnapshotFileUrl), readFile(headSnapshotFileUrl)]);
-  logger.debug(`
+    const snapshotsPromise = Promise.all([readFile(baseSnapshotFileUrl), readFile(headSnapshotFileUrl)]);
+    logger.debug(`
 search for existing comment inside pull request.
 --- pull request url ---
 ${getPullRequestHref({
-    repositoryOwner,
-    repositoryName,
-    pullRequestNumber
-  })}
+      repositoryOwner,
+      repositoryName,
+      pullRequestNumber
+    })}
 `);
-  const existingCommentPromise = getPullRequestCommentMatching({
-    repositoryOwner,
-    repositoryName,
-    pullRequestNumber,
-    githubToken,
-    regex: regexForMergingSizeImpact
-  });
-  const [[baseSnapshotFileContent, headSnapshotFileContent], existingComment] = await Promise.all([snapshotsPromise, existingCommentPromise]);
-  logger.debug(`
---- base snapshot file content ---
-${baseSnapshotFileContent}
-`);
-  logger.debug(`
---- head snapshot file content ---
-${headSnapshotFileContent}
-`);
-  const snapshotComparison = compareTwoSnapshots(JSON.parse(baseSnapshotFileContent), JSON.parse(headSnapshotFileContent));
-  const pullRequestCommentString = generatePullRequestCommentString({
-    pullRequestBase,
-    pullRequestHead,
-    snapshotComparison,
-    formatSize,
-    generatedByLink
-  });
-
-  if (!pullRequestCommentString) {
-    logger.warn(`
-aborting because the pull request comment would be empty.
-May happen whem a snapshot file is empty for instance
-`);
-  }
-
-  if (existingComment) {
-    logger.debug(`comment found, updating it
---- comment href ---
-${existingComment.html_url}`);
-    const comment = await updatePullRequestComment({
-      githubToken,
+    const existingCommentPromise = getPullRequestCommentMatching({
       repositoryOwner,
       repositoryName,
       pullRequestNumber,
-      commentId: existingComment.id,
+      githubToken,
+      regex: regexForMergingSizeImpact
+    });
+    const [[baseSnapshotFileContent, headSnapshotFileContent], existingComment] = await Promise.all([snapshotsPromise, existingCommentPromise]);
+    cancellationToken.throwIfRequested();
+    logger.debug(`
+--- base snapshot file content ---
+${baseSnapshotFileContent}
+`);
+    logger.debug(`
+--- head snapshot file content ---
+${headSnapshotFileContent}
+`);
+    const snapshotComparison = compareTwoSnapshots(JSON.parse(baseSnapshotFileContent), JSON.parse(headSnapshotFileContent));
+    const pullRequestCommentString = generatePullRequestCommentString({
+      pullRequestBase,
+      pullRequestHead,
+      snapshotComparison,
+      formatSize,
+      generatedByLink
+    });
+
+    if (!pullRequestCommentString) {
+      logger.warn(`
+aborting because the pull request comment would be empty.
+May happen whem a snapshot file is empty for instance
+`);
+    }
+
+    if (existingComment) {
+      logger.debug(`comment found, updating it
+--- comment href ---
+${existingComment.html_url}`);
+      const comment = await updatePullRequestComment({
+        githubToken,
+        repositoryOwner,
+        repositoryName,
+        pullRequestNumber,
+        commentId: existingComment.id,
+        commentBody: pullRequestCommentString
+      });
+      logger.info(`comment updated at ${existingComment.html_url}`);
+      return comment;
+    }
+
+    logger.debug(`comment not found, creating a comment`);
+    const comment = await createPullRequestComment({
+      repositoryOwner,
+      repositoryName,
+      pullRequestNumber,
+      githubToken,
       commentBody: pullRequestCommentString
     });
-    logger.info(`comment updated at ${existingComment.html_url}`);
+    logger.info(`comment created at ${comment.html_url}`);
     return comment;
-  }
-
-  logger.debug(`comment not found, creating a comment`);
-  const comment = await createPullRequestComment({
-    repositoryOwner,
-    repositoryName,
-    pullRequestNumber,
-    githubToken,
-    commentBody: pullRequestCommentString
+  }).catch(e => {
+    // this is required to ensure unhandledRejection will still
+    // set process.exitCode to 1 marking the process execution as errored
+    // preventing further command to run
+    process.exitCode = 1;
+    throw e;
   });
-  logger.info(`comment created at ${comment.html_url}`);
-  return comment;
-};
+}; // https://help.github.com/en/actions/automating-your-workflow-with-github-actions/using-environment-variables
 
 const getOptionsFromGithubAction = () => {
   const eventName = process.env.GITHUB_EVENT_NAME;
@@ -2709,4 +3031,4 @@ const getPullRequestHref = ({
 exports.generateSnapshotFile = generateSnapshotFile;
 exports.jsenvDirectorySizeTrackingConfig = jsenvDirectorySizeTrackingConfig;
 exports.reportSizeImpactIntoGithubPullRequest = reportSizeImpactIntoGithubPullRequest;
-//# sourceMappingURL=main.js.map
+//# sourceMappingURL=main.cjs.map

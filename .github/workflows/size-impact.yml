@@ -1,0 +1,39 @@
+name: size-impact
+
+on: pull_request
+
+jobs:
+  size-impact:
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        node: [13.8.0]
+    runs-on: ${{ matrix.os }}
+    name: node ${{ matrix.node }} on ${{ matrix.os }}
+    env:
+      CI: true
+    steps:
+      - uses: actions/checkout@v1
+      - uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node }}
+      - name: npm config
+        run: npm config set //npm.pkg.github.com/:_authToken ${{ secrets.GITHUB_TOKEN }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: generate base snapshot
+        run: |
+          git checkout -f $GITHUB_BASE_REF
+          npm install
+          npm run dist
+          node ./.github/size-impact/generate-size-snapshot.js ../snapshot.base.json
+      - name: generate head snapshot
+        run: |
+          git checkout -f $GITHUB_HEAD_REF
+          npm install
+          npm run dist
+          node ./.github/size-impact/generate-size-snapshot.js ../snapshot.head.json
+      - name: report size impact
+        run: node ./.github/size-impact/report-size-impact.js ../snapshot.base.json ../snapshot.head.json
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
