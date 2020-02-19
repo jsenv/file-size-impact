@@ -1,6 +1,6 @@
 {
   "name": "@jsenv/github-pull-request-filesize-impact",
-  "version": "2.5.2",
+  "version": "2.5.3",
   "description": "Monitor pull request impact on file sizes.",
   "license": "MIT",
   "repository": {
@@ -28,8 +28,8 @@
     "/index.js"
   ],
   "scripts": {
-    "test": "node ./script/test/test.js",
-    "test-with-coverage": "node ./script/test/test.js --coverage",
+    "test": "node --no-warnings ./script/test/test.js",
+    "test-with-coverage": "node --no-warnings ./script/test/test.js --coverage",
     "eslint-check": "eslint .",
     "prettier-format": "node ./script/prettier-format/prettier-format.js",
     "prettier-format-stage": "npm run prettier-format -- --staged",
