@@ -1,0 +1,9 @@
+{
+  "name": "size-impact",
+  "version": "0.0.1",
+  "license": "UNLICENSED",
+  "private": true,
+  "dependencies": {
+    "@jsenv/github-pull-request-filesize-impact": "2.5.3"
+  }
+}
