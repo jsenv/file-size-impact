@@ -3,6 +3,7 @@
   "version": "0.0.1",
   "license": "UNLICENSED",
   "private": true,
+  "type": "module",
   "dependencies": {
     "@jsenv/github-pull-request-filesize-impact": "2.5.3"
   }
