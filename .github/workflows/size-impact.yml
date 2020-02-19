@@ -35,3 +35,5 @@ jobs:
           node ./.github/size-impact/generate-size-snapshot.js ../snapshot.head.json
       - name: report size impact
         run: node ./.github/size-impact/report-size-impact.js ../snapshot.base.json ../snapshot.head.json
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
