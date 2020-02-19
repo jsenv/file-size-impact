@@ -1,9 +1,8 @@
-const { execute, launchNode } = require("@jsenv/core")
-const jsenvConfig = require("../../jsenv.config.js")
+import { execute, launchNode } from "@jsenv/core"
+import * as jsenvConfig from "../../jsenv.config.js"
 
 execute({
   ...jsenvConfig,
   launch: (options) => launchNode({ ...options, debugPort: 40000 }),
   fileRelativeUrl: process.argv[2],
-  stopPlatformAfterExecute: false,
 })

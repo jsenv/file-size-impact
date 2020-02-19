@@ -13,16 +13,17 @@ jobs:
     strategy:
       matrix:
         os: [windows-latest, ubuntu-latest]
+        node: [13.8.0]
       max-parallel: 1 # to ensure windows failure can prevent ubuntu from publishing package
     runs-on: ${{ matrix.os }}
-    name: node 12 on ${{ matrix.os }}
+    name: node ${{ matrix.node }} on ${{ matrix.os }}
     env:
       CI: true
     steps:
       - uses: actions/checkout@v1
       - uses: actions/setup-node@v1
         with:
-          node-version: 12.8.0
+          node-version: ${{ matrix.node }}
       - name: npm install
         run: |
           npm config set //npm.pkg.github.com/:_authToken ${{ secrets.GITHUB_TOKEN }}
