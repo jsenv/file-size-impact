@@ -2,10 +2,9 @@ name: size-impact
 
 on:
   pull_request:
-    # every root file and thoose inside src
     paths:
-      - "!*/**"
-      - "src/**/*"
+      - "index.js"
+      - "src/**"
 
 jobs:
   size-impact:
