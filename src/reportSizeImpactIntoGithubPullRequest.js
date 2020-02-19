@@ -13,7 +13,7 @@ import { updatePullRequestComment } from "./internal/updatePullRequestComment.js
 import { generatePullRequestCommentString } from "./internal/generatePullRequestCommentString.js"
 import { compareTwoSnapshots } from "./internal/compareTwoSnapshots.js"
 
-const regexForMergingSizeImpact = /Merging .*? into .*? will .*? overall size/
+const regexForMergingSizeImpact = /Overall size impact on .*?: /
 
 export const reportSizeImpactIntoGithubPullRequest = async ({
   cancellationToken = createCancellationTokenForProcess(),

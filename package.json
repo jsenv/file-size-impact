@@ -1,6 +1,6 @@
 {
   "name": "@jsenv/github-pull-request-filesize-impact",
-  "version": "2.5.1",
+  "version": "2.5.2",
   "description": "Monitor pull request impact on file sizes.",
   "license": "MIT",
   "repository": {
