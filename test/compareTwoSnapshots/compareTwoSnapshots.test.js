@@ -223,5 +223,125 @@ import { compareTwoSnapshots } from "../../src/internal/compareTwoSnapshots.js"
   assert({ actual, expected })
 }
 
-// TODO: pull request tracks a previous untracked directory
-// TODO: pull request tracks a previously untracked file
+// pull request tracks a previously untracked directory
+{
+  const actual = compareTwoSnapshots(
+    {
+      "dist/commonjs": {
+        report: {
+          "foo.js": { size: 10, hash: "hash1" },
+        },
+        trackingConfig: {
+          "foo.js": true,
+        },
+      },
+    },
+    {
+      "dist/systemjs": {
+        report: {
+          "foo.js": { size: 100, hash: "hash3" },
+        },
+        trackingConfig: {
+          "foo.js": true,
+        },
+      },
+    },
+  )
+  const expected = {
+    "dist/systemjs": {
+      "foo.js": {
+        base: null,
+        head: {
+          relativeUrl: "foo.js",
+          size: 100,
+          hash: "hash3",
+        },
+      },
+    },
+  }
+  assert({ actual, expected })
+}
+
+// pull request tracks a previously untracked file
+{
+  const actual = compareTwoSnapshots(
+    {
+      "dist/commonjs": {
+        report: {
+          "foo.js": { size: 10, hash: "hash1" },
+        },
+        trackingConfig: {
+          "bar.js": false,
+          "foo.js": true,
+        },
+      },
+    },
+    {
+      "dist/commonjs": {
+        report: {
+          "bar.js": { size: 100, hash: "hash2" },
+          "foo.js": { size: 100, hash: "hash3" },
+        },
+        trackingConfig: {
+          "bar.js": true,
+          "foo.js": true,
+        },
+      },
+    },
+  )
+  const expected = {
+    "dist/commonjs": {
+      "bar.js": {
+        base: null,
+        head: {
+          relativeUrl: "bar.js",
+          size: 100,
+          hash: "hash2",
+        },
+      },
+      "foo.js": {
+        base: {
+          relativeUrl: "foo.js",
+          size: 10,
+          hash: "hash1",
+        },
+        head: {
+          relativeUrl: "foo.js",
+          size: 100,
+          hash: "hash3",
+        },
+      },
+    },
+  }
+  assert({ actual, expected })
+}
+
+// pull request is the first one (basesnapshot is {})
+{
+  const actual = compareTwoSnapshots(
+    {},
+    {
+      "dist/global": {
+        report: {
+          "foo.js": { size: 100, hash: "hash1" },
+        },
+        trackingConfig: {
+          "foo.js": true,
+        },
+      },
+    },
+  )
+  const expected = {
+    "dist/global": {
+      "foo.js": {
+        base: null,
+        head: {
+          relativeUrl: "foo.js",
+          size: 100,
+          hash: "hash1",
+        },
+      },
+    },
+  }
+  assert({ actual, expected })
+}

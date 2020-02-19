@@ -1,6 +1,10 @@
 name: size-impact
 
-on: pull_request
+on:
+  pull_request:
+    paths:
+      - "index.js"
+      - "src/**"
 
 jobs:
   size-impact:
@@ -21,12 +25,17 @@ jobs:
         run: npm config set //npm.pkg.github.com/:_authToken ${{ secrets.GITHUB_TOKEN }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # Please note || echo "{}" > ../snapshot.base.json
+      # It means we fallback on an empty snapshot when left command fails.
+      # It exists in case the base branch does not contains size-impact files.
+      # Happens at least when a pull request introduces
+      # @jsenv/github-pull-request-filesize-impact to a repository for the first time.
       - name: generate base snapshot
         run: |
           git checkout -f $GITHUB_BASE_REF
           npm install
           npm run dist
-          node ./.github/size-impact/generate-size-snapshot.js ../snapshot.base.json
+          node ./.github/size-impact/generate-size-snapshot.js ../snapshot.base.json || echo "{}" > ../snapshot.base.json
       - name: generate head snapshot
         run: |
           git checkout -f $GITHUB_HEAD_REF
