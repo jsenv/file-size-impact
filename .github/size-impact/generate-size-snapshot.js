@@ -1,9 +1,8 @@
 import { generateSnapshotFile } from "@jsenv/github-pull-request-filesize-impact"
-import { projectDirectoryUrl } from "../../jsenv.config.js"
 
 generateSnapshotFile({
   logLevel: "debug",
-  projectDirectoryUrl,
+  projectDirectoryUrl: new URL("../../", import.meta.url),
   snapshotFileRelativeUrl: process.argv[2],
   directorySizeTrackingConfig: {
     "dist/commonjs": {

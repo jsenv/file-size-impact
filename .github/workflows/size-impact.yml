@@ -21,23 +21,25 @@ jobs:
         run: npm config set //npm.pkg.github.com/:_authToken ${{ secrets.GITHUB_TOKEN }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: install size-impact
-        run: |
-          cd ./.github/size-impact
-          npm install
-          git clone git@github.com:jsenv/jsenv-github-pull-request-filesize-impact.git
-          cd jsenv-github-pull-request-filesize-impact
+      - name: echo repo
+        run: echo 'repo ${{ github.respositoryUrl }}.'
       - name: generate base snapshot
         run: |
           git checkout -f $GITHUB_BASE_REF
+          cd ./.github/size-impact
+          npm install
+          cd $RUNNER_WORKSPACE
           npm install
           npm run dist
-          node ../generate-size-snapshot.js ../snapshot.base.json
+          node ./.github/size-impact/generate-size-snapshot.js ../snapshot.base.json
       - name: generate head snapshot
         run: |
           git checkout -f $GITHUB_HEAD_REF
+          cd ./.github/size-impact
+          npm install
+          cd $RUNNER_WORKSPACE
           npm install
           npm run dist
-          node ../generate-size-snapshot.js ../snapshot.head.json
+          node ./.github/size-impact/generate-size-snapshot.js ../snapshot.head.json
       - name: report size impact
-        run: node ../report-size-impact.js ../snapshot.base.json ../snapshot.head.json
+        run: node ./.github/size-impact/report-size-impact.js ../snapshot.base.json ../snapshot.head.json
