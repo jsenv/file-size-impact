@@ -17,46 +17,25 @@ jobs:
       - uses: actions/setup-node@v1
         with:
           node-version: ${{ matrix.node }}
-      - name: Dump GitHub context
+      - name: Dump RUNNER_WORKSPACE
+        run: echo "$RUNNER_WORKSPACE"
+      - name: npm config
+        run: npm config set //npm.pkg.github.com/:_authToken ${{ secrets.GITHUB_TOKEN }}
         env:
-          GITHUB_CONTEXT: ${{ toJson(github) }}
-        run: echo "$GITHUB_CONTEXT"
-      - name: Dump job context
-        env:
-          JOB_CONTEXT: ${{ toJson(job) }}
-        run: echo "$JOB_CONTEXT"
-      - name: Dump steps context
-        env:
-          STEPS_CONTEXT: ${{ toJson(steps) }}
-        run: echo "$STEPS_CONTEXT"
-      - name: Dump runner context
-        env:
-          RUNNER_CONTEXT: ${{ toJson(runner) }}
-        run: echo "$RUNNER_CONTEXT"
-      - name: Dump strategy context
-        env:
-          STRATEGY_CONTEXT: ${{ toJson(strategy) }}
-        run: echo "$STRATEGY_CONTEXT"
-      - name: Dump matrix context
-        env:
-          MATRIX_CONTEXT: ${{ toJson(matrix) }}
-        run: echo "$MATRIX_CONTEXT"
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: npm install
         run: |
           cd ./.github/size-impact
-          npm config set //npm.pkg.github.com/:_authToken ${{ secrets.GITHUB_TOKEN }}
           npm install
-          cd $RUNNER_TEMP
+          cd $RUNNER_WORKSPACE
       - name: pull request size impact
         run: |
           git checkout -f $GITHUB_BASE_REF
           npm install
           npm run dist
-          node ./.github/generate-size-snapshot.js ../snapshot.base.json
+          node ./.github/size-impact/generate-size-snapshot.js ../snapshot.base.json
           git checkout -f $GITHUB_HEAD_REF
           npm install
           npm run dist
-          node ./.github/generate-size-snapshot.js ../snapshot.head.json
-          node ./.github/report-size-impact ../snapshot.base.json ../snapshot.head.json
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          node ./.github/size-impact/generate-size-snapshot.js ../snapshot.head.json
+          node ./.github/size-impact/report-size-impact.js ../snapshot.base.json ../snapshot.head.json
