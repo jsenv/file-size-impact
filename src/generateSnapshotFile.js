@@ -32,7 +32,7 @@ export const generateSnapshotFile = async ({
 
     const directoryRelativeUrlArray = Object.keys(directorySizeTrackingConfig)
     if (directoryRelativeUrlArray.length === 0) {
-      logger.warn(`directorySizeTrackingConfig is empty`)
+      logger.warn(`directorySizeTrackingConfig is emptyyyy`)
     }
 
     const snapshotFileUrl = resolveUrl(snapshotFileRelativeUrl, projectDirectoryUrl)
