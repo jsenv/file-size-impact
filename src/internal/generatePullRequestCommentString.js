@@ -6,9 +6,9 @@ const formatSizeFallback = (sizeNumber, { diff = false, unit = false } = {}) => 
 
   if (diff) {
     if (sizeNumber < 0) {
-      sizeString = `-${sizeNumberAbsolute}`
+      sizeString = `-${sizeString}`
     } else if (sizeNumber > 0) {
-      sizeString = `+${sizeNumberAbsolute}`
+      sizeString = `+${sizeString}`
     }
   }
 

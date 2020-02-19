@@ -105,7 +105,7 @@ import { generatePullRequestCommentString } from "../../src/internal/generatePul
         },
         "file-removed.js": {
           base: {
-            size: 20,
+            size: 2000,
             hash: "hash2",
           },
           head: null,
@@ -125,7 +125,7 @@ import { generatePullRequestCommentString } from "../../src/internal/generatePul
     generatedByLink: false,
   })
   const expected = `<details>
-  <summary>Overall size impact on <code>dist</code>: -5 bytes.</summary>
+  <summary>Overall size impact on <code>dist</code>: -1,985 bytes.</summary>
   <br />
   <table>
     <thead>
@@ -148,8 +148,8 @@ import { generatePullRequestCommentString } from "../../src/internal/generatePul
       <tr>
         <td nowrap>file-removed.js</td>
         <td nowrap>file deleted</td>
-        <td nowrap>-20</td>
-        <td nowrap>20</td>
+        <td nowrap>-2,000</td>
+        <td nowrap>2,000</td>
         <td nowrap>---</td>
       </tr>
       <tr>
@@ -163,7 +163,7 @@ import { generatePullRequestCommentString } from "../../src/internal/generatePul
   </table>
 
   <blockquote>
-    <strong>Overall size impact:</strong> -5 bytes.<br />
+    <strong>Overall size impact:</strong> -1,985 bytes.<br />
     <strong>Cache impact:</strong> 1 files content changed, invalidating a total of 10 bytes.
   </blockquote>
 </details>`
