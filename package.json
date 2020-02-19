@@ -58,6 +58,7 @@
     "@jsenv/git-hooks": "1.3.3",
     "@jsenv/node-module-import-map": "11.0.1",
     "@jsenv/github-release-package": "1.2.1",
+    "@jsenv/github-pull-request-filesize-impact": "2.5.3",
     "@jsenv/package-publish": "1.5.1",
     "@jsenv/prettier-check-project": "5.5.0",
     "babel-eslint": "11.0.0-beta.0",

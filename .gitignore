@@ -1,5 +1,3 @@
-/.github/size-impact/node_modules/
-/.github/size-impact/package-lock.json
 /.jsenv/
 /.vscode/settings.json
 /coverage/

@@ -24,18 +24,12 @@ jobs:
       - name: generate base snapshot
         run: |
           git checkout -f $GITHUB_BASE_REF
-          cd ./.github/size-impact
-          npm install
-          cd $RUNNER_WORKSPACE
           npm install
           npm run dist
           node ./.github/size-impact/generate-size-snapshot.js ../snapshot.base.json
       - name: generate head snapshot
         run: |
           git checkout -f $GITHUB_HEAD_REF
-          cd ./.github/size-impact
-          npm install
-          cd $RUNNER_WORKSPACE
           npm install
           npm run dist
           node ./.github/size-impact/generate-size-snapshot.js ../snapshot.head.json
