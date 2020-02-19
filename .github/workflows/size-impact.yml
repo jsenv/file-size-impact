@@ -12,7 +12,7 @@ jobs:
     name: node ${{ matrix.node }} on ${{ matrix.os }}
     env:
       CI: true
-      SIZE_IMPACT_DIR: "../size-impact"
+      SIZE_IMPACT_DIR: .github/size-impact
     steps:
       - uses: actions/checkout@v1
       - uses: actions/setup-node@v1
@@ -26,21 +26,25 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: install size-impact
         run: |
-          mv ./.github/size-impact $SIZE_IMPACT_DIR
           cd $SIZE_IMPACT_DIR
           npm install
           cd $RUNNER_WORKSPACE
+          cp -r $SIZE_IMPACT_DIR ../size-impact-copy
       - name: generate base snapshot
         run: |
           git checkout -f $GITHUB_BASE_REF
+          rm -r $SIZE_IMPACT_DIR
+          mv ../size-impact-copy $SIZE_IMPACT_DIR
           npm install
           npm run dist
-          node $SIZE_IMPACT_DIR/generate-size-snapshot.js $SIZE_IMPACT_DIR/snapshot.base.json
+          node $SIZE_IMPACT_DIR/generate-size-snapshot.js ../snapshot.base.json
       - name: generate head snapshot
         run: |
           git checkout -f $GITHUB_HEAD_REF
+          rm -r $SIZE_IMPACT_DIR
+          mv ../size-impact-copy $SIZE_IMPACT_DIR
           npm install
           npm run dist
-          node $SIZE_IMPACT_DIR/generate-size-snapshot.js $SIZE_IMPACT_DIR/snapshot.head.json
+          node $SIZE_IMPACT_DIR/generate-size-snapshot.js ../snapshot.head.json
       - name: report size impact
-        run: node $SIZE_IMPACT_DIR/report-size-impact.js $SIZE_IMPACT_DIR/snapshot.base.json $SIZE_IMPACT_DIR/snapshot.head.json
+        run: node $SIZE_IMPACT_DIR/report-size-impact.js ../snapshot.base.json ../snapshot.head.json
