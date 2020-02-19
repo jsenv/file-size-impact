@@ -31,9 +31,11 @@ jobs:
           npm install
           npm run dist
           node ./.github/size-impact/generate-size-snapshot.js ../snapshot.base.json
-      # this step is used the first pull request introducing changes
-      # to fail. Instead we generated an empty snapshot file, retry
-      - name: catch base snapshot failure
+      # Fallback on an empty snapshot when previous step fails.
+      # It exists in case the base branch does not contains size-impact files.
+      # Happens at least when a pull request introduces
+      # @jsenv/github-pull-request-filesize-impact to a repository for the first time.
+      - name: Empty base snapshot on failure
         if: failure()
         run: echo "{}" > ../snapshot.base.json
       - name: generate head snapshot
