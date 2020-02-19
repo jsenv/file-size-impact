@@ -84,17 +84,11 @@ const compareDirectorySnapshot = (baseSnapshot, headSnapshot) => {
     }
   })
 
-  const headTrackingConfig = headSnapshot.trackingConfig
-  const directoryUrl = "file:///directory/"
-  const headSpecifierMetaMap = normalizeSpecifierMetaMap(
-    metaMapToSpecifierMetaMap({
-      track: headTrackingConfig,
-    }),
-    directoryUrl,
-  )
+  // const fileIsTrackedInBase = trackingConfigToPredicate(baseSnapshot.trackingConfig)
+  const fileIsTrackedInHead = trackingConfigToPredicate(headSnapshot.trackingConfig)
+
   Object.keys(baseReport).forEach((baseRelativeUrl) => {
-    const baseUrl = resolveUrl(baseRelativeUrl, directoryUrl)
-    if (!urlToMeta({ url: baseUrl, specifierMetaMap: headSpecifierMetaMap }).track) {
+    if (!fileIsTrackedInHead(baseRelativeUrl)) {
       // head tracking config is not interested into this file anymore
       return
     }
@@ -117,6 +111,22 @@ const compareDirectorySnapshot = (baseSnapshot, headSnapshot) => {
   })
 
   return sortDirectoryStructure(snapshotComparison)
+}
+
+const trackingConfigToPredicate = (trackingConfig) => {
+  const directoryUrl = "file:///directory/"
+  const specifierMetaMap = normalizeSpecifierMetaMap(
+    metaMapToSpecifierMetaMap({
+      track: trackingConfig,
+    }),
+    directoryUrl,
+  )
+  return (relativeUrl) => {
+    return urlToMeta({
+      url: resolveUrl(relativeUrl, directoryUrl),
+      specifierMetaMap,
+    }).track
+  }
 }
 
 const manifestToMappings = (manifest) => {
