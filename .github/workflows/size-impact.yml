@@ -1,6 +1,11 @@
 name: size-impact
 
-on: pull_request
+on:
+  pull_request:
+    # every root file and thoose inside src
+    paths:
+      - "!*/**"
+      - "src/*"
 
 jobs:
   size-impact:
