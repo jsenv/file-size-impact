@@ -1,10 +1,10 @@
 # Impact inside `dist/global`
 
-<strong>Overall impact:</strong> +120 bytes.<br />
-<strong>Cache impact:</strong> 1 files content changed invalidating a total of 167 bytes.
+<strong>Overall size:</strong> +120 bytes.<br />
+<strong>Cache loss:</strong> 167 bytes invalidated by 1 file content changed.
 
 <details>
-  <summary>File size impact</summary>
+  <summary>dist/global</summary>
   <table>
     <thead>
       <tr>
@@ -50,12 +50,11 @@
 
 # Impact inside `dist/systemjs`
 
-<strong>Overall impact:</strong> -20 bytes, -2 bytes gzipped.<br />
-<strong>Cache impact:</strong> 2 files content changed invalidating a total of 100 bytes, 8 bytes gzipped<br />
+**Overall size:** -20 bytes (2 after `gzip` compression).<br />
+**Cache loss:** 100 bytes (10 after `gzip` compression) invalidated by 2 files content changed.
 
 <details>
-  <summary>File size impact</summary>
-  <h2>Plain file size</h2>
+  <summary>dist/systemjs</summary>
   <table>
     <thead>
       <tr>
@@ -83,7 +82,7 @@
       </tr>
     </tbody>
   </table>
-  <h2>File size after gzip compression</h2>
+  <p>after <code>gzip</code> compression</p>
   <table>
     <thead>
       <tr>
