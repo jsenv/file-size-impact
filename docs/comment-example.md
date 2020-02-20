@@ -50,11 +50,12 @@
 
 # Impact inside `dist/systemjs`
 
-<strong>Overall impact:</strong> -20 bytes.<br />
-<strong>Cache impact:</strong> 2 files content changed invalidating a total of 100 bytes.<br />
+<strong>Overall impact:</strong> -20 bytes, -2 bytes gzipped.<br />
+<strong>Cache impact:</strong> 2 files content changed invalidating a total of 100 bytes, 8 bytes gzipped<br />
 
 <details>
   <summary>File size impact</summary>
+  <h2>Plain file size</h2>
   <table>
     <thead>
       <tr>
@@ -82,15 +83,7 @@
       </tr>
     </tbody>
   </table>
-</details>
-
-After compression with `gzip`
-
-<strong>Overall impact:</strong> -2 bytes.<br />
-<strong>Cache impact:</strong> 2 files content changed invalidating a total of 10 bytes.
-
-<details>
-  <summary>File size impact after compression</summary>
+  <h2>File size after gzip compression</h2>
   <table>
     <thead>
       <tr>
@@ -105,16 +98,16 @@ After compression with `gzip`
       <tr>
         <td nowrap>bar.js</td>
         <td nowrap>changed</td>
-        <td nowrap>-40</td>
-        <td nowrap>60</td>
-        <td nowrap>20</td>
+        <td nowrap>-4</td>
+        <td nowrap>6</td>
+        <td nowrap>2</td>
       </tr>
       <tr>
         <td nowrap>foo.js</td>
         <td nowrap>changed</td>
-        <td nowrap>+20</td>
-        <td nowrap>40</td>
-        <td nowrap>60</td>
+        <td nowrap>+2</td>
+        <td nowrap>4</td>
+        <td nowrap>6</td>
       </tr>
     </tbody>
   </table>
