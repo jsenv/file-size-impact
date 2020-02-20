@@ -18,14 +18,14 @@
     <tbody>
       <tr>
         <td nowrap>bar.js</td>
-        <td nowrap>file removed</td>
+        <td nowrap>removed</td>
         <td nowrap>-100</td>
         <td nowrap>100</td>
         <td nowrap>---</td>
       </tr>
       <tr>
         <td nowrap>foo.js</td>
-        <td nowrap>file added</td>
+        <td nowrap>added</td>
         <td nowrap>+120</td>
         <td nowrap>---</td>
         <td nowrap>120</td>
@@ -39,7 +39,7 @@
       </tr>
       <tr>
         <td nowrap>whatever.js</td>
-        <td nowrap>file added</td>
+        <td nowrap>added</td>
         <td nowrap>+80</td>
         <td nowrap>---</td>
         <td nowrap>80</td>
