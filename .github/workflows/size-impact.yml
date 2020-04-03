@@ -2,22 +2,25 @@ name: size-impact
 
 on:
   pull_request:
-    paths:
-      - "index.js"
-      - "src/**"
+    # In theory it would be more efficient to enable this workflow only
+    # if certain file changes (the one that could impact dist/ files)
+    # In practice humans will wonder why the workflow did not run.
+    # paths:
+    #   - "index.js"
+    #   - "src/**"
 
 jobs:
   size-impact:
     strategy:
       matrix:
         os: [ubuntu-latest]
-        node: [13.8.0]
+        node: [13.12.0]
     runs-on: ${{ matrix.os }}
-    name: node ${{ matrix.node }} on ${{ matrix.os }}
+    name: size impact
     env:
       CI: true
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
       - uses: actions/setup-node@v1
         with:
           node-version: ${{ matrix.node }}
@@ -25,6 +28,8 @@ jobs:
         run: npm config set //npm.pkg.github.com/:_authToken ${{ secrets.GITHUB_TOKEN }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: git fetch
+        run: git fetch
       # Please note || echo "{}" > ../snapshot.base.json
       # It means we fallback on an empty snapshot when left command fails.
       # It exists in case the base branch does not contains size-impact files.

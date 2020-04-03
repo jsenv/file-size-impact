@@ -9,18 +9,17 @@ on:
       - master
 
 jobs:
-  ci:
+  test:
     strategy:
       matrix:
         os: [windows-latest, ubuntu-latest]
-        node: [13.8.0]
-      max-parallel: 1 # to ensure windows failure can prevent ubuntu from publishing package
+        node: [13.12.0]
     runs-on: ${{ matrix.os }}
-    name: node ${{ matrix.node }} on ${{ matrix.os }}
+    name: test on ${{ matrix.os }} and node ${{ matrix.node }}
     env:
       CI: true
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
       - uses: actions/setup-node@v1
         with:
           node-version: ${{ matrix.node }}
@@ -41,14 +40,26 @@ jobs:
         run: npm run upload-coverage
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+  release:
+    needs: [test]
+    if: success() && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    name: release
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v1
+        with:
+          node-version: "13.x"
+      - name: npm install
+        run: |
+          npm config set //npm.pkg.github.com/:_authToken ${{ secrets.GITHUB_TOKEN }}
+          npm install
       - name: publish package
-        if: github.event_name == 'push' && runner.os == 'Linux' # runner check to run it once
-        run: node ./.github/publish-package.js
+        run: node --no-warnings ./.github/release/publish-package.js
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
       - name: ensure github release
-        if: github.event_name == 'push' && runner.os == 'Linux' # runner check to run it once
-        run: node ./.github/ensure-github-release-for-package.js
+        run: node --no-warnings ./.github/release/ensure-github-release-for-package.js
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
