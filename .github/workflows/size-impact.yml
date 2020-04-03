@@ -28,6 +28,8 @@ jobs:
         run: npm config set //npm.pkg.github.com/:_authToken ${{ secrets.GITHUB_TOKEN }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: git fetch
+        run: git fetch
       # Please note || echo "{}" > ../snapshot.base.json
       # It means we fallback on an empty snapshot when left command fails.
       # It exists in case the base branch does not contains size-impact files.
