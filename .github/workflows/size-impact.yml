@@ -11,13 +11,13 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest]
-        node: [13.8.0]
+        node: [13.12.0]
     runs-on: ${{ matrix.os }}
-    name: node ${{ matrix.node }} on ${{ matrix.os }}
+    name: size impact
     env:
       CI: true
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
       - uses: actions/setup-node@v1
         with:
           node-version: ${{ matrix.node }}

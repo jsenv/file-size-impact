@@ -37,7 +37,7 @@ The screenshot below shows how it is integrated to a github pull request.
 # Installation
 
 ```console
-npm install --save-dev @jsenv/github-pull-request-filesize-impact@2.5.5
+npm install --save-dev @jsenv/github-pull-request-filesize-impact
 ```
 
 # Usage inside github workflow
@@ -53,9 +53,7 @@ You can set process.env variables required by `reportSizeImpactIntoGithubPullReq
 The code below shows what process.env should exists to use `reportSizeImpactIntoGithubPullRequest`.
 
 ```js
-const {
-  reportSizeImpactIntoGithubPullRequest,
-} = require("@jsenv/github-pull-request-filesize-impact")
+import { reportSizeImpactIntoGithubPullRequest } from "@jsenv/github-pull-request-filesize-impact"
 
 const githubToken = "github-personnal-access-token"
 const githubRepository = "repository-owner/repository-name"
