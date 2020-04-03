@@ -2,9 +2,12 @@ name: size-impact
 
 on:
   pull_request:
-    paths:
-      - "index.js"
-      - "src/**"
+    # In theory it would be more efficient to enable this workflow only
+    # if certain file changes (the one that could impact dist/ files)
+    # In practice humans will wonder why the workflow did not run.
+    # paths:
+    #   - "index.js"
+    #   - "src/**"
 
 jobs:
   size-impact:
