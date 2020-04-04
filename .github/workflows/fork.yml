@@ -1,0 +1,26 @@
+name: size-impact
+
+on: pull_request
+
+jobs:
+  fork:
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        node: [13.12.0]
+    runs-on: ${{ matrix.os }}
+    name: size impact
+    env:
+      CI: true
+    steps:
+      - uses: actions/checkout@v2
+      - name: echo base
+        run: echo $GITHUB_BASE_REF
+      - name: echo head
+        run: echo $GITHUB_HEAD_REF
+      - name: git fetch
+        run: git fetch
+      - name: checkout base
+        run: git checkout -f $GITHUB_BASE_REF
+      - name: checkout head
+        run: git checkout -f $GITHUB_HEAD_REF
