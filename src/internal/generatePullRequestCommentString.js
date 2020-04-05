@@ -160,8 +160,8 @@ const generateSizeImpactTable = ({
         <th nowrap>file</th>
         <th nowrap>event</th>
         <th nowrap>diff</th>
-        <th nowrap><code><pre>${pullRequestBase}</pre></code></th>
-        <th nowrap><code><pre>${pullRequestHead}</pre></code></th>
+        <th nowrap><code>${pullRequestBase}</code></th>
+        <th nowrap><code>${pullRequestHead}</code></th>
       </tr>
     </thead>
     <tbody>

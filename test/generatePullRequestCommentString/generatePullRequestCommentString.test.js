@@ -59,8 +59,8 @@ import { generatePullRequestCommentString } from "../../src/internal/generatePul
         <th nowrap>file</th>
         <th nowrap>event</th>
         <th nowrap>diff</th>
-        <th nowrap><code><pre>base</pre></code></th>
-        <th nowrap><code><pre>head</pre></code></th>
+        <th nowrap><code>base</code></th>
+        <th nowrap><code>head</code></th>
       </tr>
     </thead>
     <tbody>
@@ -133,8 +133,8 @@ import { generatePullRequestCommentString } from "../../src/internal/generatePul
         <th nowrap>file</th>
         <th nowrap>event</th>
         <th nowrap>diff</th>
-        <th nowrap><code><pre>base</pre></code></th>
-        <th nowrap><code><pre>head</pre></code></th>
+        <th nowrap><code>base</code></th>
+        <th nowrap><code>head</code></th>
       </tr>
     </thead>
     <tbody>
