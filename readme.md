@@ -13,6 +13,7 @@ Monitor pull request impact on file sizes.
 - [Installation](#Installation)
 - [How it works](#How-it-works)
   - [Configuration for Github workflow](#Configuration-for-github-workflow)
+    - [Fork issue](#Fork-issue)
   - [Configuration outside Github workflow](#Configuration-outside-github-workflow)
 - [generateSnapshotFile](#generateSnapshotFile)
   - [projectDirectoryUrl](#projectDirectoryUrl)
@@ -55,13 +56,19 @@ Then `reportSizeImpactIntoGithubPullRequest` can be called. It reads these two `
 
 To configure this for your project check [Configuration for Github workflow](#Configuration-for-github-workflow) and [Configuration outside Github workflow](#Configuration-outside-Github-workflow).
 
-## Configuration for Github workflow
+## Configuration for GitHub workflow
 
-You can see how this can be integrated in a github workflow in [.github/workflows/size-impact.yml](https://github.com/jsenv/jsenv-github-pull-request-filesize-impact/blob/7318a582a18760794dfb86ec37c0a2c0b28430a4/.github/workflows/size-impact.yml)
+You can see how this can be integrated in a GitHub workflow in [.github/workflows/size-impact.yml](https://github.com/jsenv/jsenv-github-pull-request-filesize-impact/blob/7318a582a18760794dfb86ec37c0a2c0b28430a4/.github/workflows/size-impact.yml)
 
 And also see several runs for this workflow at https://github.com/jsenv/jsenv-github-pull-request-filesize-impact/actions?workflow=size-impact
 
-## Configuration outside Github workflow
+### Fork issue
+
+Using GitHub workflow has one drawback: When a fork opens a pull request the workflow fails. This is because the workflow is runned inside the forked repository. GITHUB_TOKEN from forked repository is not allowed to post comment inside main repository.
+
+Check https://github.community/t5/GitHub-Actions/Token-permissions-for-forks-once-again/td-p/33839 for more information.
+
+## Configuration outside GitHub workflow
 
 `generateSnapshotFile` needs to be runned twice in a given git state. To setup your git state check [Configuration for Github workflow](./Configuration-for-Github-workflow). The exact code is up to you according to your execution environment.
 

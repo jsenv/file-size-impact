@@ -50,9 +50,11 @@ jobs:
           npm run dist
           node ./.github/workflows/size-impact/generate-size-snapshot.js ../snapshot.base.json || echo "{}" > ../snapshot.base.json
       - name: Git merge head
+        # Here we must fetch $GITHUB_REF and not $GITHUB_HEAD_REF because
+        # $GITHUB_HEAD_REF might come from a fork
         run: |
-          git fetch --no-tags --prune origin $GITHUB_HEAD_REF
-          git merge origin/$GITHUB_HEAD_REF
+          git fetch --no-tags --prune origin $GITHUB_REF
+          git merge FETCH_HEAD
       - name: Generate snapshot after merge
         run: |
           npm install
@@ -60,5 +62,8 @@ jobs:
           node ./.github/workflows/size-impact/generate-size-snapshot.js ../snapshot.head.json
       - name: Report size impact
         run: node ./.github/workflows/size-impact/report-size-impact.js ../snapshot.base.json ../snapshot.head.json
+        # oops https://help.github.com/en/actions/configuring-and-managing-workflows/authenticating-with-the-github_token#permissions-for-the-github_token
+        # https://github.community/t5/GitHub-Actions/Token-permissions-for-forks-once-again/td-p/33839
+        # https://github.com/WordPress/gutenberg/issues/17324
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
