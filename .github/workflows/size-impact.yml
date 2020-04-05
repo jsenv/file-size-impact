@@ -2,7 +2,7 @@ name: size-impact
 
 on:
   pull_request:
-    # whatever
+    # test
     # In theory it would be more efficient to enable this workflow only
     # if certain file changes (the one that could impact dist/ files)
     # In practice humans will wonder why the workflow did not run.
