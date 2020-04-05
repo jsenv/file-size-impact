@@ -52,8 +52,8 @@ jobs:
           node ./.github/workflows/size-impact/generate-size-snapshot.js ../snapshot.base.json || echo "{}" > ../snapshot.base.json
       - name: Git merge head
         run: |
-          git fetch --no-tags --prune origin $GITHUB_HEAD_REF
-          git merge origin/$GITHUB_HEAD_REF
+          git fetch --no-tags --prune origin $GITHUB_REF
+          git merge FETCH_HEAD
       - name: Generate snapshot after merge
         run: |
           npm install
