@@ -20,34 +20,45 @@ jobs:
     env:
       CI: true
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v1
+      - name: Setup git
+        env:
+          GITHUB_REPOSITORY_URL: ${{ github.repositoryUrl }}
+        run: |
+          git init
+          git remote add origin $GITHUB_REPOSITORY_URL
+      - name: Setup node  ${{ matrix.node }}
+        uses: actions/setup-node@v1
         with:
           node-version: ${{ matrix.node }}
-      - name: npm config
+      - name: Setup npm
         run: npm config set //npm.pkg.github.com/:_authToken ${{ secrets.GITHUB_TOKEN }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: git fetch
-        run: git fetch
       # Please note || echo "{}" > ../snapshot.base.json
       # It means we fallback on an empty snapshot when left command fails.
       # It exists in case the base branch does not contains size-impact files.
       # Happens at least when a pull request introduces
       # @jsenv/github-pull-request-filesize-impact to a repository for the first time.
-      - name: generate base snapshot
+      - name: Git checkout base
         run: |
-          git checkout -f $GITHUB_BASE_REF
+          git fetch --no-tags --prune --depth=1 origin $GITHUB_BASE_REF
+          git checkout --force origin/$GITHUB_BASE_REF
+          git log -1
+      - name: Generate snapshot for base
+        run: |
           npm install
           npm run dist
-          node ./.github/size-impact/generate-size-snapshot.js ../snapshot.base.json || echo "{}" > ../snapshot.base.json
-      - name: generate head snapshot
+          node ./.github/workflows/size-impact/generate-size-snapshot.js ../snapshot.base.json || echo "{}" > ../snapshot.base.json
+      - name: Git merge head
         run: |
-          git checkout -f $GITHUB_HEAD_REF
+          git fetch --no-tags --prune --depth=1 origin $GITHUB_HEAD_REF
+          git merge $GITHUB_HEAD_REF
+      - name: Generate snapshot after merge
+        run: |
           npm install
           npm run dist
-          node ./.github/size-impact/generate-size-snapshot.js ../snapshot.head.json
-      - name: report size impact
-        run: node ./.github/size-impact/report-size-impact.js ../snapshot.base.json ../snapshot.head.json
+          node ./.github/workflows/size-impact/generate-size-snapshot.js ../snapshot.head.json
+      - name: Report size impact
+        run: node ./.github/workflows/size-impact/report-size-impact.js ../snapshot.base.json ../snapshot.head.json
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
