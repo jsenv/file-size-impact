@@ -11,6 +11,11 @@ on:
 
 jobs:
   size-impact:
+    # Do not run this workflow on forks because they are not authorized to post comments, see links below:
+    # https://help.github.com/en/actions/configuring-and-managing-workflows/authenticating-with-the-github_token#permissions-for-the-github_token
+    # https://github.community/t5/GitHub-Actions/Token-permissions-for-forks-once-again/td-p/33839
+    # https://github.com/WordPress/gutenberg/issues/17324
+    if: github.repository == 'jsenv/jsenv-github-pull-request-filesize-impact
     strategy:
       matrix:
         os: [ubuntu-latest]
@@ -62,8 +67,5 @@ jobs:
           node ./.github/workflows/size-impact/generate-size-snapshot.js ../snapshot.head.json
       - name: Report size impact
         run: node ./.github/workflows/size-impact/report-size-impact.js ../snapshot.base.json ../snapshot.head.json
-        # oops https://help.github.com/en/actions/configuring-and-managing-workflows/authenticating-with-the-github_token#permissions-for-the-github_token
-        # https://github.community/t5/GitHub-Actions/Token-permissions-for-forks-once-again/td-p/33839
-        # https://github.com/WordPress/gutenberg/issues/17324
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

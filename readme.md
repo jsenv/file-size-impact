@@ -187,12 +187,12 @@ await reportSizeImpactIntoGithubPullRequest({
 
 # Why merge
 
-As documented in [How it work](#How-it-works) `generateSnapshotFile` must be called in a state where the pull request is merged into its target. This part explains why it's needed.
+As documented in [How it works](#How-it-works) `generateSnapshotFile` must be called in a state where the pull request is merged into its target. This part explains why it's needed.
 
-To know impacts of pull request changes on a given branch, these changes must be on the branch. To understand why we will simulate what happens starting from a git tree where:
+To know impacts of a pull request changes on a given branch, these changes must be on the branch. To understand why we will simulate what happens starting from a git tree where:
 
 - There is a `master` branch
-- `me` branch is one commit behind and one commit ahead of `master`
+- `me` branch is one commit ahead of `master`
 - `other` branch is one commit ahead of `master`
 - A pull request wants to merge `me` into `master`
 
@@ -201,66 +201,64 @@ To know impacts of pull request changes on a given branch, these changes must be
 ## Initial git tree
 
 ```txt
-       ┌───D─── other
-       │
-───A───C─── master
+   ┌───D─── other (A+D)
    │
-   └───B─── me
+───A─────── master (A)
+   │
+   └───B─── me (A+B)
 ```
 
 Now `other` gets merged into master
 
-## Git tree after `other` merge
+## Git tree after merging other branch
 
 ```txt
-       ┌───D───┬ other
-       │       │
-───A───C───D───┴ master
+   ┌───D───┐ other (A+D)
+   │       │
+───A───────D─── master (A+D)
    │
-   └───B─── me
+   └───B──── me (A+B)
 ```
 
 Now we push a commit to `me`
 
-## Git tree after push to `me`
+## Git tree after pushing into me branch
 
 ```txt
-       ┌───D───┬ other
-       │       │
-───A───C───D───┴ master
+   ┌───D───┐ other (A+D)
+   │       │
+───A───────D─── master (A+D)
    │
-   └───B───E──── me
+   └───B───E─── me (A+B+E)
 ```
 
 In this state:
 
-- `me` is 2 commits behind `master` and 2 commits ahead
-  > Pull request wants to merge `B,E` and does not contain `C,D`.
-- merging pull request means adding `B+E` resulting into `master` becoming `A+C+D+B+E`.
+- `me` is 1 commit behind `master` and 2 commits ahead
+  > Pull request wants to merge `B,E` and does not contain `D`.
+- merging pull request means adding `B+E` into `master`. Master would become `A+D+B+E`.
   > Depending how pull request gets merged order may differ but that's not important for this demonstration.
 
-I have explored different solutions to analyze a pull request impact
+To compute the actual impact of merging `me` into `master` we must simulate the merge. Let's create a `merge` branch with this state.
 
-### Compare `master` and `me`
+## Git tree after creating merge branch
 
-This solution means comparing `master` and `me`.
+```txt
+   ┌───D───┐ other (A+D)
+   │       │
+───A───────D──── master (A+D)
+   │       │
+   │       └───┬─── merge (A+D+B+E)
+   │           │
+   └───B───E───┘ me (A+B+E)
+```
 
-But `master` contains commits that are not in `me`. `master` may have commits changing same files than `me`. We must merge `me` into `master` to be in the correct state to compute the pull request impact.
+If `D` changes overlaps with `E` changes, impact is analysed after these changes are merged.
 
--> Solution rejected
+Moreover `D` changes that are not in `B` or `E` are ignored thanks to diff between `merge` and `master`.
 
-### Compare `master` and `merge`
-
-This solution means comparing `master` with the merging of `me` into `master`.
-
-This comparison result might differ from developer expectation. Developer expects to see impacts from `B+E` and it finds `C+D+B+E`.
-
--> Solution approved but let's see if using `fork-point` might be better.
-
-### Compare `fork-point` and `me`
-
-This solution means comparing the `fork-point` and `me`. `fork-point` is the first commit in common between `me` and `master`. In our case this is `A`.
-
-The comparison result would ignore `C`, `D`. Merging the pull request results into `A+C+D+B+E`, they must be taken into account.
-
--> Solution rejected
+```
+merge = A+D+B+E
+master = A+D
+merge - master = B+E
+```
