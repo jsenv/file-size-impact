@@ -42,7 +42,7 @@ jobs:
       - name: Git checkout base
         run: |
           git fetch --no-tags --prune --depth=1 origin $GITHUB_BASE_REF
-          git checkout --force origin/$GITHUB_BASE_REF
+          git checkout origin/$GITHUB_BASE_REF
           git log -1
       - name: Generate snapshot for base
         run: |
@@ -51,8 +51,8 @@ jobs:
           node ./.github/workflows/size-impact/generate-size-snapshot.js ../snapshot.base.json || echo "{}" > ../snapshot.base.json
       - name: Git merge head
         run: |
-          git fetch --no-tags --prune --depth=1 origin $GITHUB_HEAD_REF
-          git merge $GITHUB_HEAD_REF
+          git fetch --no-tags --prune origin $GITHUB_HEAD_REF
+          git merge origin/$GITHUB_HEAD_REF
       - name: Generate snapshot after merge
         run: |
           npm install
