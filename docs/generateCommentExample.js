@@ -87,4 +87,8 @@ ${examples[exampleName]}`
 
 `)
 
-writeFile(exampleFileUrl, exampleFileContent)
+writeFile(
+  exampleFileUrl,
+  `${exampleFileContent}
+`,
+)
