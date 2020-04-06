@@ -21,21 +21,25 @@ const renderCacheImpactDescription = ({ fileChangedCount }) => {
 }
 
 const directoryComparisonToCacheImpact = (directoryComparison) => {
-  let uncompressedBytesLost = 0
-  let gzipBytesLost = 0
-  let brotliBytesLost = 0
+  let uncompressedBytesOutdated = 0
+  let gzipBytesOutdated = 0
+  let brotliBytesOutdated = 0
   let fileChangedCount = 0
   Object.keys(directoryComparison).forEach((fileRelativeUrl) => {
     const { base, head } = directoryComparison[fileRelativeUrl]
     if (isChanged({ base, head })) {
       fileChangedCount++
-      uncompressedBytesLost += base.size
-      gzipBytesLost += base.gzipSize
-      brotliBytesLost += base.brotliSize
+      uncompressedBytesOutdated += base.size
+      gzipBytesOutdated += base.gzipSize
+      brotliBytesOutdated += base.brotliSize
     }
   })
-
-  return { fileChangedCount, uncompressedBytesLost, gzipBytesLost, brotliBytesLost }
+  return {
+    fileChangedCount,
+    uncompressedBytesOutdated,
+    gzipBytesOutdated,
+    brotliBytesOutdated,
+  }
 }
 
 const renderCacheImpactTable = (cacheImpact, { formatSize }) => {
@@ -53,16 +57,16 @@ const renderCacheImpactTable = (cacheImpact, { formatSize }) => {
 }
 
 const renderCacheImpactTableBody = (cacheImpact, { formatSize }) => {
-  const { size, gzipSize, brotliSize } = cacheImpact
+  const { uncompressedBytesOutdated, gzipBytesOutdated, brotliBytesOutdated } = cacheImpact
 
   const lines = [
-    { name: "uncompressed", size },
-    { name: "gzip", size: gzipSize },
-    { name: "brotli", size: brotliSize },
-  ].map(({ name, size }) => {
+    { name: "uncompressed", bytesOutdated: uncompressedBytesOutdated },
+    { name: "gzip", bytesOutdated: gzipBytesOutdated },
+    { name: "brotli", bytesOutdated: brotliBytesOutdated },
+  ].map(({ name, bytesOutdated }) => {
     return `
         <td nowrap>${name}</td>
-        <td nowrap>${formatSize(size)}</td>`
+        <td nowrap>${formatSize(bytesOutdated)}</td>`
   })
 
   return `<tr>${lines.join(`

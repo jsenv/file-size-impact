@@ -1,11 +1,15 @@
 export const renderDirectoryImpact = (
   directoryComparison,
-  { directoryRelativeUrl, formatSize },
+  { directoryRelativeUrl, pullRequestBase, pullRequestHead, formatSize },
 ) => {
   return `
   <h3>Overall impact</h3>
   <p>Impact of changes on <code>${directoryRelativeUrl}</code> size in bytes.</p>
-  ${renderDirectoryImpactTable(directoryComparison, { formatSize })}`
+  ${renderDirectoryImpactTable(directoryComparison, {
+    pullRequestBase,
+    pullRequestHead,
+    formatSize,
+  })}`
 }
 
 const directoryComparisonToDirectoryImpact = (directoryComparison) => {
@@ -51,7 +55,7 @@ const renderDirectoryImpactTable = (
         <th nowrap>Overall impact</th>
         <th nowrap>diff</th>
         <th nowrap><code>${pullRequestBase}</code></th>
-        <th nowrap><code>${pullRequestHead}}</code></th>
+        <th nowrap><code>${pullRequestHead}</code></th>
       </tr>
     </thead>
     <tbody>
@@ -70,7 +74,7 @@ const renderDirectoryImpactTableBody = (directoryImpact, { formatSize }) => {
   ].map(({ name, baseSize, headSize }) => {
     return `
         <td nowrap>${name}</td>
-        <td nowrap>${(formatSize(headSize - baseSize), { diff: true })}</td>
+        <td nowrap>${formatSize(headSize - baseSize, { diff: true })}</td>
         <td nowrap>${baseSize}</td>
         <td nowrap>${headSize}</td>`
   })
