@@ -22,15 +22,15 @@ export const generatePullRequestCommentString = ({
 
     return `<details>
   <summary>${generateSummary(directoryRelativeUrl)}</summary>
-  ${generateDetails(directoryComparison, {
-    directoryRelativeUrl,
-    pullRequestBase,
-    pullRequestHead,
-    formatSize,
-    gzipTracking,
-    brotliTracking,
-    generatedByLink,
-  })}
+${generateDetails(directoryComparison, {
+  directoryRelativeUrl,
+  pullRequestBase,
+  pullRequestHead,
+  formatSize,
+  gzipTracking,
+  brotliTracking,
+  generatedByLink,
+})}
 </details>`
   })
 

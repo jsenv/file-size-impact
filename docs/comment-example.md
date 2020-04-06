@@ -9,7 +9,7 @@
   <table>
     <thead>
       <tr>
-        <th nowrap>Overall impact</th>
+        <th nowrap>Compression</th>
         <th nowrap>diff</th>
         <th nowrap><code>base</code></th>
         <th nowrap><code>head</code></th>
@@ -17,7 +17,7 @@
     </thead>
     <tbody>
       <tr>
-        <td nowrap>uncompressed</td>
+        <td nowrap>none</td>
         <td nowrap>+40</td>
         <td nowrap>267</td>
         <td nowrap>307</td>
@@ -42,6 +42,7 @@
     <thead>
       <tr>
         <th nowrap>file</th>
+        <th nowrap>compression</th>
         <th nowrap>diff</th>
         <th nowrap><code>base</code></th>
         <th nowrap><code>head</code></th>
@@ -50,25 +51,60 @@
     </thead>
     <tbody>
       <tr>
-        <td nowrap>bar.js<br />gzip<br />brotli</td>
-        <td nowrap>-100<br />-10<br />-9</td>
-        <td nowrap>100<br />10<br />9</td>
-        <td nowrap>---</td>
-        <td nowrap>deleted</td>
+        <td nowrap rowspan="3">bar.js</td>
+        <td nowrap>none</td>
+        <td nowrap>-100</td>
+        <td nowrap>100</td>
+        <td nowrap rowspan="3">---</td>
+        <td nowrap rowspan="3">deleted</td>
       </tr>
       <tr>
-        <td nowrap>foo.js<br />gzip<br />brotli</td>
-        <td nowrap>-120<br />-12<br />-11</td>
-        <td nowrap>---</td>
-        <td nowrap>120<br />12<br />11</td>
-        <td nowrap>created</td>
+        <td nowrap>gzip</td>
+        <td nowrap>-10</td>
+        <td nowrap>10</td>
       </tr>
       <tr>
-        <td nowrap>hello.js<br />gzip<br />brotli</td>
-        <td nowrap>+20<br />+2<br />+2</td>
-        <td nowrap>167<br />16<br />15</td>
-        <td nowrap>187<br />18<br />17</td>
-        <td nowrap>changed</td>
+        <td nowrap>brotli</td>
+        <td nowrap>-9</td>
+        <td nowrap>9</td>
+      </tr>
+      <tr>
+        <td nowrap rowspan="3">foo.js</td>
+        <td nowrap>none</td>
+        <td nowrap>+120</td>
+        <td nowrap rowspan="3">---</td>
+        <td nowrap>120</td>
+        <td nowrap rowspan="3">created</td>
+      </tr>
+      <tr>
+        <td nowrap>gzip</td>
+        <td nowrap>+12</td>
+        <td nowrap>12</td>
+      </tr>
+      <tr>
+        <td nowrap>brotli</td>
+        <td nowrap>+11</td>
+        <td nowrap>11</td>
+      </tr>
+      <tr>
+        <td nowrap rowspan="3">hello.js</td>
+        <td nowrap>none</td>
+        <td nowrap>+20</td>
+        <td nowrap>167</td>
+        <td nowrap>187</td>
+        <td nowrap rowspan="3">changed</td>
+      </tr>
+      <tr>
+        <td nowrap>gzip</td>
+        <td nowrap>+2</td>
+        <td nowrap>16</td>
+        <td nowrap>18</td>
+      </tr>
+      <tr>
+        <td nowrap>brotli</td>
+        <td nowrap>+2</td>
+        <td nowrap>15</td>
+        <td nowrap>17</td>
       </tr>
     </tbody>
   </table>
@@ -78,13 +114,13 @@
   <table>
     <thead>
       <tr>
-        <th nowrap>Cache impact</th>
+        <th nowrap>Compression</th>
         <th nowrap>Bytes outdated</th>
       </tr>
     </thead>
     <tbody>
       <tr>
-        <td nowrap>uncompressed</td>
+        <td nowrap>none</td>
         <td nowrap>167</td>
       </tr>
       <tr>
@@ -111,7 +147,7 @@
   <table>
     <thead>
       <tr>
-        <th nowrap>Overall impact</th>
+        <th nowrap>Compression</th>
         <th nowrap>diff</th>
         <th nowrap><code>base</code></th>
         <th nowrap><code>head</code></th>
@@ -119,7 +155,7 @@
     </thead>
     <tbody>
       <tr>
-        <td nowrap>uncompressed</td>
+        <td nowrap>none</td>
         <td nowrap>+40</td>
         <td nowrap>267</td>
         <td nowrap>307</td>
@@ -144,6 +180,7 @@
     <thead>
       <tr>
         <th nowrap>file</th>
+        <th nowrap>compression</th>
         <th nowrap>diff</th>
         <th nowrap><code>base</code></th>
         <th nowrap><code>head</code></th>
@@ -152,25 +189,60 @@
     </thead>
     <tbody>
       <tr>
-        <td nowrap>bar.js<br />gzip<br />brotli</td>
-        <td nowrap>-100<br />-10<br />-9</td>
-        <td nowrap>100<br />10<br />9</td>
-        <td nowrap>---</td>
-        <td nowrap>deleted</td>
+        <td nowrap rowspan="3">bar.js</td>
+        <td nowrap>none</td>
+        <td nowrap>-100</td>
+        <td nowrap>100</td>
+        <td nowrap rowspan="3">---</td>
+        <td nowrap rowspan="3">deleted</td>
       </tr>
       <tr>
-        <td nowrap>foo.js<br />gzip<br />brotli</td>
-        <td nowrap>-120<br />-12<br />-11</td>
-        <td nowrap>---</td>
-        <td nowrap>120<br />12<br />11</td>
-        <td nowrap>created</td>
+        <td nowrap>gzip</td>
+        <td nowrap>-10</td>
+        <td nowrap>10</td>
       </tr>
       <tr>
-        <td nowrap>hello.js<br />gzip<br />brotli</td>
-        <td nowrap>+20<br />+2<br />+2</td>
-        <td nowrap>167<br />16<br />15</td>
-        <td nowrap>187<br />18<br />17</td>
-        <td nowrap>changed</td>
+        <td nowrap>brotli</td>
+        <td nowrap>-9</td>
+        <td nowrap>9</td>
+      </tr>
+      <tr>
+        <td nowrap rowspan="3">foo.js</td>
+        <td nowrap>none</td>
+        <td nowrap>+120</td>
+        <td nowrap rowspan="3">---</td>
+        <td nowrap>120</td>
+        <td nowrap rowspan="3">created</td>
+      </tr>
+      <tr>
+        <td nowrap>gzip</td>
+        <td nowrap>+12</td>
+        <td nowrap>12</td>
+      </tr>
+      <tr>
+        <td nowrap>brotli</td>
+        <td nowrap>+11</td>
+        <td nowrap>11</td>
+      </tr>
+      <tr>
+        <td nowrap rowspan="3">hello.js</td>
+        <td nowrap>none</td>
+        <td nowrap>+20</td>
+        <td nowrap>167</td>
+        <td nowrap>187</td>
+        <td nowrap rowspan="3">changed</td>
+      </tr>
+      <tr>
+        <td nowrap>gzip</td>
+        <td nowrap>+2</td>
+        <td nowrap>16</td>
+        <td nowrap>18</td>
+      </tr>
+      <tr>
+        <td nowrap>brotli</td>
+        <td nowrap>+2</td>
+        <td nowrap>15</td>
+        <td nowrap>17</td>
       </tr>
     </tbody>
   </table>
@@ -180,13 +252,13 @@
   <table>
     <thead>
       <tr>
-        <th nowrap>Cache impact</th>
+        <th nowrap>Compression</th>
         <th nowrap>Bytes outdated</th>
       </tr>
     </thead>
     <tbody>
       <tr>
-        <td nowrap>uncompressed</td>
+        <td nowrap>none</td>
         <td nowrap>167</td>
       </tr>
       <tr>

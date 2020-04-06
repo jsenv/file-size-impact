@@ -46,7 +46,7 @@ const renderCacheImpactTable = (cacheImpact, { formatSize }) => {
   return `<table>
     <thead>
       <tr>
-        <th nowrap>Cache impact</th>
+        <th nowrap>Compression</th>
         <th nowrap>Bytes outdated</th>
       </tr>
     </thead>
@@ -60,7 +60,7 @@ const renderCacheImpactTableBody = (cacheImpact, { formatSize }) => {
   const { uncompressedBytesOutdated, gzipBytesOutdated, brotliBytesOutdated } = cacheImpact
 
   const lines = [
-    { name: "uncompressed", bytesOutdated: uncompressedBytesOutdated },
+    { name: "none", bytesOutdated: uncompressedBytesOutdated },
     { name: "gzip", bytesOutdated: gzipBytesOutdated },
     { name: "brotli", bytesOutdated: brotliBytesOutdated },
   ].map(({ name, bytesOutdated }) => {

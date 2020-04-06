@@ -52,7 +52,7 @@ const renderDirectoryImpactTable = (
   return `<table>
     <thead>
       <tr>
-        <th nowrap>Overall impact</th>
+        <th nowrap>Compression</th>
         <th nowrap>diff</th>
         <th nowrap><code>${pullRequestBase}</code></th>
         <th nowrap><code>${pullRequestHead}</code></th>
@@ -68,7 +68,7 @@ const renderDirectoryImpactTableBody = (directoryImpact, { formatSize }) => {
   const { uncompressed, gzip, brotli } = directoryImpact
 
   const lines = [
-    { name: "uncompressed", ...uncompressed },
+    { name: "none", ...uncompressed },
     { name: "gzip", ...gzip },
     { name: "brotli", ...brotli },
   ].map(({ name, baseSize, headSize }) => {
