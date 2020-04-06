@@ -75,8 +75,8 @@ const renderDirectoryImpactTableBody = (directoryImpact, { formatSize }) => {
     return `
         <td nowrap>${name}</td>
         <td nowrap>${formatSize(headSize - baseSize, { diff: true })}</td>
-        <td nowrap>${baseSize}</td>
-        <td nowrap>${headSize}</td>`
+        <td nowrap>${formatSize(baseSize)}</td>
+        <td nowrap>${formatSize(headSize)}</td>`
   })
 
   return `<tr>${lines.join(`

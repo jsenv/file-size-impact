@@ -27,15 +27,15 @@ const examples = {
         },
         "hello.js": {
           base: {
-            size: 167,
-            gzipSize: 16,
-            brotliSize: 15,
+            size: 167000,
+            gzipSize: 1600,
+            brotliSize: 1500,
             hash: "a",
           },
           head: {
-            size: 187,
-            gzipSize: 18,
-            brotliSize: 17,
+            size: 187000,
+            gzipSize: 1800,
+            brotliSize: 1700,
             hash: "b",
           },
         },
