@@ -1,11 +1,11 @@
 export const renderDirectoryImpact = (
   directoryComparison,
-  { directoryRelativePath, formatSize },
+  { directoryRelativeUrl, formatSize },
 ) => {
-  return `<h3>Overall impact</h3>
-<p>Impact of changes on <code>${directoryRelativePath}</code> size in bytes.</p>
-${renderDirectoryImpactTable(directoryComparison, { formatSize })}
-`
+  return `
+  <h3>Overall impact</h3>
+  <p>Impact of changes on <code>${directoryRelativeUrl}</code> size in bytes.</p>
+  ${renderDirectoryImpactTable(directoryComparison, { formatSize })}`
 }
 
 const directoryComparisonToDirectoryImpact = (directoryComparison) => {
@@ -19,13 +19,17 @@ const directoryComparisonToDirectoryImpact = (directoryComparison) => {
   Object.keys(directoryComparison).forEach((fileRelativeUrl) => {
     const { base, head } = directoryComparison[fileRelativeUrl]
 
-    uncompressedBaseSize += base.size
-    gzipBaseSize += base.gzipSize
-    brotliBaseSize += base.brotliSize
+    if (base) {
+      uncompressedBaseSize += base.size
+      gzipBaseSize += base.gzipSize
+      brotliBaseSize += base.brotliSize
+    }
 
-    uncompressedHeadSize += head.size
-    gzipHeadSize += head.gzipSize
-    brotliHeadSize += head.brotliSize
+    if (head) {
+      uncompressedHeadSize += head.size
+      gzipHeadSize += head.gzipSize
+      brotliHeadSize += head.brotliSize
+    }
   })
 
   return {
@@ -42,18 +46,18 @@ const renderDirectoryImpactTable = (
   const directoryImpact = directoryComparisonToDirectoryImpact(directoryComparison)
 
   return `<table>
-  <thead>
-    <tr>
-      <th nowrap>Overall impact</th>
-      <th nowrap>diff</th>
-      <th nowrap><code>${pullRequestBase}</code></th>
-      <th nowrap><code>${pullRequestHead}}</code></th>
-    </tr>
-  </thead>
-  <tbody>
-    ${renderDirectoryImpactTableBody(directoryImpact, { formatSize })}
-  </tbody>
-<table>`
+    <thead>
+      <tr>
+        <th nowrap>Overall impact</th>
+        <th nowrap>diff</th>
+        <th nowrap><code>${pullRequestBase}</code></th>
+        <th nowrap><code>${pullRequestHead}}</code></th>
+      </tr>
+    </thead>
+    <tbody>
+      ${renderDirectoryImpactTableBody(directoryImpact, { formatSize })}
+    </tbody>
+  <table>`
 }
 
 const renderDirectoryImpactTableBody = (directoryImpact, { formatSize }) => {

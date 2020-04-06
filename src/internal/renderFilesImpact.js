@@ -6,7 +6,9 @@ export const renderFilesImpact = (
 ) => {
   const filesImpact = directoryComparisonToFilesImpact(directoryComparison)
   const noImpact = Object.keys(filesImpact).length === 0
-  return `<h3>File by file impact</h3>
+  return `
+
+  <h3>File by file impact</h3>
 ${
   noImpact
     ? `Pull request changes have no impact on ${directoryRelativeUrl} files.`
@@ -15,8 +17,7 @@ ${
 }
 
 const renderFilesImpactTable = (filesImpact, { pullRequestBase, pullRequestHead, formatSize }) => {
-  return `
-  <table>
+  return `  <table>
     <thead>
       <tr>
         <th nowrap>file</th>
@@ -89,9 +90,7 @@ const directoryComparisonToFilesImpact = (directoryComparison) => {
 }
 
 const renderFile = (fileRelativePath) => {
-  return `${fileRelativePath}
-<br />gzip
-<br />brotli`
+  return `${fileRelativePath}<br />gzip<br />brotli`
 }
 
 const renderFileDiff = ({ event, base, head }, formatSize) => {
@@ -103,7 +102,7 @@ const renderFileDiff = ({ event, base, head }, formatSize) => {
     uncompressedDiff = -base.size
     gzipDiff = -base.gzipSize
     brotliDiff = -base.brotliSize
-  } else if (event === "added") {
+  } else if (event === "created") {
     uncompressedDiff = -head.size
     gzipDiff = -head.gzipSize
     brotliDiff = -head.brotliSize
@@ -113,27 +112,27 @@ const renderFileDiff = ({ event, base, head }, formatSize) => {
     brotliDiff = head.brotliSize - base.brotliSize
   }
 
-  return `${formatSize(uncompressedDiff, { diff: true })}
-<br />${formatSize(gzipDiff, { diff: true })}
-<br />${formatSize(brotliDiff, { diff: true })}`
+  return `${formatSize(uncompressedDiff, { diff: true })}<br />${formatSize(gzipDiff, {
+    diff: true,
+  })}<br />${formatSize(brotliDiff, { diff: true })}`
 }
 
 const renderFileBaseSize = ({ event, base }, formatSize) => {
-  if (event === "added") {
+  if (event === "created") {
     return "---"
   }
-  return `${formatSize(base.size)}
-<br />${formatSize(base.gzipSize)}
-<br />${formatSize(base.brotliSize)}`
+  return `${formatSize(base.size)}<br />${formatSize(base.gzipSize)}<br />${formatSize(
+    base.brotliSize,
+  )}`
 }
 
 const renderFileHeadSize = ({ event, head }, formatSize) => {
   if (event === "deleted") {
     return "---"
   }
-  return `${formatSize(head.size)}
-<br />${formatSize(head.gzipSize)}
-<br />${formatSize(head.brotliSize)}`
+  return `${formatSize(head.size)}<br />${formatSize(head.gzipSize)}<br />${formatSize(
+    head.brotliSize,
+  )}`
 }
 
 const renderFileEvent = ({ event }) => event

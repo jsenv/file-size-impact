@@ -2,23 +2,22 @@ import { isChanged } from "./helper.js"
 
 export const renderCacheImpact = (directoryComparison, { formatSize }) => {
   const cacheImpact = directoryComparisonToCacheImpact(directoryComparison, { formatSize })
-  const { fileChangedCount } = cacheImpact
 
+  return `
+
+  <h3>Cache impact</h3>
+  <p>${renderCacheImpactDescription(cacheImpact)}</p>
+  ${cacheImpact.fileChangedCount === 0 ? "" : renderCacheImpactTable(cacheImpact, { formatSize })}`
+}
+
+const renderCacheImpactDescription = ({ fileChangedCount }) => {
   if (fileChangedCount === 0) {
-    return `<h3>Cache impact</h3>
-<p>No impact on your users cache because no file content has changed.</p>
-${renderCacheImpactTable(cacheImpact)}`
+    return `No impact on your users cache because no file content has changed.`
   }
-
   if (fileChangedCount === 1) {
-    return `<h3>Cache impact</h3>
-<p>1 file in your users cache is now outdated because its content have changed.</p>
-${renderCacheImpactTable(cacheImpact)}`
+    return `1 file in your users cache is now outdated because its content have changed.`
   }
-
-  return `<h3>Cache impact</h3>
-<p>2 files in you users cache are now outdated because their content have changed.</p>
-${renderCacheImpactTable(cacheImpact)}`
+  return `${fileChangedCount} files in you users cache are now outdated because their content have changed.`
 }
 
 const directoryComparisonToCacheImpact = (directoryComparison) => {
@@ -41,16 +40,16 @@ const directoryComparisonToCacheImpact = (directoryComparison) => {
 
 const renderCacheImpactTable = (cacheImpact, { formatSize }) => {
   return `<table>
-  <thead>
-    <tr>
-      <th nowrap>Cache impact</th>
-      <th nowrap>Bytes outdated</th>
-    </tr>
-  </thead>
-  <tbody>
-    ${renderCacheImpactTableBody(cacheImpact, { formatSize })}
-  </tbody>
-</table>`
+    <thead>
+      <tr>
+        <th nowrap>Cache impact</th>
+        <th nowrap>Bytes outdated</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${renderCacheImpactTableBody(cacheImpact, { formatSize })}
+    </tbody>
+  </table>`
 }
 
 const renderCacheImpactTableBody = (cacheImpact, { formatSize }) => {
