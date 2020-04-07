@@ -41,7 +41,7 @@ const renderFilesTableBody = (filesImpact, formatSize) => {
     const fileImpact = filesImpact[fileRelativePath]
     const { event, base, head } = fileImpact
 
-    const keys = Object.keys((base || head).sizeMap)
+    const keys = Object.keys((head || base).sizeMap)
     keys.forEach((sizeName, index) => {
       const rowSpan = index === 0 ? keys.length : 1
       const merged = index > 0

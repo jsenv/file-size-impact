@@ -2,6 +2,74 @@ import { writeFile, resolveUrl } from "@jsenv/util"
 import { generatePullRequestCommentString } from "../src/internal/generatePullRequestCommentString.js"
 
 const examples = {
+  "basic": generatePullRequestCommentString({
+    pullRequestBase: "base",
+    pullRequestHead: "head",
+    snapshotComparison: {
+      dist: {
+        "bar.js": {
+          base: {
+            sizeMap: {
+              none: 100,
+            },
+            hash: "a",
+          },
+          head: {
+            sizeMap: {
+              none: 110,
+            },
+            hash: "b",
+          },
+        },
+      },
+    },
+  }),
+  "introduce gzip": generatePullRequestCommentString({
+    pullRequestBase: "base",
+    pullRequestHead: "head",
+    snapshotComparison: {
+      dist: {
+        "bar.js": {
+          base: {
+            sizeMap: {
+              none: 100,
+            },
+            hash: "a",
+          },
+          head: {
+            sizeMap: {
+              none: 110,
+              gzip: 10,
+            },
+            hash: "b",
+          },
+        },
+      },
+    },
+  }),
+  "remove gzip": generatePullRequestCommentString({
+    pullRequestBase: "base",
+    pullRequestHead: "head",
+    snapshotComparison: {
+      dist: {
+        "bar.js": {
+          base: {
+            sizeMap: {
+              none: 100,
+              gzip: 10,
+            },
+            hash: "a",
+          },
+          head: {
+            sizeMap: {
+              none: 110,
+            },
+            hash: "b",
+          },
+        },
+      },
+    },
+  }),
   "multiple + gzip + brotli": generatePullRequestCommentString({
     pullRequestBase: "base",
     pullRequestHead: "head",

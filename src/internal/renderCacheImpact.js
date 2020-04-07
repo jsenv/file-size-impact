@@ -23,6 +23,7 @@ const renderCacheImpactDescription = ({ fileChangedCount }) => {
 const directoryComparisonToCacheImpact = (directoryComparison) => {
   let fileChangedCount = 0
   const outdatedBytesMap = {}
+
   Object.keys(directoryComparison).forEach((fileRelativeUrl) => {
     const { base, head } = directoryComparison[fileRelativeUrl]
     if (isChanged({ base, head })) {
@@ -32,6 +33,26 @@ const directoryComparisonToCacheImpact = (directoryComparison) => {
       })
     }
   })
+
+  Object.keys(directoryComparison).find((fileRelativeUrl) => {
+    const { head } = directoryComparison[fileRelativeUrl]
+    if (head) {
+      // adds sizeName we becomes interested in
+      // (will show undefined because we cannot compute the value but that's fine )
+      Object.keys(head.sizeMap).forEach((sizeName) => {
+        if (sizeName in outdatedBytesMap) return
+        outdatedBytesMap[sizeName] = undefined
+      })
+      // remove sizeName that we are no longer interested in
+      Object.keys(outdatedBytesMap).forEach((sizeName) => {
+        if (sizeName in head.sizeMap) return
+        delete outdatedBytesMap[sizeName]
+      })
+      return true
+    }
+    return false
+  })
+
   return {
     fileChangedCount,
     outdatedBytesMap,
