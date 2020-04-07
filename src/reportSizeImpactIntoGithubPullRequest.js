@@ -116,7 +116,7 @@ ${headSnapshotFileContent}
       baseSnapshot = {}
       logger.warn(`base snapshot ignored because different version.`)
       warnings.push(
-        `\`${pullRequestBase}\` ignored because version (${baseVersion}) differs from version on \`${pullRequestHead}\` (${headVersion})`,
+        `**Warning:** Base ignored while computing pull request impact. It's because @jsenv/github-pull-request-filesize-impact version between \`${pullRequestBase}\` and \`${pullRequestHead}\` are too different.`,
       )
     }
 
