@@ -6,20 +6,7 @@ import {
   normalizeSpecifierMetaMap,
 } from "@jsenv/util"
 
-export const compareTwoSnapshots = (baseVersionnedSnapshot, headVersionnedSnapshot) => {
-  const baseVersion = baseVersionnedSnapshot.version
-  const headVersion = headVersionnedSnapshot.version
-  if (baseVersion !== headVersion) {
-    return {
-      code: "OLD_VERSION",
-      baseVersion,
-      headVersion,
-    }
-  }
-
-  const baseSnapshot = baseVersionnedSnapshot.snapshot
-  const headSnapshot = headVersionnedSnapshot.snapshot
-
+export const compareTwoSnapshots = (baseSnapshot, headSnapshot) => {
   const directories = Object.keys(headSnapshot)
   if (directories.length === 0) {
     return {

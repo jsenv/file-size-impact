@@ -102,25 +102,35 @@ ${baseSnapshotFileContent}
 ${headSnapshotFileContent}
 `)
 
-    const baseSnapshot = JSON.parse(baseSnapshotFileContent)
-    const headSnapshot = JSON.parse(headSnapshotFileContent)
+    const baseVersionnedSnapshot = JSON.parse(baseSnapshotFileContent)
+    const headVersionnedSnapshot = JSON.parse(headSnapshotFileContent)
+    const baseVersion = baseVersionnedSnapshot.version
+    const headVersion = headVersionnedSnapshot.version
+
+    let baseSnapshot
+    const warnings = []
+    const headSnapshot = headVersionnedSnapshot.snapshot
+    if (baseVersion === headVersion) {
+      baseSnapshot = baseVersionnedSnapshot.snapshot
+    } else {
+      baseSnapshot = {}
+      logger.warn(`base snapshot ignored because different version.`)
+      warnings.push(
+        `\`${pullRequestBase}\` ignored because version (${baseVersion}) differs from version on \`${pullRequestHead}\` (${headVersion})`,
+      )
+    }
+
     const snapshotComparison = compareTwoSnapshots(baseSnapshot, headSnapshot)
 
     const pullRequestCommentString = generatePullRequestCommentString({
       pullRequestBase,
       pullRequestHead,
       snapshotComparison,
+      warnings,
       formatSize,
       commentSections,
       generatedByLink,
     })
-
-    if (!pullRequestCommentString) {
-      logger.warn(`
-aborting because the pull request comment would be empty.
-May happen whem a snapshot file is empty for instance
-`)
-    }
 
     if (existingComment) {
       logger.debug(`comment found, updating it
