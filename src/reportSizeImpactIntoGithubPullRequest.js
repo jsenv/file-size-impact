@@ -104,20 +104,34 @@ ${headSnapshotFileContent}
 
     const baseVersionnedSnapshot = JSON.parse(baseSnapshotFileContent)
     const headVersionnedSnapshot = JSON.parse(headSnapshotFileContent)
-    const baseVersion = baseVersionnedSnapshot.version
-    const headVersion = headVersionnedSnapshot.version
 
     let baseSnapshot
-    const warnings = []
     const headSnapshot = headVersionnedSnapshot.snapshot
-    if (baseVersion === headVersion) {
-      baseSnapshot = baseVersionnedSnapshot.snapshot
-    } else {
+    const warnings = []
+
+    // this is an indirect way of detecting that there is an error while generating snapshot
+    // There is || echo "{}" > ../snapshot.base.json in size-impact.yml
+    if (Object.keys(baseVersionnedSnapshot).length === 0) {
       baseSnapshot = {}
-      logger.warn(`base snapshot ignored because different version.`)
       warnings.push(
-        `**Warning:** Files on \`${pullRequestBase}\` ignored while computing pull request impact. Reason: versions of \`@jsenv/github-pull-request-filesize-impact\` are too different on \`${pullRequestBase}\` and \`${pullRequestHead}\`.`,
+        `**Warning:** Files on \`${pullRequestBase}\` cannot be compared to compute pull request impact.
+There was an error while generating snapshot for \`${pullRequestBase}\`.
+It's likely because \`@jsenv/github-pull-request-filesize-impact\` scripts are not in \`${pullRequestBase}\` branch.
+This is normal when adding \`@jsenv/github-pull-request-filesize-impact\` for the first time.`,
       )
+    } else {
+      const baseVersion = baseVersionnedSnapshot.version
+      const headVersion = headVersionnedSnapshot.version
+
+      if (baseVersion === headVersion) {
+        baseSnapshot = baseVersionnedSnapshot.snapshot
+      } else {
+        baseSnapshot = {}
+        logger.warn(`base snapshot ignored because different version.`)
+        warnings.push(
+          `**Warning:** Files on \`${pullRequestBase}\` ignored while computing pull request impact. Reason: versions of \`@jsenv/github-pull-request-filesize-impact\` are too different on \`${pullRequestBase}\` and \`${pullRequestHead}\`.`,
+        )
+      }
     }
 
     const snapshotComparison = compareTwoSnapshots(baseSnapshot, headSnapshot)
