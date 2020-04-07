@@ -6,9 +6,30 @@ import {
   normalizeSpecifierMetaMap,
 } from "@jsenv/util"
 
-export const compareTwoSnapshots = (baseSnapshot, headSnapshot) => {
+export const compareTwoSnapshots = (baseVersionnedSnapshot, headVersionnedSnapshot) => {
+  const baseVersion = baseVersionnedSnapshot.version
+  const headVersion = headVersionnedSnapshot.version
+  if (baseVersion !== headVersion) {
+    return {
+      code: "OLD_VERSION",
+      baseVersion,
+      headVersion,
+    }
+  }
+
+  const baseSnapshot = baseVersionnedSnapshot.snapshot
+  const headSnapshot = headVersionnedSnapshot.snapshot
+
+  const directories = Object.keys(headSnapshot)
+  if (directories.length === 0) {
+    return {
+      code: "EMPTY",
+      trackingConfig: headSnapshot.trackingConfig,
+    }
+  }
+
   const comparison = {}
-  Object.keys(headSnapshot).forEach((directoryRelativeUrl) => {
+  directories.forEach((directoryRelativeUrl) => {
     // || {} exists in case directory was not tracked in base branch
     // and is now tracked in head branch.
     // compareDirectorySnapshot will handle the empty object and consider everything as added
@@ -19,6 +40,7 @@ export const compareTwoSnapshots = (baseSnapshot, headSnapshot) => {
       headDirectorySnapshot,
     )
   })
+
   return comparison
 }
 

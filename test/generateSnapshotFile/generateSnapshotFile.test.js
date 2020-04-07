@@ -1,5 +1,5 @@
 import { assert } from "@jsenv/assert"
-import { resolveUrl, ensureEmptyDirectory, readFile, writeFile } from "@jsenv/util"
+import { resolveUrl, ensureEmptyDirectory, readFile, writeFile, writeDirectory } from "@jsenv/util"
 import { generateSnapshotFile } from "../../index.js"
 
 const tempDirectoryUrl = resolveUrl("./temp/", import.meta.url)
@@ -26,16 +26,19 @@ const tempDirectoryUrl = resolveUrl("./temp/", import.meta.url)
   const snapshotFileContent = await readFile(snapshotFileUrl)
   const actual = JSON.parse(snapshotFileContent)
   const expected = {
-    dist: {
-      manifest: null,
-      report: {
-        "file.js": {
-          sizeMap: { none: 20 },
-          hash: '"14-qK8urhYN/nZoik6niqmvkolkCK0"',
+    version: 1,
+    snapshot: {
+      dist: {
+        manifest: null,
+        report: {
+          "file.js": {
+            sizeMap: { none: 20 },
+            hash: '"14-qK8urhYN/nZoik6niqmvkolkCK0"',
+          },
         },
-      },
-      trackingConfig: {
-        "./**/*.js": true,
+        trackingConfig: {
+          "./**/*.js": true,
+        },
       },
     },
   }
@@ -64,18 +67,53 @@ const tempDirectoryUrl = resolveUrl("./temp/", import.meta.url)
   const snapshotFileContent = await readFile(snapshotFileUrl)
   const actual = JSON.parse(snapshotFileContent)
   const expected = {
-    dist: {
-      manifest: {
-        "file.js": "file.hash.js",
-      },
-      report: {
-        "file.hash.js": {
-          sizeMap: { none: 20 },
-          hash: '"14-qK8urhYN/nZoik6niqmvkolkCK0"',
+    version: 1,
+    snapshot: {
+      dist: {
+        manifest: {
+          "file.js": "file.hash.js",
+        },
+        report: {
+          "file.hash.js": {
+            sizeMap: { none: 20 },
+            hash: '"14-qK8urhYN/nZoik6niqmvkolkCK0"',
+          },
+        },
+        trackingConfig: {
+          "./**/*": true,
         },
       },
-      trackingConfig: {
-        "./**/*": true,
+    },
+  }
+  assert({ actual, expected })
+}
+
+// an empty directory
+{
+  await ensureEmptyDirectory(tempDirectoryUrl)
+  const directoryUrl = resolveUrl("dist", tempDirectoryUrl)
+  await writeDirectory(directoryUrl)
+  const snapshotFileRelativeUrl = "./snapshot.json"
+  const snapshotFileUrl = resolveUrl(snapshotFileRelativeUrl, tempDirectoryUrl)
+
+  await generateSnapshotFile({
+    logLevel: "warn",
+    projectDirectoryUrl: tempDirectoryUrl,
+    snapshotFileRelativeUrl,
+    directorySizeTrackingConfig: {
+      dist: {
+        "./**/*.js": true,
+      },
+    },
+  })
+  const snapshotFileContent = await readFile(snapshotFileUrl)
+  const actual = JSON.parse(snapshotFileContent)
+  const expected = {
+    version: 1,
+    snapshot: {
+      dist: {
+        manifest: null,
+        report: {},
       },
     },
   }

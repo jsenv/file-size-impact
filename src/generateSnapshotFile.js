@@ -16,6 +16,9 @@ import {
 import { jsenvDirectorySizeTrackingConfig } from "./jsenvDirectorySizeTrackingConfig.js"
 import { transform as noneTransform } from "./noneTransformation.js"
 
+// update this when snapshot file format changes and is not retro compatible
+const SNAPSHOT_VERSION = 1
+
 export const generateSnapshotFile = async ({
   cancellationToken = createCancellationTokenForProcess(),
   logLevel,
@@ -81,7 +84,11 @@ export const generateSnapshotFile = async ({
     )
 
     logger.info(`write snapshot file at ${urlToFileSystemPath(snapshotFileUrl)}`)
-    const snapshotFileContent = JSON.stringify(snapshot, null, "  ")
+    const versionnedSnapshot = {
+      version: SNAPSHOT_VERSION,
+      snapshot,
+    }
+    const snapshotFileContent = JSON.stringify(versionnedSnapshot, null, "  ")
     logger.debug(snapshotFileContent)
     await writeFile(snapshotFileUrl, snapshotFileContent)
   }).catch((e) => {
