@@ -8,32 +8,62 @@ export const renderFilesImpact = (
   const noImpact = Object.keys(filesImpact).length === 0
   return `
   <h3>File by file impact</h3>
-${
-  noImpact
-    ? `Pull request changes have no impact on <code>${directoryRelativeUrl}</code> files.`
-    : renderFilesImpactTable(filesImpact, { pullRequestBase, pullRequestHead, formatSize })
-}`
+  ${
+    noImpact
+      ? `<p>Pull request changes have no impact on <code>${directoryRelativeUrl}</code> files.</p>`
+      : renderFilesImpactTable(filesImpact, { pullRequestBase, pullRequestHead, formatSize })
+  }`
 }
 
 const renderFilesImpactTable = (filesImpact, { pullRequestBase, pullRequestHead, formatSize }) => {
-  return `  <table>
+  const noneOnly = analyseNoneOnly(filesImpact)
+
+  const headerCells = [
+    `<th nowrap>File</th>`,
+    ...(noneOnly ? [] : ["<th nowrap>Transform</th>"]),
+    `<th nowrap>Diff</th>`,
+    `<th nowrap><code>${pullRequestBase}</code></th>`,
+    `<th nowrap><code>${pullRequestHead}</code></th>`,
+    `<th nowrap>Event</th>`,
+  ]
+
+  return `<table>
     <thead>
       <tr>
-        <th nowrap>File</th>
-        <th nowrap>Transform</th>
-        <th nowrap>Diff</th>
-        <th nowrap><code>${pullRequestBase}</code></th>
-        <th nowrap><code>${pullRequestHead}</code></th>
-        <th nowrap>Event</th>
+        ${headerCells.join(`
+        `)}
       </tr>
     </thead>
     <tbody>
-      ${renderFilesTableBody(filesImpact, formatSize)}
+      ${renderFilesTableBody(filesImpact, { noneOnly, formatSize })}
     </tbody>
   </table>`
 }
 
-const renderFilesTableBody = (filesImpact, formatSize) => {
+const analyseNoneOnly = (filesImpact) => {
+  const files = Object.keys(filesImpact)
+  const firstFileWithHead = files.find((file) => {
+    return Boolean(filesImpact[file].head)
+  })
+  if (firstFileWithHead) {
+    const sizeMap = filesImpact[firstFileWithHead].head.sizeMap
+    return "none" in sizeMap && Object.keys(sizeMap).length === 1
+  }
+
+  // we are guaranteed to have at least one base file otherwise the message saying
+  // pull request have no impact would be displayed instead of the table.
+  // There is one case where a transform would be ignored though:
+  // A PR add a new transform and there 1+ deleted files, and zero created/changed files.
+  // But that's kinda ok because we would only display that transform with --- everywhere
+  // because base did'nt have this and file was deleted so head neither
+  const firstFileWithBase = files.find((file) => {
+    return Boolean(filesImpact[file].base)
+  })
+  const sizeMap = filesImpact[firstFileWithBase].base.sizeMap
+  return "none" in sizeMap && Object.keys(sizeMap).length === 1
+}
+
+const renderFilesTableBody = (filesImpact, { noneOnly, formatSize }) => {
   const lines = []
 
   Object.keys(filesImpact).forEach((fileRelativePath) => {
@@ -46,7 +76,7 @@ const renderFilesTableBody = (filesImpact, formatSize) => {
       const merged = index > 0
       const cells = [
         renderFileCell({ rowSpan, merged, fileRelativePath }),
-        `<td nowrap>${sizeName}</td>`,
+        ...(noneOnly ? [] : [`<td nowrap>${sizeName}</td>`]),
         renderDiffCell({ event, sizeName, base, head, formatSize }),
         renderBaseCell({ rowSpan, merged, event, sizeName, base, formatSize }),
         renderHeadCell({ rowSpan, merged, event, sizeName, head, formatSize }),

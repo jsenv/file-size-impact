@@ -11,7 +11,7 @@ export const renderDirectoryImpact = (
   <h3>Directory impact</h3>
   ${
     noChanges
-      ? `Pull request changes have no impact on <code>${directoryRelativeUrl}</code>.`
+      ? `<p>Pull request changes have no impact on <code>${directoryRelativeUrl}</code>.</p>`
       : `<p>Impact of changes on <code>${directoryRelativeUrl}</code> size in bytes.</p>
   ${renderDirectoryImpactTable(directoryImpact, {
     pullRequestBase,

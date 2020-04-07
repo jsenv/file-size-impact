@@ -32,7 +32,7 @@ const examples = {
       },
     },
   }),
-  "directory + cache section disabled": generateComment({
+  "directory disabled, files enabled, cache disabled": generateComment({
     commentSections: { filesImpact: true },
     snapshotComparison: {
       dist: {
@@ -53,7 +53,7 @@ const examples = {
       },
     },
   }),
-  "cache section disabled": generateComment({
+  "files enabled, directory enabed, cache disabled": generateComment({
     commentSections: { filesImpact: true, directoryImpact: true },
     snapshotComparison: {
       dist: {

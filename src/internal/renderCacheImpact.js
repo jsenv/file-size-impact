@@ -5,8 +5,9 @@ export const renderCacheImpact = (directoryComparison, { formatSize }) => {
 
   return `
   <h3>Cache impact</h3>
-  <p>${renderCacheImpactDescription(cacheImpact)}</p>
-  ${cacheImpact.fileChangedCount === 0 ? "" : renderCacheImpactTable(cacheImpact, { formatSize })}`
+  <p>${renderCacheImpactDescription(cacheImpact)}</p>${
+    cacheImpact.fileChangedCount === 0 ? "" : renderCacheImpactTable(cacheImpact, { formatSize })
+  }`
 }
 
 const renderCacheImpactDescription = ({ fileChangedCount }) => {
@@ -65,7 +66,8 @@ const renderCacheImpactTable = (cacheImpact, { formatSize }) => {
     `<th nowrap>Bytes outdated</th>`,
   ]
 
-  return `<table>
+  return `
+  <table>
     <thead>
       <tr>
         ${headerCells.join(`
