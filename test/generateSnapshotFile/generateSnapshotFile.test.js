@@ -114,6 +114,9 @@ const tempDirectoryUrl = resolveUrl("./temp/", import.meta.url)
       dist: {
         manifest: null,
         report: {},
+        trackingConfig: {
+          "./**/*.js": true,
+        },
       },
     },
   }
