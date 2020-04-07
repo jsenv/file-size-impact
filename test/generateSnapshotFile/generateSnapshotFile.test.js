@@ -30,7 +30,7 @@ const tempDirectoryUrl = resolveUrl("./temp/", import.meta.url)
       manifest: null,
       report: {
         "file.js": {
-          size: 20,
+          sizeMap: { none: 20 },
           hash: '"14-qK8urhYN/nZoik6niqmvkolkCK0"',
         },
       },
@@ -70,7 +70,7 @@ const tempDirectoryUrl = resolveUrl("./temp/", import.meta.url)
       },
       report: {
         "file.hash.js": {
-          size: 20,
+          sizeMap: { none: 20 },
           hash: '"14-qK8urhYN/nZoik6niqmvkolkCK0"',
         },
       },

@@ -17,5 +17,5 @@ const expected = await readFile(commentExampleFileUrl)
 
 const { promise } = await import("../../docs/generate-comment-example.js")
 await promise
-const actual = readFile(commentExampleFileUrl)
+const actual = await readFile(commentExampleFileUrl)
 assert({ actual, expected })
