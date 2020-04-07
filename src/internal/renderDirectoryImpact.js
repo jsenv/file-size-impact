@@ -52,8 +52,8 @@ const renderDirectoryImpactTable = (
   return `<table>
     <thead>
       <tr>
-        <th nowrap>Compression</th>
-        <th nowrap>diff</th>
+        <th nowrap>Transform</th>
+        <th nowrap>Diff</th>
         <th nowrap><code>${pullRequestBase}</code></th>
         <th nowrap><code>${pullRequestHead}</code></th>
       </tr>

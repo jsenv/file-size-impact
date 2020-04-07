@@ -46,7 +46,7 @@ const renderCacheImpactTable = (cacheImpact, { formatSize }) => {
   return `<table>
     <thead>
       <tr>
-        <th nowrap>Compression</th>
+        <th nowrap>Transform</th>
         <th nowrap>Bytes outdated</th>
       </tr>
     </thead>

@@ -20,12 +20,12 @@ const renderFilesImpactTable = (filesImpact, { pullRequestBase, pullRequestHead,
   return `  <table>
     <thead>
       <tr>
-        <th nowrap>file</th>
-        <th nowrap>compression</th>
-        <th nowrap>diff</th>
+        <th nowrap>File</th>
+        <th nowrap>Transform</th>
+        <th nowrap>Diff</th>
         <th nowrap><code>${pullRequestBase}</code></th>
         <th nowrap><code>${pullRequestHead}</code></th>
-        <th nowrap>event</th>
+        <th nowrap>Event</th>
       </tr>
     </thead>
     <tbody>
@@ -123,22 +123,16 @@ const renderDiffCell = ({ event, compression, base, head, formatSize }) => {
   return `<td nowrap>${formatSize(diff, { diff: true })}</td>`
 }
 
-const renderBaseCell = ({ event, rowSpan, merged, compression, base, formatSize }) => {
+const renderBaseCell = ({ event, compression, base, formatSize }) => {
   if (event === "created") {
-    if (merged) {
-      return ""
-    }
-    return `<td nowrap rowspan="${rowSpan}">---</td>`
+    return `<td nowrap>---</td>`
   }
   return `<td nowrap>${formatSize(base[compressionToSizeName(compression)])}</td>`
 }
 
-const renderHeadCell = ({ event, rowSpan, merged, compression, head, formatSize }) => {
+const renderHeadCell = ({ event, compression, head, formatSize }) => {
   if (event === "deleted") {
-    if (merged) {
-      return ""
-    }
-    return `<td nowrap rowspan="${rowSpan}">---</td>`
+    return `<td nowrap>---</td>`
   }
   return `<td nowrap>${formatSize(head[compressionToSizeName(compression)])}</td>`
 }

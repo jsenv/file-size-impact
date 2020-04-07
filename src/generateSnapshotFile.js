@@ -14,6 +14,7 @@ import {
   urlToRelativeUrl,
 } from "@jsenv/util"
 import { jsenvDirectorySizeTrackingConfig } from "./jsenvDirectorySizeTrackingConfig.js"
+import { transform as noneTransform } from "./noneTransformation.js"
 
 export const generateSnapshotFile = async ({
   cancellationToken = createCancellationTokenForProcess(),
@@ -24,6 +25,7 @@ export const generateSnapshotFile = async ({
 
   manifest = true,
   manifestFileRelativeUrl = "./manifest.json",
+  transformations = { none: noneTransform },
 }) => {
   return catchCancellation(async () => {
     const logger = createLogger({ logLevel })
@@ -64,6 +66,7 @@ export const generateSnapshotFile = async ({
             specifierMetaMap,
             manifest,
             manifestFileRelativeUrl,
+            transformations,
           }),
         ])
 
@@ -109,6 +112,7 @@ const generateDirectoryFileReport = async ({
   specifierMetaMap,
   manifest,
   manifestFileRelativeUrl,
+  transformations,
 }) => {
   const directoryFileReport = {}
   try {
@@ -125,10 +129,27 @@ const generateDirectoryFileReport = async ({
         }
         const fileUrl = resolveUrl(relativeUrl, directoryUrl)
         const fileContent = await readFile(fileUrl)
-        const hash = bufferToEtag(Buffer.from(fileContent))
+        const fileBuffer = Buffer.from(fileContent)
+
+        const sizeMap = {}
+        await Object.keys(transformations).reduce(async (previous, key) => {
+          await previous
+          const transform = transformations[key]
+          try {
+            const transformResult = await transform(fileBuffer)
+            sizeMap[key] = Buffer.from(transformResult).length
+          } catch (e) {
+            logger.debug(`error while transforming ${fileUrl} with ${key}.
+--- error stack ---
+${e.stack}`)
+            sizeMap[key] = "error"
+          }
+        }, Promise.resolve())
+
+        const hash = bufferToEtag(fileBuffer)
 
         directoryFileReport[relativeUrl] = {
-          size: fileStats.size,
+          sizeMap,
           hash,
         }
       },
