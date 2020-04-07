@@ -45,47 +45,64 @@ const directoryComparisonToDirectoryImpact = (directoryComparison) => {
   }
 }
 
+const analyseNoneOnly = (directoryImpact) => {
+  const { directoryHeadSizeMap } = directoryImpact
+  return `none` in directoryHeadSizeMap && Object.keys(directoryHeadSizeMap).length === 1
+}
+
 const renderDirectoryImpactTable = (
   directoryImpact,
   { pullRequestBase, pullRequestHead, formatSize },
 ) => {
+  const noneOnly = analyseNoneOnly(directoryImpact)
+
+  const headers = [
+    ...(noneOnly ? [] : ["<th nowrap>Transform</th>"]),
+    `<th nowrap>Diff</th>`,
+    `<th nowrap><code>${pullRequestBase}</code></th>`,
+    `<th nowrap><code>${pullRequestHead}</code></th>`,
+  ]
+
   return `<table>
     <thead>
       <tr>
-        <th nowrap>Transform</th>
-        <th nowrap>Diff</th>
-        <th nowrap><code>${pullRequestBase}</code></th>
-        <th nowrap><code>${pullRequestHead}</code></th>
+        ${headers.join(`
+        `)}
       </tr>
     </thead>
     <tbody>
-      ${renderDirectoryImpactTableBody(directoryImpact, { formatSize })}
+      ${renderDirectoryImpactTableBody(directoryImpact, { noneOnly, formatSize })}
     </tbody>
   </table>`
 }
 
-const renderDirectoryImpactTableBody = (directoryImpact, { formatSize }) => {
+const renderDirectoryImpactTableBody = (directoryImpact, { noneOnly, formatSize }) => {
   const { directoryBaseSizeMap, directoryHeadSizeMap } = directoryImpact
 
   const lines = Object.keys(directoryHeadSizeMap).map((sizeName) => {
+    const cells = [
+      ...(noneOnly ? [] : [`<td nowrap>${sizeName}</td>`]),
+      renderDirectoryDiffCell({
+        directoryBaseSizeMap,
+        directoryHeadSizeMap,
+        sizeName,
+        formatSize,
+      }),
+      renderDirectoryBaseCell({
+        directoryBaseSizeMap,
+        sizeName,
+        formatSize,
+      }),
+      renderDirectoryHeadCell({
+        directoryHeadSizeMap,
+        sizeName,
+        formatSize,
+      }),
+    ]
+
     return `
-        <td nowrap>${sizeName}</td>
-        ${renderDirectoryDiffCell({
-          directoryBaseSizeMap,
-          directoryHeadSizeMap,
-          sizeName,
-          formatSize,
-        })}
-        ${renderDirectoryBaseCell({
-          directoryBaseSizeMap,
-          sizeName,
-          formatSize,
-        })}
-        ${renderDirectoryHeadCell({
-          directoryHeadSizeMap,
-          sizeName,
-          formatSize,
-        })}`
+        ${cells.join(`
+        `)}`
   })
 
   return `<tr>${lines.join(`

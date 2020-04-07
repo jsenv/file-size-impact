@@ -9,7 +9,6 @@
   <table>
     <thead>
       <tr>
-        <th nowrap>Transform</th>
         <th nowrap>Diff</th>
         <th nowrap><code>base</code></th>
         <th nowrap><code>head</code></th>
@@ -17,7 +16,6 @@
     </thead>
     <tbody>
       <tr>
-        <td nowrap>none</td>
         <td nowrap>+10</td>
         <td nowrap>100</td>
         <td nowrap>110</td>
@@ -133,7 +131,6 @@
   <table>
     <thead>
       <tr>
-        <th nowrap>Transform</th>
         <th nowrap>Diff</th>
         <th nowrap><code>base</code></th>
         <th nowrap><code>head</code></th>
@@ -141,7 +138,6 @@
     </thead>
     <tbody>
       <tr>
-        <td nowrap>none</td>
         <td nowrap>+10</td>
         <td nowrap>100</td>
         <td nowrap>110</td>
@@ -178,7 +174,6 @@ Pull request changes have no impact on <code>dist</code> files.
   <table>
     <thead>
       <tr>
-        <th nowrap>Transform</th>
         <th nowrap>Diff</th>
         <th nowrap><code>base</code></th>
         <th nowrap><code>head</code></th>
@@ -186,7 +181,6 @@ Pull request changes have no impact on <code>dist</code> files.
     </thead>
     <tbody>
       <tr>
-        <td nowrap>none</td>
         <td nowrap>0</td>
         <td nowrap>25</td>
         <td nowrap>25</td>
@@ -340,7 +334,6 @@ Pull request changes have no impact on <code>dist</code> files.
   <table>
     <thead>
       <tr>
-        <th nowrap>Transform</th>
         <th nowrap>Diff</th>
         <th nowrap><code>base</code></th>
         <th nowrap><code>head</code></th>
@@ -348,7 +341,6 @@ Pull request changes have no impact on <code>dist</code> files.
     </thead>
     <tbody>
       <tr>
-        <td nowrap>none</td>
         <td nowrap>+10</td>
         <td nowrap>100</td>
         <td nowrap>110</td>
