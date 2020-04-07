@@ -22,7 +22,11 @@ ${generateDetails(directoryComparison, {
   directoryRelativeUrl,
   pullRequestBase,
   pullRequestHead,
-  formatSize,
+  formatSize: (value, ...rest) => {
+    // call formatSize only on numbers 'error' must be returned untouched
+    if (typeof value === "number") return formatSize(value, ...rest)
+    return value
+  },
 })}
 </details>`
   })

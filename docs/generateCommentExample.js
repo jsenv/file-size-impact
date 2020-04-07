@@ -9,9 +9,11 @@ const examples = {
       "dist/commonjs": {
         "bar.js": {
           base: {
-            size: 100,
-            gzipSize: 10,
-            brotliSize: 9,
+            sizeMap: {
+              none: 100,
+              gzip: 10,
+              brotli: 9,
+            },
             hash: "a",
           },
           head: null,
@@ -19,23 +21,29 @@ const examples = {
         "foo.js": {
           base: null,
           head: {
-            size: 120,
-            gzipSize: 12,
-            brotliSize: 11,
+            sizeMap: {
+              none: 120,
+              gzip: 12,
+              brotli: 11,
+            },
             hash: "a",
           },
         },
         "hello.js": {
           base: {
-            size: 167000,
-            gzipSize: 1600,
-            brotliSize: 1500,
+            sizeMap: {
+              none: 167000,
+              gzip: 1600,
+              brotli: 1500,
+            },
             hash: "a",
           },
           head: {
-            size: 187000,
-            gzipSize: 1800,
-            brotliSize: 1700,
+            sizeMap: {
+              none: 187000,
+              gzip: 1800,
+              brotli: 1700,
+            },
             hash: "b",
           },
         },
@@ -43,9 +51,11 @@ const examples = {
       "dist/systemjs": {
         "bar.js": {
           base: {
-            size: 100,
-            gzipSize: 10,
-            brotliSize: 9,
+            sizeMap: {
+              none: 100,
+              gzip: 10,
+              brotli: 9,
+            },
             hash: "a",
           },
           head: null,
@@ -53,23 +63,29 @@ const examples = {
         "foo.js": {
           base: null,
           head: {
-            size: 120,
-            gzipSize: 12,
-            brotliSize: 11,
+            sizeMap: {
+              none: 120,
+              gzip: 12,
+              brotli: 11,
+            },
             hash: "a",
           },
         },
         "hello.js": {
           base: {
-            size: 167,
-            gzipSize: 16,
-            brotliSize: 15,
+            sizeMap: {
+              none: 167000,
+              gzip: 1600,
+              brotli: 1500,
+            },
             hash: "a",
           },
           head: {
-            size: 187,
-            gzipSize: 18,
-            brotliSize: 17,
+            sizeMap: {
+              none: 187000,
+              gzip: 1800,
+              brotli: 1700,
+            },
             hash: "b",
           },
         },

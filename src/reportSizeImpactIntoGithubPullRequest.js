@@ -100,10 +100,9 @@ ${baseSnapshotFileContent}
 ${headSnapshotFileContent}
 `)
 
-    const snapshotComparison = compareTwoSnapshots(
-      JSON.parse(baseSnapshotFileContent),
-      JSON.parse(headSnapshotFileContent),
-    )
+    const baseSnapshot = JSON.parse(baseSnapshotFileContent)
+    const headSnapshot = JSON.parse(headSnapshotFileContent)
+    const snapshotComparison = compareTwoSnapshots(baseSnapshot, headSnapshot)
 
     const pullRequestCommentString = generatePullRequestCommentString({
       pullRequestBase,

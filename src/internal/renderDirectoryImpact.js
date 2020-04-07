@@ -1,9 +1,11 @@
+import { sumSize } from "./helper.js"
+
 export const renderDirectoryImpact = (
   directoryComparison,
   { directoryRelativeUrl, pullRequestBase, pullRequestHead, formatSize },
 ) => {
   return `
-  <h3>Overall impact</h3>
+  <h3>Directory impact</h3>
   <p>Impact of changes on <code>${directoryRelativeUrl}</code> size in bytes.</p>
   ${renderDirectoryImpactTable(directoryComparison, {
     pullRequestBase,
@@ -13,33 +15,26 @@ export const renderDirectoryImpact = (
 }
 
 const directoryComparisonToDirectoryImpact = (directoryComparison) => {
-  let uncompressedBaseSize = 0
-  let uncompressedHeadSize = 0
-  let gzipBaseSize = 0
-  let gzipHeadSize = 0
-  let brotliBaseSize = 0
-  let brotliHeadSize = 0
-
+  const directoryBaseSizeMap = {}
+  const directoryHeadSizeMap = {}
   Object.keys(directoryComparison).forEach((fileRelativeUrl) => {
     const { base, head } = directoryComparison[fileRelativeUrl]
-
     if (base) {
-      uncompressedBaseSize += base.size
-      gzipBaseSize += base.gzipSize
-      brotliBaseSize += base.brotliSize
+      const baseSizeMap = base.sizeMap
+      Object.keys(baseSizeMap).forEach((key) => {
+        directoryBaseSizeMap[key] = sumSize(baseSizeMap, directoryBaseSizeMap, key)
+      })
     }
-
     if (head) {
-      uncompressedHeadSize += head.size
-      gzipHeadSize += head.gzipSize
-      brotliHeadSize += head.brotliSize
+      const headSizeMap = head.sizeMap
+      Object.keys(headSizeMap).forEach((key) => {
+        directoryHeadSizeMap[key] = sumSize(headSizeMap, directoryHeadSizeMap, key)
+      })
     }
   })
-
   return {
-    uncompressed: { baseSize: uncompressedBaseSize, headSize: uncompressedHeadSize },
-    gzip: { baseSize: gzipBaseSize, headSize: gzipHeadSize },
-    brotli: { baseSize: brotliBaseSize, headSize: brotliHeadSize },
+    directoryBaseSizeMap,
+    directoryHeadSizeMap,
   }
 }
 
@@ -65,15 +60,14 @@ const renderDirectoryImpactTable = (
 }
 
 const renderDirectoryImpactTableBody = (directoryImpact, { formatSize }) => {
-  const { uncompressed, gzip, brotli } = directoryImpact
+  const { directoryBaseSizeMap, directoryHeadSizeMap } = directoryImpact
 
-  const lines = [
-    { name: "none", ...uncompressed },
-    { name: "gzip", ...gzip },
-    { name: "brotli", ...brotli },
-  ].map(({ name, baseSize, headSize }) => {
+  const lines = Object.keys(directoryHeadSizeMap).map((key) => {
+    const baseSize = directoryBaseSizeMap[key]
+    const headSize = directoryHeadSizeMap[key]
+
     return `
-        <td nowrap>${name}</td>
+        <td nowrap>${key}</td>
         <td nowrap>${formatSize(headSize - baseSize, { diff: true })}</td>
         <td nowrap>${formatSize(baseSize)}</td>
         <td nowrap>${formatSize(headSize)}</td>`

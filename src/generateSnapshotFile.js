@@ -116,44 +116,50 @@ const generateDirectoryFileReport = async ({
 }) => {
   const directoryFileReport = {}
   try {
-    await collectFiles({
+    const files = await collectFiles({
       directoryUrl,
       specifierMetaMap,
       predicate: (meta) => meta.track === true,
-      matchingFileOperation: async ({ relativeUrl, fileStats }) => {
-        if (!fileStats.isFile()) {
-          return
-        }
-        if (manifest && relativeUrl === manifestFileRelativeUrl) {
-          return
-        }
-        const fileUrl = resolveUrl(relativeUrl, directoryUrl)
-        const fileContent = await readFile(fileUrl)
-        const fileBuffer = Buffer.from(fileContent)
+    })
 
-        const sizeMap = {}
-        await Object.keys(transformations).reduce(async (previous, key) => {
-          await previous
-          const transform = transformations[key]
-          try {
-            const transformResult = await transform(fileBuffer)
-            sizeMap[key] = Buffer.from(transformResult).length
-          } catch (e) {
-            logger.debug(`error while transforming ${fileUrl} with ${key}.
+    // we use reduce and not Promise.all(files.map) because transformation can be expensive (gzip, brotli)
+    // so we won't benefit from concurrency (it might even make things worse)
+    await files.reduce(async (previous, { relativeUrl, fileStats }) => {
+      await previous
+
+      if (!fileStats.isFile()) {
+        return
+      }
+      if (manifest && relativeUrl === manifestFileRelativeUrl) {
+        return
+      }
+
+      const fileUrl = resolveUrl(relativeUrl, directoryUrl)
+      const fileContent = await readFile(fileUrl)
+      const fileBuffer = Buffer.from(fileContent)
+
+      const sizeMap = {}
+      await Object.keys(transformations).reduce(async (previous, key) => {
+        await previous
+        const transform = transformations[key]
+        try {
+          const transformResult = await transform(fileBuffer)
+          sizeMap[key] = Buffer.from(transformResult).length
+        } catch (e) {
+          logger.debug(`error while transforming ${fileUrl} with ${key}.
 --- error stack ---
 ${e.stack}`)
-            sizeMap[key] = "error"
-          }
-        }, Promise.resolve())
-
-        const hash = bufferToEtag(fileBuffer)
-
-        directoryFileReport[relativeUrl] = {
-          sizeMap,
-          hash,
+          sizeMap[key] = "error"
         }
-      },
-    })
+      }, Promise.resolve())
+
+      const hash = bufferToEtag(fileBuffer)
+
+      directoryFileReport[relativeUrl] = {
+        sizeMap,
+        hash,
+      }
+    }, Promise.resolve())
   } catch (e) {
     const directoryPath = urlToFileSystemPath(directoryUrl)
     if (e.code === "ENOENT" && e.path === directoryPath) {

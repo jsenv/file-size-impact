@@ -4,7 +4,7 @@
 <details>
   <summary>dist/commonjs</summary>
 
-  <h3>Overall impact</h3>
+  <h3>Directory impact</h3>
   <p>Impact of changes on <code>dist/commonjs</code> size in bytes.</p>
   <table>
     <thead>
@@ -142,7 +142,7 @@
 <details>
   <summary>dist/systemjs</summary>
 
-  <h3>Overall impact</h3>
+  <h3>Directory impact</h3>
   <p>Impact of changes on <code>dist/systemjs</code> size in bytes.</p>
   <table>
     <thead>
@@ -156,21 +156,21 @@
     <tbody>
       <tr>
         <td nowrap>none</td>
-        <td nowrap>+40</td>
-        <td nowrap>267</td>
-        <td nowrap>307</td>
+        <td nowrap>+20,020</td>
+        <td nowrap>167,100</td>
+        <td nowrap>187,120</td>
       </tr>
       <tr>
         <td nowrap>gzip</td>
-        <td nowrap>+4</td>
-        <td nowrap>26</td>
-        <td nowrap>30</td>
+        <td nowrap>+202</td>
+        <td nowrap>1,610</td>
+        <td nowrap>1,812</td>
       </tr>
       <tr>
         <td nowrap>brotli</td>
-        <td nowrap>+4</td>
-        <td nowrap>24</td>
-        <td nowrap>28</td>
+        <td nowrap>+202</td>
+        <td nowrap>1,509</td>
+        <td nowrap>1,711</td>
       </tr>
     </tbody>
   <table>
@@ -231,22 +231,22 @@
       <tr>
         <td nowrap rowspan="3">hello.js</td>
         <td nowrap>none</td>
-        <td nowrap>+20</td>
-        <td nowrap>167</td>
-        <td nowrap>187</td>
+        <td nowrap>+20,000</td>
+        <td nowrap>167,000</td>
+        <td nowrap>187,000</td>
         <td nowrap rowspan="3">changed</td>
       </tr>
       <tr>
         <td nowrap>gzip</td>
-        <td nowrap>+2</td>
-        <td nowrap>16</td>
-        <td nowrap>18</td>
+        <td nowrap>+200</td>
+        <td nowrap>1,600</td>
+        <td nowrap>1,800</td>
       </tr>
       <tr>
         <td nowrap>brotli</td>
-        <td nowrap>+2</td>
-        <td nowrap>15</td>
-        <td nowrap>17</td>
+        <td nowrap>+200</td>
+        <td nowrap>1,500</td>
+        <td nowrap>1,700</td>
       </tr>
     </tbody>
   </table>
@@ -263,15 +263,15 @@
     <tbody>
       <tr>
         <td nowrap>none</td>
-        <td nowrap>167</td>
+        <td nowrap>167,000</td>
       </tr>
       <tr>
         <td nowrap>gzip</td>
-        <td nowrap>16</td>
+        <td nowrap>1,600</td>
       </tr>
       <tr>
         <td nowrap>brotli</td>
-        <td nowrap>15</td>
+        <td nowrap>1,500</td>
       </tr>
     </tbody>
   </table>

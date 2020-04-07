@@ -35,22 +35,22 @@ const renderFilesImpactTable = (filesImpact, { pullRequestBase, pullRequestHead,
 }
 
 const renderFilesTableBody = (filesImpact, formatSize) => {
-  const compressions = ["none", "gzip", "brotli"]
   const lines = []
 
   Object.keys(filesImpact).forEach((fileRelativePath) => {
     const fileImpact = filesImpact[fileRelativePath]
     const { event, base, head } = fileImpact
 
-    compressions.forEach((compression, index) => {
-      const rowSpan = index === 0 ? compressions.length : 1
+    const keys = Object.keys((base || head).sizeMap)
+    keys.forEach((sizeName, index) => {
+      const rowSpan = index === 0 ? keys.length : 1
       const merged = index > 0
       const cells = [
         renderFileCell({ rowSpan, merged, fileRelativePath }),
-        `<td nowrap>${compression}</td>`,
-        renderDiffCell({ event, compression, base, head, formatSize }),
-        renderBaseCell({ rowSpan, merged, event, compression, base, formatSize }),
-        renderHeadCell({ rowSpan, merged, event, compression, head, formatSize }),
+        `<td nowrap>${sizeName}</td>`,
+        renderDiffCell({ event, sizeName, base, head, formatSize }),
+        renderBaseCell({ rowSpan, merged, event, sizeName, base, formatSize }),
+        renderHeadCell({ rowSpan, merged, event, sizeName, head, formatSize }),
         renderEventCell({ rowSpan, merged, event }),
       ].filter((cell) => cell.length > 0)
       lines.push(
@@ -74,7 +74,6 @@ const directoryComparisonToFilesImpact = (directoryComparison) => {
     const { base, head } = directoryComparison[fileRelativeUrl]
 
     if (isNew({ base, head })) {
-      // if (head.size === 0) return
       filesImpact[fileRelativeUrl] = {
         base,
         head,
@@ -84,7 +83,6 @@ const directoryComparisonToFilesImpact = (directoryComparison) => {
     }
 
     if (isDeleted({ base, head })) {
-      // if (base.size === 0) return
       filesImpact[fileRelativeUrl] = {
         base,
         head,
@@ -108,38 +106,33 @@ const renderFileCell = ({ rowSpan, merged, fileRelativePath }) => {
   return merged ? "" : `<td nowrap rowspan="${rowSpan}">${fileRelativePath}</td>`
 }
 
-const renderDiffCell = ({ event, compression, base, head, formatSize }) => {
-  const sizeName = compressionToSizeName(compression)
-
+const renderDiffCell = ({ event, sizeName, base, head, formatSize }) => {
   let diff
   if (event === "deleted") {
-    diff = -base[sizeName]
+    diff = -base.sizeMap[sizeName]
   } else if (event === "created") {
-    diff = head[sizeName]
+    diff = head.sizeMap[sizeName]
   } else {
-    diff = head[sizeName] - base[sizeName]
+    diff = head.sizeMap[sizeName] - base.sizeMap[sizeName]
   }
 
   return `<td nowrap>${formatSize(diff, { diff: true })}</td>`
 }
 
-const renderBaseCell = ({ event, compression, base, formatSize }) => {
+const renderBaseCell = ({ event, sizeName, base, formatSize }) => {
   if (event === "created") {
     return `<td nowrap>---</td>`
   }
-  return `<td nowrap>${formatSize(base[compressionToSizeName(compression)])}</td>`
+  return `<td nowrap>${formatSize(base.sizeMap[sizeName])}</td>`
 }
 
-const renderHeadCell = ({ event, compression, head, formatSize }) => {
+const renderHeadCell = ({ event, sizeName, head, formatSize }) => {
   if (event === "deleted") {
     return `<td nowrap>---</td>`
   }
-  return `<td nowrap>${formatSize(head[compressionToSizeName(compression)])}</td>`
+  return `<td nowrap>${formatSize(head.sizeMap[sizeName])}</td>`
 }
 
 const renderEventCell = ({ event, rowSpan, merged }) => {
   return merged ? "" : `<td nowrap rowspan="${rowSpan}">${event}</td>`
 }
-
-const COMPRESSION_TO_SIZE = { none: "size", gzip: "gzipSize", brotli: "brotliSize" }
-const compressionToSizeName = (compression) => COMPRESSION_TO_SIZE[compression]

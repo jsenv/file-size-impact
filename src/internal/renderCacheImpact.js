@@ -1,4 +1,4 @@
-import { isChanged } from "./helper.js"
+import { isChanged, sumSize } from "./helper.js"
 
 export const renderCacheImpact = (directoryComparison, { formatSize }) => {
   const cacheImpact = directoryComparisonToCacheImpact(directoryComparison, { formatSize })
@@ -21,24 +21,20 @@ const renderCacheImpactDescription = ({ fileChangedCount }) => {
 }
 
 const directoryComparisonToCacheImpact = (directoryComparison) => {
-  let uncompressedBytesOutdated = 0
-  let gzipBytesOutdated = 0
-  let brotliBytesOutdated = 0
   let fileChangedCount = 0
+  const outdatedBytesMap = {}
   Object.keys(directoryComparison).forEach((fileRelativeUrl) => {
     const { base, head } = directoryComparison[fileRelativeUrl]
     if (isChanged({ base, head })) {
       fileChangedCount++
-      uncompressedBytesOutdated += base.size
-      gzipBytesOutdated += base.gzipSize
-      brotliBytesOutdated += base.brotliSize
+      Object.keys(base.sizeMap).forEach((key) => {
+        outdatedBytesMap[key] = sumSize(base.sizeMap, outdatedBytesMap, key)
+      })
     }
   })
   return {
     fileChangedCount,
-    uncompressedBytesOutdated,
-    gzipBytesOutdated,
-    brotliBytesOutdated,
+    outdatedBytesMap,
   }
 }
 
@@ -57,16 +53,12 @@ const renderCacheImpactTable = (cacheImpact, { formatSize }) => {
 }
 
 const renderCacheImpactTableBody = (cacheImpact, { formatSize }) => {
-  const { uncompressedBytesOutdated, gzipBytesOutdated, brotliBytesOutdated } = cacheImpact
+  const { outdatedBytesMap } = cacheImpact
 
-  const lines = [
-    { name: "none", bytesOutdated: uncompressedBytesOutdated },
-    { name: "gzip", bytesOutdated: gzipBytesOutdated },
-    { name: "brotli", bytesOutdated: brotliBytesOutdated },
-  ].map(({ name, bytesOutdated }) => {
+  const lines = Object.keys(outdatedBytesMap).map((key) => {
     return `
-        <td nowrap>${name}</td>
-        <td nowrap>${formatSize(bytesOutdated)}</td>`
+        <td nowrap>${key}</td>
+        <td nowrap>${formatSize(outdatedBytesMap[key])}</td>`
   })
 
   return `<tr>${lines.join(`
