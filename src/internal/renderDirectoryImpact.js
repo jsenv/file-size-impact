@@ -45,18 +45,13 @@ const directoryComparisonToDirectoryImpact = (directoryComparison) => {
   }
 }
 
-const analyseNoneOnly = (directoryImpact) => {
-  const { directoryHeadSizeMap } = directoryImpact
-  return `none` in directoryHeadSizeMap && Object.keys(directoryHeadSizeMap).length === 1
-}
-
 const renderDirectoryImpactTable = (
   directoryImpact,
   { pullRequestBase, pullRequestHead, formatSize },
 ) => {
   const noneOnly = analyseNoneOnly(directoryImpact)
 
-  const headers = [
+  const headerCells = [
     ...(noneOnly ? [] : ["<th nowrap>Transform</th>"]),
     `<th nowrap>Diff</th>`,
     `<th nowrap><code>${pullRequestBase}</code></th>`,
@@ -66,7 +61,7 @@ const renderDirectoryImpactTable = (
   return `<table>
     <thead>
       <tr>
-        ${headers.join(`
+        ${headerCells.join(`
         `)}
       </tr>
     </thead>
@@ -74,6 +69,11 @@ const renderDirectoryImpactTable = (
       ${renderDirectoryImpactTableBody(directoryImpact, { noneOnly, formatSize })}
     </tbody>
   </table>`
+}
+
+const analyseNoneOnly = (directoryImpact) => {
+  const { directoryHeadSizeMap } = directoryImpact
+  return `none` in directoryHeadSizeMap && Object.keys(directoryHeadSizeMap).length === 1
 }
 
 const renderDirectoryImpactTableBody = (directoryImpact, { noneOnly, formatSize }) => {

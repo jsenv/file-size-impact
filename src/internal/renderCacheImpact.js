@@ -58,27 +58,43 @@ const directoryComparisonToCacheImpact = (directoryComparison) => {
 }
 
 const renderCacheImpactTable = (cacheImpact, { formatSize }) => {
+  const noneOnly = analyseNoneOnly(cacheImpact)
+
+  const headerCells = [
+    ...(noneOnly ? [] : ["<th nowrap>Transform</th>"]),
+    `<th nowrap>Bytes outdated</th>`,
+  ]
+
   return `<table>
     <thead>
       <tr>
-        <th nowrap>Transform</th>
-        <th nowrap>Bytes outdated</th>
+        ${headerCells.join(`
+        `)}
       </tr>
     </thead>
     <tbody>
-      ${renderCacheImpactTableBody(cacheImpact, { formatSize })}
+      ${renderCacheImpactTableBody(cacheImpact, { noneOnly, formatSize })}
     </tbody>
   </table>`
 }
 
-const renderCacheImpactTableBody = (cacheImpact, { formatSize }) => {
+const analyseNoneOnly = (cacheImpact) => {
+  const { outdatedBytesMap } = cacheImpact
+  return `none` in outdatedBytesMap && Object.keys(outdatedBytesMap).length === 1
+}
+
+const renderCacheImpactTableBody = (cacheImpact, { noneOnly, formatSize }) => {
   const { outdatedBytesMap } = cacheImpact
 
   const lines = Object.keys(outdatedBytesMap).map((sizeName) => {
     const sizeValue = outdatedBytesMap[sizeName]
+    const cells = [
+      ...(noneOnly ? [] : [`<td nowrap>${sizeName}</td>`]),
+      `<td nowrap>${formatSize(sizeValue)}</td>`,
+    ]
     return `
-        <td nowrap>${sizeName}</td>
-        <td nowrap>${formatSize(sizeValue)}</td>`
+        ${cells.join(`
+        `)}`
   })
 
   return `<tr>${lines.join(`

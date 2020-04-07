@@ -52,13 +52,11 @@
   <table>
     <thead>
       <tr>
-        <th nowrap>Transform</th>
         <th nowrap>Bytes outdated</th>
       </tr>
     </thead>
     <tbody>
       <tr>
-        <td nowrap>none</td>
         <td nowrap>100</td>
       </tr>
     </tbody>
@@ -225,13 +223,11 @@ Pull request changes have no impact on <code>dist</code> files.
   <table>
     <thead>
       <tr>
-        <th nowrap>Transform</th>
         <th nowrap>Bytes outdated</th>
       </tr>
     </thead>
     <tbody>
       <tr>
-        <td nowrap>none</td>
         <td nowrap>25</td>
       </tr>
     </tbody>
@@ -377,13 +373,11 @@ Pull request changes have no impact on <code>dist</code> files.
   <table>
     <thead>
       <tr>
-        <th nowrap>Transform</th>
         <th nowrap>Bytes outdated</th>
       </tr>
     </thead>
     <tbody>
       <tr>
-        <td nowrap>none</td>
         <td nowrap>100</td>
       </tr>
     </tbody>
