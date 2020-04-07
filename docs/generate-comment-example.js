@@ -32,12 +32,54 @@ const examples = {
       },
     },
   }),
+  "directory + cache section disabled": generateComment({
+    commentSections: { filesImpact: true },
+    snapshotComparison: {
+      dist: {
+        "bar.js": {
+          base: {
+            sizeMap: {
+              none: 100,
+            },
+            hash: "a",
+          },
+          head: {
+            sizeMap: {
+              none: 110,
+            },
+            hash: "b",
+          },
+        },
+      },
+    },
+  }),
+  "cache section disabled": generateComment({
+    commentSections: { filesImpact: true, directoryImpact: true },
+    snapshotComparison: {
+      dist: {
+        "bar.js": {
+          base: {
+            sizeMap: {
+              none: 100,
+            },
+            hash: "a",
+          },
+          head: {
+            sizeMap: {
+              none: 110,
+            },
+            hash: "b",
+          },
+        },
+      },
+    },
+  }),
   "no changes": generateComment({
     snapshotComparison: {
       dist: {},
     },
   }),
-  "no impact": generateComment({
+  "changes impact cancels each other": generateComment({
     snapshotComparison: {
       dist: {
         "file-a.js": {

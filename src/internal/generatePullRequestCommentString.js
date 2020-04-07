@@ -67,8 +67,8 @@ const generateDetails = (
         pullRequestHead,
         formatSize,
       })
-    })
-    .join("")
+    }).join(`
+`)
 }
 
 const renderGeneratedByLink = () => {

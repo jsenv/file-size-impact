@@ -7,7 +7,6 @@ export const renderFilesImpact = (
   const filesImpact = directoryComparisonToFilesImpact(directoryComparison)
   const noImpact = Object.keys(filesImpact).length === 0
   return `
-
   <h3>File by file impact</h3>
 ${
   noImpact
@@ -107,30 +106,52 @@ const renderFileCell = ({ rowSpan, merged, fileRelativePath }) => {
 }
 
 const renderDiffCell = ({ event, sizeName, base, head, formatSize }) => {
-  let diff
   if (event === "deleted") {
-    diff = -base.sizeMap[sizeName]
-  } else if (event === "created") {
-    diff = head.sizeMap[sizeName]
-  } else {
-    diff = head.sizeMap[sizeName] - base.sizeMap[sizeName]
+    const baseSizeMap = base.sizeMap
+    if (sizeName in baseSizeMap) {
+      return `<td nowrap>${formatSize(-baseSizeMap[sizeName], { diff: true })}</td>`
+    }
+    return `<td nowrap>---</td>`
   }
 
-  return `<td nowrap>${formatSize(diff, { diff: true })}</td>`
+  if (event === "created") {
+    const headSizeMap = head.sizeMap
+    if (sizeName in headSizeMap) {
+      return `<td nowrap>${formatSize(headSizeMap[sizeName], { diff: true })}</td>`
+    }
+    return `<td nowrap>---</td>`
+  }
+
+  const baseSizeMap = base.sizeMap
+  const headSizeMap = head.sizeMap
+  if (sizeName in baseSizeMap && sizeName in headSizeMap) {
+    return `<td nowrap>${formatSize(headSizeMap[sizeName] - base.sizeMap[sizeName], {
+      diff: true,
+    })}</td>`
+  }
+  return `<td nowrap>---</td>`
 }
 
 const renderBaseCell = ({ event, sizeName, base, formatSize }) => {
   if (event === "created") {
     return `<td nowrap>---</td>`
   }
-  return `<td nowrap>${formatSize(base.sizeMap[sizeName])}</td>`
+  const baseSizeMap = base.sizeMap
+  if (sizeName in baseSizeMap) {
+    return `<td nowrap>${formatSize(baseSizeMap[sizeName])}</td>`
+  }
+  return `<td nowrap>---</td>`
 }
 
 const renderHeadCell = ({ event, sizeName, head, formatSize }) => {
   if (event === "deleted") {
     return `<td nowrap>---</td>`
   }
-  return `<td nowrap>${formatSize(head.sizeMap[sizeName])}</td>`
+  const headSizeMap = head.sizeMap
+  if (sizeName in headSizeMap) {
+    return `<td nowrap>${formatSize(headSizeMap[sizeName])}</td>`
+  }
+  return `<td nowrap>---</td>`
 }
 
 const renderEventCell = ({ event, rowSpan, merged }) => {

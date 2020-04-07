@@ -4,7 +4,6 @@ export const renderCacheImpact = (directoryComparison, { formatSize }) => {
   const cacheImpact = directoryComparisonToCacheImpact(directoryComparison, { formatSize })
 
   return `
-
   <h3>Cache impact</h3>
   <p>${renderCacheImpactDescription(cacheImpact)}</p>
   ${cacheImpact.fileChangedCount === 0 ? "" : renderCacheImpactTable(cacheImpact, { formatSize })}`
@@ -37,11 +36,10 @@ const directoryComparisonToCacheImpact = (directoryComparison) => {
   Object.keys(directoryComparison).find((fileRelativeUrl) => {
     const { head } = directoryComparison[fileRelativeUrl]
     if (head) {
-      // adds sizeName we becomes interested in
-      // (will show undefined because we cannot compute the value but that's fine )
+      // adds sizeName we becomes interested in indicating "---"
       Object.keys(head.sizeMap).forEach((sizeName) => {
         if (sizeName in outdatedBytesMap) return
-        outdatedBytesMap[sizeName] = undefined
+        outdatedBytesMap[sizeName] = "---"
       })
       // remove sizeName that we are no longer interested in
       Object.keys(outdatedBytesMap).forEach((sizeName) => {
@@ -76,10 +74,11 @@ const renderCacheImpactTable = (cacheImpact, { formatSize }) => {
 const renderCacheImpactTableBody = (cacheImpact, { formatSize }) => {
   const { outdatedBytesMap } = cacheImpact
 
-  const lines = Object.keys(outdatedBytesMap).map((key) => {
+  const lines = Object.keys(outdatedBytesMap).map((sizeName) => {
+    const sizeValue = outdatedBytesMap[sizeName]
     return `
-        <td nowrap>${key}</td>
-        <td nowrap>${formatSize(outdatedBytesMap[key])}</td>`
+        <td nowrap>${sizeName}</td>
+        <td nowrap>${formatSize(sizeValue)}</td>`
   })
 
   return `<tr>${lines.join(`

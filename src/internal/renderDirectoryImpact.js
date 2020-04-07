@@ -61,25 +61,66 @@ const renderDirectoryImpactTable = (
     <tbody>
       ${renderDirectoryImpactTableBody(directoryImpact, { formatSize })}
     </tbody>
-  <table>`
+  </table>`
 }
 
 const renderDirectoryImpactTableBody = (directoryImpact, { formatSize }) => {
   const { directoryBaseSizeMap, directoryHeadSizeMap } = directoryImpact
 
-  const lines = Object.keys(directoryHeadSizeMap).map((key) => {
-    const baseSize = directoryBaseSizeMap[key]
-    const headSize = directoryHeadSizeMap[key]
-
+  const lines = Object.keys(directoryHeadSizeMap).map((sizeName) => {
     return `
-        <td nowrap>${key}</td>
-        <td nowrap>${formatSize(headSize - baseSize, { diff: true })}</td>
-        <td nowrap>${formatSize(baseSize)}</td>
-        <td nowrap>${formatSize(headSize)}</td>`
+        <td nowrap>${sizeName}</td>
+        ${renderDirectoryDiffCell({
+          directoryBaseSizeMap,
+          directoryHeadSizeMap,
+          sizeName,
+          formatSize,
+        })}
+        ${renderDirectoryBaseCell({
+          directoryBaseSizeMap,
+          sizeName,
+          formatSize,
+        })}
+        ${renderDirectoryHeadCell({
+          directoryHeadSizeMap,
+          sizeName,
+          formatSize,
+        })}`
   })
 
   return `<tr>${lines.join(`
       </tr>
       <tr>`)}
       </tr>`
+}
+
+const renderDirectoryDiffCell = ({
+  directoryBaseSizeMap,
+  directoryHeadSizeMap,
+  sizeName,
+  formatSize,
+}) => {
+  if (sizeName in directoryBaseSizeMap && sizeName in directoryHeadSizeMap) {
+    return `<td nowrap>${formatSize(
+      directoryHeadSizeMap[sizeName] - directoryBaseSizeMap[sizeName],
+      {
+        diff: true,
+      },
+    )}</td>`
+  }
+  return `<td nowrap>---</td>`
+}
+
+const renderDirectoryBaseCell = ({ directoryBaseSizeMap, sizeName, formatSize }) => {
+  if (sizeName in directoryBaseSizeMap) {
+    return `<td nowrap>${formatSize(directoryBaseSizeMap[sizeName])}</td>`
+  }
+  return `<td nowrap>---</td>`
+}
+
+const renderDirectoryHeadCell = ({ directoryHeadSizeMap, sizeName, formatSize }) => {
+  if (sizeName in directoryHeadSizeMap) {
+    return `<td nowrap>${formatSize(directoryHeadSizeMap[sizeName])}</td>`
+  }
+  return `<td nowrap>---</td>`
 }
