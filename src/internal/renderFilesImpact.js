@@ -11,7 +11,7 @@ export const renderFilesImpact = (
   <h3>File by file impact</h3>
 ${
   noImpact
-    ? `Pull request changes have no impact on ${directoryRelativeUrl} files.`
+    ? `Pull request changes have no impact on <code>${directoryRelativeUrl}</code> files.`
     : renderFilesImpactTable(filesImpact, { pullRequestBase, pullRequestHead, formatSize })
 }`
 }

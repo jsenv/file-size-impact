@@ -4,14 +4,21 @@ export const renderDirectoryImpact = (
   directoryComparison,
   { directoryRelativeUrl, pullRequestBase, pullRequestHead, formatSize },
 ) => {
+  const directoryImpact = directoryComparisonToDirectoryImpact(directoryComparison)
+  const noChanges = Object.keys(directoryImpact.directoryHeadSizeMap).length === 0
+
   return `
   <h3>Directory impact</h3>
-  <p>Impact of changes on <code>${directoryRelativeUrl}</code> size in bytes.</p>
-  ${renderDirectoryImpactTable(directoryComparison, {
+  ${
+    noChanges
+      ? `Pull request changes have no impact on <code>${directoryRelativeUrl}</code>.`
+      : `<p>Impact of changes on <code>${directoryRelativeUrl}</code> size in bytes.</p>
+  ${renderDirectoryImpactTable(directoryImpact, {
     pullRequestBase,
     pullRequestHead,
     formatSize,
   })}`
+  }`
 }
 
 const directoryComparisonToDirectoryImpact = (directoryComparison) => {
@@ -39,11 +46,9 @@ const directoryComparisonToDirectoryImpact = (directoryComparison) => {
 }
 
 const renderDirectoryImpactTable = (
-  directoryComparison,
+  directoryImpact,
   { pullRequestBase, pullRequestHead, formatSize },
 ) => {
-  const directoryImpact = directoryComparisonToDirectoryImpact(directoryComparison)
-
   return `<table>
     <thead>
       <tr>

@@ -32,6 +32,37 @@ const examples = {
       },
     },
   }),
+  "no changes": generateComment({
+    snapshotComparison: {
+      dist: {},
+    },
+  }),
+  "no impact": generateComment({
+    snapshotComparison: {
+      dist: {
+        "file-a.js": {
+          base: {
+            sizeMap: { none: 10 },
+            hash: "hash1",
+          },
+          head: {
+            sizeMap: { none: 15 },
+            hash: "hash2",
+          },
+        },
+        "file-b.js": {
+          base: {
+            sizeMap: { none: 15 },
+            hash: "hash3",
+          },
+          head: {
+            sizeMap: { none: 10 },
+            hash: "hash4",
+          },
+        },
+      },
+    },
+  }),
   "introduce gzip": generateComment({
     snapshotComparison: {
       dist: {
@@ -173,7 +204,7 @@ ${examples[exampleName]}`
 
 `)
 
-writeFile(
+export const promise = writeFile(
   exampleFileUrl,
   `${exampleFileContent}
 `,
