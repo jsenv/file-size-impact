@@ -1,4 +1,3 @@
-import { jsenvFormatSize } from "./jsenvFormatSize.js"
 import { renderDirectoryImpact } from "./renderDirectoryImpact.js"
 import { renderFilesImpact } from "./renderFilesImpact.js"
 import { renderCacheImpact } from "./renderCacheImpact.js"
@@ -7,11 +6,9 @@ export const generatePullRequestCommentString = ({
   pullRequestBase,
   pullRequestHead,
   snapshotComparison,
-  formatSize = jsenvFormatSize,
-  generatedByLink = true,
-  // TODO: add a param controlling by directoryImpact, filesImpact and cacheImpact ?
-  // maybe something like comment = {directoryImpact: true, filesImpact: true, cacheImpact: true }
-  // (l'ordre des keys de cet objet controllerait l'ordre du message)
+  formatSize,
+  commentSections,
+  generatedByLink,
 }) => {
   const directoryMessages = Object.keys(snapshotComparison).map((directoryRelativeUrl) => {
     const directoryComparison = snapshotComparison[directoryRelativeUrl]
@@ -22,6 +19,7 @@ ${generateDetails(directoryComparison, {
   directoryRelativeUrl,
   pullRequestBase,
   pullRequestHead,
+  commentSections,
   formatSize: (value, ...rest) => {
     // call formatSize only on numbers 'error' must be returned untouched
     if (typeof value === "number") return formatSize(value, ...rest)
@@ -41,36 +39,36 @@ ${directoryMessages.join(`
 
 const generateSummary = (directoryRelativeUrl) => directoryRelativeUrl
 
+const COMMENT_NAME_TO_RENDER = {
+  directoryImpact: renderDirectoryImpact,
+  filesImpact: renderFilesImpact,
+  cacheImpact: renderCacheImpact,
+}
+
 const generateDetails = (
   directoryComparison,
-  {
-    directoryRelativeUrl,
-    pullRequestBase,
-    pullRequestHead,
-    formatSize,
-    gzipTracking,
-    brotliTracking,
-  },
+  { directoryRelativeUrl, pullRequestBase, pullRequestHead, commentSections, formatSize },
 ) => {
-  return `${renderDirectoryImpact(directoryComparison, {
-    directoryRelativeUrl,
-    pullRequestBase,
-    pullRequestHead,
-    gzipTracking,
-    brotliTracking,
-    formatSize,
-  })}${renderFilesImpact(directoryComparison, {
-    directoryRelativeUrl,
-    pullRequestBase,
-    pullRequestHead,
-    gzipTracking,
-    brotliTracking,
-    formatSize,
-  })}${renderCacheImpact(directoryComparison, {
-    gzipTracking,
-    brotliTracking,
-    formatSize,
-  })}`
+  return Object.keys(commentSections)
+    .filter((commentSectionName) => commentSections[commentSectionName])
+    .map((commentSectionName) => {
+      const renderCommentSection = COMMENT_NAME_TO_RENDER[commentSectionName]
+      if (!renderCommentSection) {
+        console.warn(
+          `unknown comment section ${commentSectionName}. Available comment section are ${Object.keys(
+            COMMENT_NAME_TO_RENDER,
+          )} `,
+        )
+        return ""
+      }
+      return renderCommentSection(directoryComparison, {
+        directoryRelativeUrl,
+        pullRequestBase,
+        pullRequestHead,
+        formatSize,
+      })
+    })
+    .join("")
 }
 
 const renderGeneratedByLink = () => {

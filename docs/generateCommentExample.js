@@ -1,10 +1,18 @@
 import { writeFile, resolveUrl } from "@jsenv/util"
+import { jsenvFormatSize } from "../src/internal/jsenvFormatSize.js"
 import { generatePullRequestCommentString } from "../src/internal/generatePullRequestCommentString.js"
 
+const generateComment = (data) =>
+  generatePullRequestCommentString({
+    pullRequestBase: "base",
+    pullRequestHead: "head",
+    formatSize: jsenvFormatSize,
+    commentSections: { directoryImpact: true, filesImpact: true, cacheImpact: true },
+    ...data,
+  })
+
 const examples = {
-  "basic": generatePullRequestCommentString({
-    pullRequestBase: "base",
-    pullRequestHead: "head",
+  "basic": generateComment({
     snapshotComparison: {
       dist: {
         "bar.js": {
@@ -24,9 +32,7 @@ const examples = {
       },
     },
   }),
-  "introduce gzip": generatePullRequestCommentString({
-    pullRequestBase: "base",
-    pullRequestHead: "head",
+  "introduce gzip": generateComment({
     snapshotComparison: {
       dist: {
         "bar.js": {
@@ -47,9 +53,7 @@ const examples = {
       },
     },
   }),
-  "remove gzip": generatePullRequestCommentString({
-    pullRequestBase: "base",
-    pullRequestHead: "head",
+  "remove gzip": generateComment({
     snapshotComparison: {
       dist: {
         "bar.js": {
@@ -70,9 +74,7 @@ const examples = {
       },
     },
   }),
-  "multiple + gzip + brotli": generatePullRequestCommentString({
-    pullRequestBase: "base",
-    pullRequestHead: "head",
+  "multiple + gzip + brotli": generateComment({
     snapshotComparison: {
       "dist/commonjs": {
         "bar.js": {
