@@ -114,10 +114,10 @@ ${headSnapshotFileContent}
     if (Object.keys(baseVersionnedSnapshot).length === 0) {
       baseSnapshot = {}
       warnings.push(
-        `**Warning:** \`${pullRequestBase}\` snapshot is empty.
-File size impact analysis below consider every file as new.
-It happens when there is an error while generating snapshot for \`${pullRequestBase}\`.
-It's likely because \`@jsenv/github-pull-request-filesize-impact\` scripts are not in \`${pullRequestBase}\` branch.
+        `**Warning:** Only \`${pullRequestHead}\` files are taken into account below.
+It happens because \`${pullRequestBase}\` files are missing.
+This occurs when there is an error executing \`@jsenv/github-pull-request-filesize-impact\` scripts.
+It's likely because scripts are not in \`${pullRequestBase}\` branch.
 This is normal when adding \`@jsenv/github-pull-request-filesize-impact\` for the first time.`,
       )
     } else {
@@ -130,8 +130,7 @@ This is normal when adding \`@jsenv/github-pull-request-filesize-impact\` for th
         baseSnapshot = {}
         logger.warn(`base snapshot ignored because different version.`)
         warnings.push(
-          `**Warning:** \`${pullRequestBase}\` snapshot version differs.
-File size impact analysis below is unable to compare with \`${pullRequestBase}\` and consider every file as new.
+          `**Warning:** Only \`${pullRequestHead}\` files are taken into account below.
 It happens because versions of \`@jsenv/github-pull-request-filesize-impact\` are too different on \`${pullRequestBase}\` and \`${pullRequestHead}\`.`,
         )
       }
