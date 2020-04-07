@@ -6,5 +6,5 @@ reportSizeImpactIntoGithubPullRequest({
   projectDirectoryUrl,
   baseSnapshotFileRelativeUrl: process.argv[2],
   headSnapshotFileRelativeUrl: process.argv[3],
-  generatedByLink: false,
+  generatedByLink: true,
 })
