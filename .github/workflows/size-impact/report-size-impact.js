@@ -1,4 +1,4 @@
-import { reportSizeImpactIntoGithubPullRequest } from "@jsenv/github-pull-request-filesize-impact"
+import { reportSizeImpactIntoGithubPullRequest } from "../../../index.js"
 import { projectDirectoryUrl } from "../../../jsenv.config.js"
 
 reportSizeImpactIntoGithubPullRequest({

@@ -1,4 +1,4 @@
-import { generateSnapshotFile } from "@jsenv/github-pull-request-filesize-impact"
+import { generateSnapshotFile, none, gzip } from "../../../index.js"
 import { projectDirectoryUrl } from "../../../jsenv.config.js"
 
 generateSnapshotFile({
@@ -11,4 +11,5 @@ generateSnapshotFile({
       "./dist/commonjs/**/*.map": false,
     },
   },
+  transformations: { none, gzip },
 })
