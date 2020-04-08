@@ -12,12 +12,12 @@ const generateComment = (data) =>
   })
 
 const examples = {
-  "basic": generateComment({
+  "basic example": generateComment({
     baseVersionnedSnapshot: {
       snapshot: {
         dist: {
           fileMap: {
-            "bar.js": { hash: "a", sizeMap: { none: 100 } },
+            "dist/bar.js": { hash: "a", sizeMap: { none: 100 } },
           },
         },
       },
@@ -26,22 +26,278 @@ const examples = {
       snapshot: {
         dist: {
           fileMap: {
-            "bar.js": { hash: "b", sizeMap: { none: 110 } },
+            "dist/bar.js": { hash: "b", sizeMap: { none: 110 } },
           },
         },
       },
     },
   }),
-  "base empty warning": generateComment({
+  "no changes": generateComment({
+    baseVersionnedSnapshot: {
+      snapshot: {
+        dist: {
+          fileMap: {
+            "dist/bar.js": { hash: "a", sizeMap: { none: 110 } },
+          },
+        },
+      },
+    },
+    headVersionnedSnapshot: {
+      snapshot: {
+        dist: {
+          fileMap: {
+            "dist/bar.js": { hash: "a", sizeMap: { none: 110 } },
+          },
+        },
+      },
+    },
+  }),
+  "changes impact cancels each other": generateComment({
+    baseVersionnedSnapshot: {
+      snapshot: {
+        dist: {
+          fileMap: {
+            "dist/file-a.js": {
+              hash: "hash1",
+              sizeMap: { none: 10 },
+            },
+            "dist/file-b.js": {
+              hash: "hash3",
+              sizeMap: { none: 15 },
+            },
+          },
+        },
+      },
+    },
+    headVersionnedSnapshot: {
+      snapshot: {
+        dist: {
+          fileMap: {
+            "dist/file-a.js": {
+              hash: "hash2",
+              sizeMap: { none: 15 },
+            },
+            "dist/file-b.js": {
+              hash: "hash4",
+              sizeMap: { none: 10 },
+            },
+          },
+        },
+      },
+    },
+  }),
+  "introduce gzip": generateComment({
+    baseVersionnedSnapshot: {
+      snapshot: {
+        dist: {
+          fileMap: {
+            "dist/bar.js": {
+              hash: "a",
+              sizeMap: {
+                none: 100,
+              },
+            },
+          },
+        },
+      },
+    },
+    headVersionnedSnapshot: {
+      snapshot: {
+        dist: {
+          fileMap: {
+            "dist/bar.js": {
+              hash: "b",
+              sizeMap: {
+                none: 110,
+                gzip: 10,
+              },
+            },
+          },
+        },
+      },
+    },
+  }),
+  "remove gzip": generateComment({
+    baseVersionnedSnapshot: {
+      snapshot: {
+        dist: {
+          fileMap: {
+            "dist/bar.js": {
+              hash: "a",
+              sizeMap: {
+                none: 100,
+                gzip: 10,
+              },
+            },
+          },
+        },
+      },
+    },
+    headVersionnedSnapshot: {
+      snapshot: {
+        dist: {
+          fileMap: {
+            "dist/bar.js": {
+              hash: "b",
+              sizeMap: {
+                none: 110,
+              },
+            },
+          },
+        },
+      },
+    },
+  }),
+  "multiple + gzip + brotli": generateComment({
+    baseVersionnedSnapshot: {
+      snapshot: {
+        "dist/commonjs": {
+          fileMap: {
+            "dist/commonjs/bar.js": {
+              hash: "a",
+              sizeMap: {
+                none: 100,
+                gzip: 10,
+                brotli: 9,
+              },
+            },
+            "dist/commonjs/hello.js": {
+              hash: "a",
+              sizeMap: {
+                none: 167000,
+                gzip: 1600,
+                brotli: 1500,
+              },
+            },
+          },
+        },
+        "dist/systemjs": {
+          fileMap: {
+            "dist/systemjs/bar.js": {
+              hash: "a",
+              sizeMap: {
+                none: 100,
+                gzip: 10,
+                brotli: 9,
+              },
+            },
+            "dist/systemjs/hello.js": {
+              hash: "a",
+              sizeMap: {
+                none: 167000,
+                gzip: 1600,
+                brotli: 1500,
+              },
+            },
+          },
+        },
+      },
+    },
+    headVersionnedSnapshot: {
+      snapshot: {
+        "dist/commonjs": {
+          fileMap: {
+            "dist/commonjs/foo.js": {
+              hash: "a",
+              sizeMap: {
+                none: 120,
+                gzip: 12,
+                brotli: 11,
+              },
+            },
+            "dist/commonjs/hello.js": {
+              hash: "b",
+              sizeMap: {
+                none: 187000,
+                gzip: 1800,
+                brotli: 1700,
+              },
+            },
+          },
+        },
+        "dist/systemjs": {
+          fileMap: {
+            "dist/systemjs/foo.js": {
+              hash: "a",
+              sizeMap: {
+                none: 120,
+                gzip: 12,
+                brotli: 11,
+              },
+            },
+            "dist/systemjs/hello.js": {
+              hash: "b",
+              sizeMap: {
+                none: 187000,
+                gzip: 1800,
+                brotli: 1700,
+              },
+            },
+          },
+        },
+      },
+    },
+  }),
+  "directory disabled, files enabled, cache disabled": generateComment({
+    commentSections: { filesImpact: true },
+    baseVersionnedSnapshot: {
+      snapshot: {
+        dist: {
+          fileMap: {
+            "dist/bar.js": { hash: "a", sizeMap: { none: 100 } },
+          },
+        },
+      },
+    },
+    headVersionnedSnapshot: {
+      snapshot: {
+        dist: {
+          fileMap: {
+            "dist/bar.js": { hash: "b", sizeMap: { none: 110 } },
+          },
+        },
+      },
+    },
+  }),
+  "files enabled, directory enabed, cache disabled": generateComment({
+    commentSections: { filesImpact: true, directoryImpact: true },
+    baseVersionnedSnapshot: {
+      snapshot: {
+        dist: {
+          fileMap: {
+            "dist/bar.js": { hash: "a", sizeMap: { none: 100 } },
+          },
+        },
+      },
+    },
+    headVersionnedSnapshot: {
+      snapshot: {
+        dist: {
+          fileMap: {
+            "dist/bar.js": { hash: "b", sizeMap: { none: 110 } },
+          },
+        },
+      },
+    },
+  }),
+  "base missing warning": generateComment({
     baseVersionnedSnapshot: {},
     headVersionnedSnapshot: {
       snapshot: {
         dist: {
           fileMap: {
-            "bar.js": { hash: "b", sizeMap: { none: 110 } },
+            "dist/bar.js": { hash: "b", sizeMap: { none: 110 } },
           },
         },
       },
+    },
+  }),
+  "empty warning": generateComment({
+    baseVersionnedSnapshot: {
+      snapshot: {},
+    },
+    headVersionnedSnapshot: {
+      snapshot: {},
     },
   }),
   "base version too different warning": generateComment({
@@ -50,7 +306,7 @@ const examples = {
       snapshot: {
         dist: {
           fileMap: {
-            "bar.js": { hash: "a", sizeMap: { none: 100 } },
+            "dist/bar.js": { hash: "a", sizeMap: { none: 100 } },
           },
         },
       },
@@ -60,215 +316,12 @@ const examples = {
       snapshot: {
         dist: {
           fileMap: {
-            "bar.js": { hash: "b", sizeMap: { none: 110 } },
+            "dist/bar.js": { hash: "b", sizeMap: { none: 110 } },
           },
         },
       },
     },
   }),
-  // "directory disabled, files enabled, cache disabled": generateComment({
-  //   commentSections: { filesImpact: true },
-  //   snapshotComparison: {
-  //     dist: {
-  //       "bar.js": {
-  //         base: {
-  //           sizeMap: {
-  //             none: 100,
-  //           },
-  //           hash: "a",
-  //         },
-  //         head: {
-  //           sizeMap: {
-  //             none: 110,
-  //           },
-  //           hash: "b",
-  //         },
-  //       },
-  //     },
-  //   },
-  // }),
-  // "files enabled, directory enabed, cache disabled": generateComment({
-  //   commentSections: { filesImpact: true, directoryImpact: true },
-  //   snapshotComparison: {
-  //     dist: {
-  //       "bar.js": {
-  //         base: {
-  //           sizeMap: {
-  //             none: 100,
-  //           },
-  //           hash: "a",
-  //         },
-  //         head: {
-  //           sizeMap: {
-  //             none: 110,
-  //           },
-  //           hash: "b",
-  //         },
-  //       },
-  //     },
-  //   },
-  // }),
-  // "no changes": generateComment({
-  //   snapshotComparison: {
-  //     dist: {},
-  //   },
-  // }),
-  // "changes impact cancels each other": generateComment({
-  //   snapshotComparison: {
-  //     dist: {
-  //       "file-a.js": {
-  //         base: {
-  //           sizeMap: { none: 10 },
-  //           hash: "hash1",
-  //         },
-  //         head: {
-  //           sizeMap: { none: 15 },
-  //           hash: "hash2",
-  //         },
-  //       },
-  //       "file-b.js": {
-  //         base: {
-  //           sizeMap: { none: 15 },
-  //           hash: "hash3",
-  //         },
-  //         head: {
-  //           sizeMap: { none: 10 },
-  //           hash: "hash4",
-  //         },
-  //       },
-  //     },
-  //   },
-  // }),
-  // "introduce gzip": generateComment({
-  //   snapshotComparison: {
-  //     dist: {
-  //       "bar.js": {
-  //         base: {
-  //           sizeMap: {
-  //             none: 100,
-  //           },
-  //           hash: "a",
-  //         },
-  //         head: {
-  //           sizeMap: {
-  //             none: 110,
-  //             gzip: 10,
-  //           },
-  //           hash: "b",
-  //         },
-  //       },
-  //     },
-  //   },
-  // }),
-  // "remove gzip": generateComment({
-  //   snapshotComparison: {
-  //     dist: {
-  //       "bar.js": {
-  //         base: {
-  //           sizeMap: {
-  //             none: 100,
-  //             gzip: 10,
-  //           },
-  //           hash: "a",
-  //         },
-  //         head: {
-  //           sizeMap: {
-  //             none: 110,
-  //           },
-  //           hash: "b",
-  //         },
-  //       },
-  //     },
-  //   },
-  // }),
-  // "multiple + gzip + brotli": generateComment({
-  //   snapshotComparison: {
-  //     "dist/commonjs": {
-  //       "bar.js": {
-  //         base: {
-  //           sizeMap: {
-  //             none: 100,
-  //             gzip: 10,
-  //             brotli: 9,
-  //           },
-  //           hash: "a",
-  //         },
-  //         head: null,
-  //       },
-  //       "foo.js": {
-  //         base: null,
-  //         head: {
-  //           sizeMap: {
-  //             none: 120,
-  //             gzip: 12,
-  //             brotli: 11,
-  //           },
-  //           hash: "a",
-  //         },
-  //       },
-  //       "hello.js": {
-  //         base: {
-  //           sizeMap: {
-  //             none: 167000,
-  //             gzip: 1600,
-  //             brotli: 1500,
-  //           },
-  //           hash: "a",
-  //         },
-  //         head: {
-  //           sizeMap: {
-  //             none: 187000,
-  //             gzip: 1800,
-  //             brotli: 1700,
-  //           },
-  //           hash: "b",
-  //         },
-  //       },
-  //     },
-  //     "dist/systemjs": {
-  //       "bar.js": {
-  //         base: {
-  //           sizeMap: {
-  //             none: 100,
-  //             gzip: 10,
-  //             brotli: 9,
-  //           },
-  //           hash: "a",
-  //         },
-  //         head: null,
-  //       },
-  //       "foo.js": {
-  //         base: null,
-  //         head: {
-  //           sizeMap: {
-  //             none: 120,
-  //             gzip: 12,
-  //             brotli: 11,
-  //           },
-  //           hash: "a",
-  //         },
-  //       },
-  //       "hello.js": {
-  //         base: {
-  //           sizeMap: {
-  //             none: 167000,
-  //             gzip: 1600,
-  //             brotli: 1500,
-  //           },
-  //           hash: "a",
-  //         },
-  //         head: {
-  //           sizeMap: {
-  //             none: 187000,
-  //             gzip: 1800,
-  //             brotli: 1700,
-  //           },
-  //           hash: "b",
-  //         },
-  //       },
-  //     },
-  //   },
-  // }),
 }
 
 const exampleFileUrl = resolveUrl("./comment-example.md", import.meta.url)
