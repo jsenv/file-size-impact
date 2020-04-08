@@ -4,6 +4,7 @@ import { generateSnapshotFile } from "../../index.js"
 
 const tempDirectoryUrl = resolveUrl("./temp/", import.meta.url)
 
+// .js + .js.map without manifest
 {
   await ensureEmptyDirectory(tempDirectoryUrl)
   const fileUrl = resolveUrl("dist/file.js", tempDirectoryUrl)
@@ -17,9 +18,9 @@ const tempDirectoryUrl = resolveUrl("./temp/", import.meta.url)
     logLevel: "warn",
     projectDirectoryUrl: tempDirectoryUrl,
     snapshotFileRelativeUrl,
-    directorySizeTrackingConfig: {
+    trackingConfig: {
       dist: {
-        "./**/*.js": true,
+        "./dist/**/*.js": true,
       },
     },
   })
@@ -29,15 +30,15 @@ const tempDirectoryUrl = resolveUrl("./temp/", import.meta.url)
     version: 1,
     snapshot: {
       dist: {
-        manifest: null,
-        report: {
-          "file.js": {
+        tracking: {
+          "./dist/**/*.js": true,
+        },
+        manifestMap: {},
+        fileMap: {
+          "dist/file.js": {
             sizeMap: { none: 20 },
             hash: '"14-qK8urhYN/nZoik6niqmvkolkCK0"',
           },
-        },
-        trackingConfig: {
-          "./**/*.js": true,
         },
       },
     },
@@ -45,6 +46,7 @@ const tempDirectoryUrl = resolveUrl("./temp/", import.meta.url)
   assert({ actual, expected })
 }
 
+// file hashed + manifest
 {
   await ensureEmptyDirectory(tempDirectoryUrl)
   const fileUrl = resolveUrl("dist/file.hash.js", tempDirectoryUrl)
@@ -58,9 +60,9 @@ const tempDirectoryUrl = resolveUrl("./temp/", import.meta.url)
     logLevel: "warn",
     projectDirectoryUrl: tempDirectoryUrl,
     snapshotFileRelativeUrl,
-    directorySizeTrackingConfig: {
+    trackingConfig: {
       dist: {
-        "./**/*": true,
+        "./dist/**/*": true,
       },
     },
   })
@@ -70,17 +72,19 @@ const tempDirectoryUrl = resolveUrl("./temp/", import.meta.url)
     version: 1,
     snapshot: {
       dist: {
-        manifest: {
-          "file.js": "file.hash.js",
+        tracking: {
+          "./dist/**/*": true,
         },
-        report: {
-          "file.hash.js": {
+        manifestMap: {
+          "dist/manifest.json": {
+            "file.js": "file.hash.js",
+          },
+        },
+        fileMap: {
+          "dist/file.hash.js": {
             sizeMap: { none: 20 },
             hash: '"14-qK8urhYN/nZoik6niqmvkolkCK0"',
           },
-        },
-        trackingConfig: {
-          "./**/*": true,
         },
       },
     },
@@ -100,9 +104,9 @@ const tempDirectoryUrl = resolveUrl("./temp/", import.meta.url)
     logLevel: "warn",
     projectDirectoryUrl: tempDirectoryUrl,
     snapshotFileRelativeUrl,
-    directorySizeTrackingConfig: {
+    trackingConfig: {
       dist: {
-        "./**/*.js": true,
+        "./dist/**/*.js": true,
       },
     },
   })
@@ -112,11 +116,11 @@ const tempDirectoryUrl = resolveUrl("./temp/", import.meta.url)
     version: 1,
     snapshot: {
       dist: {
-        manifest: null,
-        report: {},
-        trackingConfig: {
-          "./**/*.js": true,
+        tracking: {
+          "./dist/**/*.js": true,
         },
+        manifestMap: {},
+        fileMap: {},
       },
     },
   }
