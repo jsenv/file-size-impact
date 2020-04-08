@@ -1,7 +1,7 @@
 import { isChanged, sumSize } from "./helper.js"
 
-export const renderCacheImpact = (directoryComparison, { formatSize }) => {
-  const cacheImpact = directoryComparisonToCacheImpact(directoryComparison, { formatSize })
+export const renderCacheImpact = (groupComparison, { formatSize }) => {
+  const cacheImpact = groupComparisonToCacheImpact(groupComparison, { formatSize })
 
   return `
   <h3>Cache impact</h3>
@@ -20,12 +20,12 @@ const renderCacheImpactDescription = ({ fileChangedCount }) => {
   return `${fileChangedCount} files in you users cache are now outdated because their content have changed.`
 }
 
-const directoryComparisonToCacheImpact = (directoryComparison) => {
+const groupComparisonToCacheImpact = (groupComparison) => {
   let fileChangedCount = 0
   const outdatedBytesMap = {}
 
-  Object.keys(directoryComparison).forEach((fileRelativeUrl) => {
-    const { base, head } = directoryComparison[fileRelativeUrl]
+  Object.keys(groupComparison).forEach((fileRelativeUrl) => {
+    const { base, head } = groupComparison[fileRelativeUrl]
     if (isChanged({ base, head })) {
       fileChangedCount++
       Object.keys(base.sizeMap).forEach((key) => {
@@ -34,8 +34,8 @@ const directoryComparisonToCacheImpact = (directoryComparison) => {
     }
   })
 
-  Object.keys(directoryComparison).find((fileRelativeUrl) => {
-    const { head } = directoryComparison[fileRelativeUrl]
+  Object.keys(groupComparison).find((fileRelativeUrl) => {
+    const { head } = groupComparison[fileRelativeUrl]
     if (head) {
       // adds sizeName we becomes interested in indicating "---"
       Object.keys(head.sizeMap).forEach((sizeName) => {

@@ -52,6 +52,22 @@ const examples = {
       },
     },
   }),
+  "no files": generateComment({
+    baseVersionnedSnapshot: {
+      snapshot: {
+        dist: {
+          fileMap: {},
+        },
+      },
+    },
+    headVersionnedSnapshot: {
+      snapshot: {
+        dist: {
+          fileMap: {},
+        },
+      },
+    },
+  }),
   "changes impact cancels each other": generateComment({
     baseVersionnedSnapshot: {
       snapshot: {

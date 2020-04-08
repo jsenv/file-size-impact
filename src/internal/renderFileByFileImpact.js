@@ -4,15 +4,33 @@ export const renderFileByFileImpact = (
   groupComparison,
   { groupName, pullRequestBase, pullRequestHead, formatSize },
 ) => {
-  const filesImpact = groupComparisonToFilesImpact(groupComparison)
-  const noImpact = Object.keys(filesImpact).length === 0
   return `
   <h3>File by file impact</h3>
-  ${
-    noImpact
-      ? `<p>Pull request changes have no impact on <code>${groupName}</code> files.</p>`
-      : renderFileByFileTable(filesImpact, { pullRequestBase, pullRequestHead, formatSize })
-  }`
+  ${renderFileByFileBody(groupComparison, {
+    groupName,
+    pullRequestBase,
+    pullRequestHead,
+    formatSize,
+  })}`
+}
+
+const renderFileByFileBody = (
+  groupComparison,
+  { groupName, pullRequestBase, pullRequestHead, formatSize },
+) => {
+  const emptyGroup = Object.keys(groupComparison).length === 0
+  if (emptyGroup) {
+    return `<p>No file in <code>${groupName}</code> group.</p>`
+  }
+
+  const filesImpact = groupComparisonToFilesImpact(groupComparison)
+  const noImpact = Object.keys(filesImpact).length === 0
+
+  if (noImpact) {
+    return `<p>Pull request have no impact on <code>${groupName}</code> files.</p>`
+  }
+
+  return renderFileByFileTable(filesImpact, { pullRequestBase, pullRequestHead, formatSize })
 }
 
 const groupComparisonToFilesImpact = (groupComparison) => {
