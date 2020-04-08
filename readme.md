@@ -18,15 +18,17 @@ Monitor pull request impact on file sizes.
 - [generateSnapshotFile](#generateSnapshotFile)
   - [projectDirectoryUrl](#projectDirectoryUrl)
   - [logLevel](#loglevel)
-  - [directorySizeTrackingConfig](#directorySizeTrackingConfig)
-  - [manifest](#manifest)
+  - [trackingConfig](#trackingConfig)
+  - [transformations](#transformations)
+  - [manifestFilePattern](#manifestFilePattern)
 - [reportSizeImpactIntoGithubPullRequest](#reportSizeImpactIntoGithubPullRequest)
   - [projectDirectoryUrl](#projectDirectoryUrl)
   - [logLevel](#loglevel)
   - [baseSnapshotFileRelativeUrl](#baseSnapshotFileRelativeUrl)
   - [headSnapshotFileRelativeUrl](#headSnapshotFileRelativeUrl)
-  - [formatSize](#formatsize)
+  - [commentSections](#commentSections)
   - [generatedByLink](#generatedByLink)
+  - [formatSize](#formatsize)
 - [Why merge](#Why-merge)
 
 # Presentation
@@ -35,7 +37,11 @@ Monitor pull request impact on file sizes.
 
 The screenshot below shows how it is integrated to a github pull request.
 
-![screenshot of pull request comment](./docs/screenshot-of-pull-request-comment.png)
+![screenshot of pull request comment](./docs/pull-request-comment-collapsed.png)
+
+The comment can be expanded to get more details.
+
+![screenshot of pull request comment expanded](./docs/pull-request-comment-expanded.png)
 
 # Installation
 
@@ -107,9 +113,9 @@ import { generateSnapshotFile } from "@jsenv/github-pull-request-filesize-impact
 
 await generateSnapshotFile({
   projectDirectoryUrl: "file:///directory",
-  directorySizeTrackingConfig: {
+  trackingConfig: {
     dist: {
-      "./**/*.js": true,
+      "./dist/**/*.js": true,
     },
   },
   snapshotFileRelativeUrl: "./size-snapshot.json",
@@ -128,28 +134,78 @@ await generateSnapshotFile({
 
 The list of available logLevel values can be found on [@jsenv/logger documentation](https://github.com/jsenv/jsenv-logger#list-of-log-levels)
 
-## directorySizeTrackingConfig
+## trackingConfig
 
-`directorySizeTrackingConfig` parameter is an object used to configure directories and files you want to track. This parameter is optional with a default value exported in [src/jsenvDirectorySizeTrackingConfig.js](../src/jsenvDirectorySizeTrackingConfig.js)
+`trackingConfig` parameter is an object used to configure group of files you want to track. This parameter is optional with a default value exported in [src/jsenvTrackingConfig.js](./src/jsenvTrackingConfig.js)
 
-`directorySizeTrackingConfig` keys are urls relative to your `projectDirectoryUrl`. These relative urls leads to the directory you want to track.
-`directorySizeTrackingConfig` values are `specifierMetaMap` as documented in https://github.com/jsenv/jsenv-url-meta#normalizespecifiermetamap.
+`trackingConfig` keys are group names that will appear in the generated comment.
+`trackingConfig` values are `specifierMetaMap` as documented in https://github.com/jsenv/jsenv-url-meta#normalizespecifiermetamap.
 
-For every directory you track there will be a corresponding line in the generated pull request comment as visible in [docs/comment-example.md](./docs/comment-example.md)
+For every group you track there will be a corresponding line in the generated pull request comment as visible in [docs/comment-example.md](./docs/comment-example.md)
 
-## manifest
+For example you can create two groups like this:
 
-`manifest` parameter is a boolean controlling if a manifest json file will be taken into account when generating snapshot. This parameter is optional with a default value of `true`.
+```js
+const trackingConfig = {
+  whatever: {
+    "./dist/whatever/**/*.js": true,
+  },
+  dist: {
+    "./dist/**/*.js": true,
+    "./dist/whatever/**/*.js": false,
+  },
+}
+```
+
+And the generated comment will have two expandable section.
+
+<details>
+  <summary>whatever</summary>
+  Analysis for files matching whatever group
+</details>
+
+<details>
+  <summary>dist</summary>
+  Analysis for files matching dist group
+</details>
+
+## transformations
+
+`transformations` parameter is an object used to transform files content before computing their size. This parameter is optional with a default value of `{ none: (buffer) => bufer }`.
+
+You can use this parameter to track file size after gzip compression.
+
+```js
+import { generateSnapshotFile, none, gzip } from "@jsenv/github-pull-request-filesize-impact"
+
+await generateSnapshotFile({
+  projectDirectoryUrl: "file:///directory",
+  transformations: { none, gzip },
+})
+```
+
+And the pull request comment now contains gzip size. Check [docs/comment-example.md#introduce-gzip](./docs/comment-example.md#introduce-gzip) to see how it looks like.
+
+You can enable `none`, `gzip` and `brotli` compression this way. `transformations` can be used to add custom transformations.
+
+```js
+import { none, gzip } from "@jsenv/github-pull-request-filesize-impact"
+
+const transformations = {
+  none,
+  trim: (buffer) => String(buffer).trim(),
+}
+```
+
+## manifestFilePattern
+
+`manifestFilePattern` parameter is a string controlling if a manifest json file will be taken into account when generating snapshot. The parameter also control the name of the manifest file. This parameter is optional with a default value of `./**/manifest.json`.
 
 Manifest where introduced by webpack in https://github.com/danethurber/webpack-manifest-plugin. There is the equivalent for rollup at https://github.com/shuizhongyueming/rollup-plugin-output-manifest.
 
 The concept is to be able to remap generated file like `file.4798774987w97er984798.js` back to `file.js`.
 
 Without this, comparison of directories accross branches would consider generated files as always new because of their dynamic names.
-
-## manifestFileRelativeUrl
-
-`manifestFileRelativeUrl` parameter is a string used to find the manifest json file. This parameter is optional with a default value of `"./manifest.json"`.
 
 # reportSizeImpactIntoGithubPullRequest
 
@@ -177,13 +233,25 @@ await reportSizeImpactIntoGithubPullRequest({
 
 `headSnapshotFileRelativeUrl` parameter is a string leading to the head snapshot file. This parameter is **required**.
 
-## formatSize
+## commentSections
 
-`formatSize` parameter controls the display of file size. This parameter is optionnal, the default value doing an english formatting of a number. Check source code if you want to pass a custom function.
+`commentSections` parameter is an object controlling which comment sections are enabled and their order. This parameter is optionnal and enable `groupImpact`, `fileByFileImpact` and `cacheImpact` section in that order. Check [docs/comment-example.md#basic-example](./docs/comment-example.md#basic-example) to see the comment sections.
+
+You can control sections order because it follow `commentSections` keys order. You can also control which section are enabled at all. For instance [docs/comment-example.md#group-disabled-filebyfile-enabled-cache-disabled](./docs/comment-example.md#group-disabled-filebyfile-enabled-cache-disabled) can be generated by passing `commentSections` below.
+
+```js
+const commentSections = { fileByFileImpact: true }
+```
+
+> This parameter could be an array. Using an object was decided in case each section becomes configurable in the future.
 
 ## generatedByLink
 
 `generatedByLink` parameter controls if pull request comment contains a generated by message. This parameter is optionnal and enabled by default. This parameter allows someone to understand where the pull request message comes from.
+
+## formatSize
+
+`formatSize` parameter controls the display of file size. This parameter is optionnal, the default value doing an english formatting of a number. Check source code if you want to pass a custom function.
 
 # Why merge
 

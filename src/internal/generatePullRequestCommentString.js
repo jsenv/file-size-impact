@@ -1,242 +1,156 @@
-const enDecimalFormatter = new Intl.NumberFormat("en", { style: "decimal" })
-
-const formatSizeFallback = (sizeNumber, { diff = false, unit = false } = {}) => {
-  const sizeNumberAbsolute = Math.abs(sizeNumber)
-  let sizeString = enDecimalFormatter.format(sizeNumberAbsolute)
-
-  if (diff) {
-    if (sizeNumber < 0) {
-      sizeString = `-${sizeString}`
-    } else if (sizeNumber > 0) {
-      sizeString = `+${sizeString}`
-    }
-  }
-
-  if (unit) {
-    if (sizeNumberAbsolute === 0) {
-    } else if (sizeNumberAbsolute === 1) {
-      sizeString = `${sizeString} byte`
-    } else if (sizeNumberAbsolute > 1) {
-      sizeString = `${sizeString} bytes`
-    }
-  }
-
-  return sizeString
-}
+import { compareTwoSnapshots } from "./compareTwoSnapshots.js"
+import { renderGroupImpact } from "./renderGroupImpact.js"
+import { renderFileByFileImpact } from "./renderFileByFileImpact.js"
+import { renderCacheImpact } from "./renderCacheImpact.js"
 
 export const generatePullRequestCommentString = ({
   pullRequestBase,
   pullRequestHead,
-  snapshotComparison,
-  formatSize = formatSizeFallback,
-  // this is to inform someone wondering where this message comes from
-  // do not confuse this with advertising
-  // if you don't like it, you can pass this option to false
-  generatedByLink = true,
+  baseVersionnedSnapshot,
+  headVersionnedSnapshot,
+  formatSize,
+  commentSections,
+  generatedByLink,
 }) => {
-  const directoryMessages = Object.keys(snapshotComparison).map((directoryRelativeUrl) => {
-    const directoryComparison = snapshotComparison[directoryRelativeUrl]
-    const sizeImpactMap = {}
-    let sizeImpact = 0
-    let hasImpact = false
-    Object.keys(directoryComparison).forEach((relativeUrl) => {
-      const { base, head } = directoryComparison[relativeUrl]
+  const warnings = []
 
-      // added
-      if (!base) {
-        const headSize = head.size
-        if (headSize !== 0) {
-          sizeImpactMap[relativeUrl] = {
-            why: "added",
-            baseSize: 0,
-            headSize,
-            diffSize: headSize,
-          }
-          hasImpact = true
-          sizeImpact += headSize
-        }
-      }
-      // removed
-      else if (base && !head) {
-        const baseSize = base.size
-        if (baseSize !== 0) {
-          sizeImpactMap[relativeUrl] = {
-            why: "removed",
-            baseSize,
-            headSize: 0,
-            diffSize: -baseSize,
-          }
-          hasImpact = true
-          sizeImpact -= baseSize
-        }
-      }
-      // changed
-      else if (base && head) {
-        const baseSize = base.size
-        const headSize = head.size
-        const diffSize = headSize - baseSize
-        if (base.hash !== head.hash) {
-          sizeImpactMap[relativeUrl] = {
-            why: "changed",
-            baseSize,
-            headSize,
-            diffSize,
-          }
-          hasImpact = true
-          sizeImpact += diffSize
-        }
-      }
-    })
+  let baseSnapshot
+  const headSnapshot = headVersionnedSnapshot.snapshot
 
-    const sizeImpactText = generateSizeImpactText({
-      directoryRelativeUrl,
+  // this is an indirect way of detecting that there is an error while generating snapshot
+  // There is || echo "{}" > ../snapshot.base.json in size-impact.yml
+  if (Object.keys(baseVersionnedSnapshot).length === 0) {
+    baseSnapshot = {}
+    warnings.push(
+      `**Warning:** Only \`${pullRequestHead}\` files are taken into account below.
+It happens because \`${pullRequestBase}\` files are missing.
+This occurs when there is an error executing \`@jsenv/github-pull-request-filesize-impact\` scripts.
+It's likely because scripts are not in \`${pullRequestBase}\` branch.
+This is normal when adding \`@jsenv/github-pull-request-filesize-impact\` for the first time.`,
+    )
+  } else {
+    const baseVersion = baseVersionnedSnapshot.version
+    const headVersion = headVersionnedSnapshot.version
+
+    if (baseVersion === headVersion) {
+      baseSnapshot = baseVersionnedSnapshot.snapshot
+    } else {
+      baseSnapshot = {}
+      warnings.push(
+        `**Warning:** Only \`${pullRequestHead}\` files are taken into account below.
+It happens because versions of \`@jsenv/github-pull-request-filesize-impact\` are too different on \`${pullRequestBase}\` and \`${pullRequestHead}\`.`,
+      )
+    }
+  }
+
+  const snapshotComparison = compareTwoSnapshots(baseSnapshot, headSnapshot)
+  const groups = Object.keys(snapshotComparison)
+
+  if (groups.length === 0) {
+    warnings.push(`**Warning:** Nothing is tracked. It happens when tracking config is empty.`)
+  }
+
+  const bodyParts = [
+    renderWarnings(warnings),
+    renderBody({
+      snapshotComparison,
+      pullRequestBase,
+      pullRequestHead,
+      commentSections,
       formatSize,
-      sizeImpact,
-    })
+    }),
+    generatedByLink ? renderGeneratedByLink() : "",
+  ].filter((string) => string.length > 0)
 
-    return `<!-- Generated by @jsenv/github-pull-request-filesize-impact --><details>
-  <summary>${sizeImpactText}</summary>
-  <br />${generateSizeImpactDetails({
-    pullRequestBase,
-    pullRequestHead,
-    formatSize,
-    sizeImpactMap,
-    hasImpact,
-    sizeImpact,
-  })}
+  return `<!-- Generated by @jsenv/github-pull-request-filesize-impact -->
+
+${bodyParts.join(`
+
+`)}`
+}
+
+const renderWarnings = (warnings) => {
+  if (warnings.length === 0) {
+    return ""
+  }
+
+  return `---
+
+${warnings.join(`
+
+`)}
+
+---`
+}
+
+const renderBody = ({
+  snapshotComparison,
+  pullRequestBase,
+  pullRequestHead,
+  commentSections,
+  formatSize,
+}) => {
+  const groupMessages = Object.keys(snapshotComparison).map((groupName) => {
+    const groupComparison = snapshotComparison[groupName]
+
+    return `<details>
+  <summary>${generateSummary(groupName)}</summary>
+${generateDetails(groupComparison, {
+  groupName,
+  pullRequestBase,
+  pullRequestHead,
+  commentSections,
+  formatSize: (value, ...rest) => {
+    // call formatSize only on numbers 'error' must be returned untouched
+    if (typeof value === "number") return formatSize(value, ...rest)
+    return value
+  },
+})}
 </details>`
   })
 
-  if (directoryMessages.length === 0) return null
+  return groupMessages.join(`
 
-  return `${directoryMessages.join(`
-
-`)}${
-    generatedByLink
-      ? `
-
-<sub>Generated by [github pull request filesize impact](https://github.com/jsenv/jsenv-github-pull-request-filesize-impact)</sub>`
-      : ""
-  }`
+`)
 }
 
-const generateSizeImpactDetails = ({
-  pullRequestBase,
-  pullRequestHead,
-  formatSize,
-  sizeImpactMap,
-  hasImpact,
-  sizeImpact,
-}) => {
-  if (hasImpact) {
-    return `${generateSizeImpactTable({
-      pullRequestBase,
-      pullRequestHead,
-      formatSize,
-      sizeImpactMap,
-    })}
+const generateSummary = (directoryRelativeUrl) => directoryRelativeUrl
 
-  <blockquote>
-    <strong>Overall size impact:</strong> ${formatSize(sizeImpact, {
-      diff: true,
-      unit: true,
-    })}.<br />
-    <strong>Cache impact:</strong> ${formatCacheImpact(sizeImpactMap, formatSize)}
-  </blockquote>`
-  }
+const COMMENT_NAME_TO_RENDER = {
+  groupImpact: renderGroupImpact,
+  fileByFileImpact: renderFileByFileImpact,
+  cacheImpact: renderCacheImpact,
+}
+
+const generateDetails = (
+  groupComparison,
+  { groupName, pullRequestBase, pullRequestHead, commentSections, formatSize },
+) => {
+  return Object.keys(commentSections)
+    .filter((commentSectionName) => commentSections[commentSectionName])
+    .map((commentSectionName) => {
+      const renderCommentSection = COMMENT_NAME_TO_RENDER[commentSectionName]
+      if (!renderCommentSection) {
+        console.warn(
+          `unknown comment section ${commentSectionName}. Available comment section are ${Object.keys(
+            COMMENT_NAME_TO_RENDER,
+          )} `,
+        )
+        return ""
+      }
+      return renderCommentSection(groupComparison, {
+        groupName,
+        pullRequestBase,
+        pullRequestHead,
+        formatSize,
+      })
+    }).join(`
+`)
+}
+
+const renderGeneratedByLink = () => {
   return `
-  <blockquote>changes don't affect the overall size or cache.</blockquote>`
-}
-
-const generateSizeImpactTable = ({
-  pullRequestBase,
-  pullRequestHead,
-  formatSize,
-  sizeImpactMap,
-}) => `
-  <table>
-    <thead>
-      <tr>
-        <th nowrap>file</th>
-        <th nowrap>event</th>
-        <th nowrap>diff</th>
-        <th nowrap><code>${pullRequestBase}</code></th>
-        <th nowrap><code>${pullRequestHead}</code></th>
-      </tr>
-    </thead>
-    <tbody>
-      ${renderTableBody(sizeImpactMap, formatSize)}
-    </tbody>
-  </table>`
-
-const renderTableBody = (sizeImpactMap, formatSize) => {
-  const lines = Object.keys(sizeImpactMap).map((relativePath) => {
-    const sizeImpact = sizeImpactMap[relativePath]
-
-    return `
-        <td nowrap>${relativePath}</td>
-        <td nowrap>${generateEventCellText(sizeImpact.why)}</td>
-        <td nowrap>${generateImpactCellText(sizeImpact, formatSize)}</td>
-        <td nowrap>${generateBaseCellText(sizeImpact, formatSize)}</td>
-        <td nowrap>${generateHeadCellText(sizeImpact, formatSize)}</td>`
-  })
-
-  if (lines.length === 0) return ""
-
-  return `<tr>${lines.join(`
-      </tr>
-      <tr>`)}
-      </tr>`
-}
-
-const generateEventCellText = (why) => {
-  if (why === "added") {
-    return "file created"
-  }
-  if (why === "removed") {
-    return "file deleted"
-  }
-  return "changed"
-}
-
-const generateBaseCellText = ({ baseSize, why }, formatSize) => {
-  if (why === "added") {
-    return "---"
-  }
-  return formatSize(baseSize)
-}
-
-const generateHeadCellText = ({ headSize, why }, formatSize) => {
-  if (why === "removed") {
-    return "---"
-  }
-  return formatSize(headSize)
-}
-
-const generateImpactCellText = ({ diffSize }, formatSize) => {
-  return formatSize(diffSize, { diff: true })
-}
-
-const generateSizeImpactText = ({ directoryRelativeUrl, formatSize, sizeImpact }) => {
-  return `Overall size impact on <code>${directoryRelativeUrl}</code>: ${formatSize(sizeImpact, {
-    diff: true,
-    unit: true,
-  })}.`
-}
-
-const formatCacheImpact = (sizeImpactMap, formatSize) => {
-  const changedFiles = Object.keys(sizeImpactMap).filter((relativePath) => {
-    return sizeImpactMap[relativePath].why === "changed"
-  })
-  const numberOfChangedFiles = changedFiles.length
-  if (numberOfChangedFiles === 0) {
-    return "none."
-  }
-  const numberOfBytes = changedFiles.reduce((number, relativePath) => {
-    return number + sizeImpactMap[relativePath].baseSize
-  }, 0)
-  return `${numberOfChangedFiles} files content changed, invalidating a total of ${formatSize(
-    numberOfBytes,
-    { unit: true },
-  )}.`
+<sub>
+  Generated by <a href="https://github.com/jsenv/jsenv-github-pull-request-filesize-impact">github pull request filesize impact</a>
+</sub>`
 }

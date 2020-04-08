@@ -1,14 +1,15 @@
-import { generateSnapshotFile } from "@jsenv/github-pull-request-filesize-impact"
+import { generateSnapshotFile, none, gzip, brotli } from "../../../index.js"
 import { projectDirectoryUrl } from "../../../jsenv.config.js"
 
 generateSnapshotFile({
   logLevel: "debug",
   projectDirectoryUrl,
   snapshotFileRelativeUrl: process.argv[2],
-  directorySizeTrackingConfig: {
+  trackingConfig: {
     "dist/commonjs": {
-      "**/*": true,
-      "**/*.map": false,
+      "./dist/commonjs/**/*": true,
+      "./dist/commonjs/**/*.map": false,
     },
   },
+  transformations: { none, gzip, brotli },
 })

@@ -3,7 +3,6 @@ import {
   assertAndNormalizeDirectoryUrl,
   bufferToEtag,
   resolveUrl,
-  resolveDirectoryUrl,
   urlToFileSystemPath,
   writeFile,
   readFile,
@@ -11,74 +10,63 @@ import {
   collectFiles,
   catchCancellation,
   createCancellationTokenForProcess,
-  urlToRelativeUrl,
 } from "@jsenv/util"
-import { jsenvDirectorySizeTrackingConfig } from "./jsenvDirectorySizeTrackingConfig.js"
+import { jsenvTrackingConfig } from "./jsenvTrackingConfig.js"
+import { transform as noneTransform } from "./noneTransformation.js"
+
+// update this when snapshot file format changes and is not retro compatible
+const SNAPSHOT_VERSION = 1
 
 export const generateSnapshotFile = async ({
   cancellationToken = createCancellationTokenForProcess(),
   logLevel,
   projectDirectoryUrl,
-  directorySizeTrackingConfig = jsenvDirectorySizeTrackingConfig,
+  trackingConfig = jsenvTrackingConfig,
   snapshotFileRelativeUrl = "./filesize-snapshot.json",
-
-  manifest = true,
-  manifestFileRelativeUrl = "./manifest.json",
+  manifestFilePattern = "./**/manifest.json",
+  transformations = { none: noneTransform },
 }) => {
   return catchCancellation(async () => {
     const logger = createLogger({ logLevel })
 
     projectDirectoryUrl = assertAndNormalizeDirectoryUrl(projectDirectoryUrl)
 
-    const directoryRelativeUrlArray = Object.keys(directorySizeTrackingConfig)
-    if (directoryRelativeUrlArray.length === 0) {
-      logger.warn(`directorySizeTrackingConfig is empty`)
+    const trackingNames = Object.keys(trackingConfig)
+    if (trackingNames.length === 0) {
+      logger.warn(`trackingConfig is empty`)
     }
 
     const snapshotFileUrl = resolveUrl(snapshotFileRelativeUrl, projectDirectoryUrl)
-
     const snapshot = {}
 
     await Promise.all(
-      directoryRelativeUrlArray.map(async (directoryRelativeUrl) => {
-        const directoryUrl = resolveDirectoryUrl(directoryRelativeUrl, projectDirectoryUrl)
-        const directoryTrackingConfig = directorySizeTrackingConfig[directoryRelativeUrl]
+      trackingNames.map(async (trackingName) => {
+        const tracking = trackingConfig[trackingName]
         const specifierMetaMap = metaMapToSpecifierMetaMap({
-          track: directoryTrackingConfig,
+          track: tracking,
+          ...(manifestFilePattern ? { manifest: { [manifestFilePattern]: true } } : {}),
         })
 
-        const manifestFileUrl = resolveUrl(manifestFileRelativeUrl, directoryUrl)
-        // ensure manifestFileRelativeUrl is normalized
-        manifestFileRelativeUrl = urlToRelativeUrl(manifestFileUrl, directoryUrl)
-
-        const [directoryManifest, directoryFileReport] = await Promise.all([
-          manifest
-            ? readDirectoryManifest({
-                logger,
-                manifestFileUrl,
-              })
-            : null,
-          generateDirectoryFileReport({
-            logger,
-            directoryUrl,
-            specifierMetaMap,
-            manifest,
-            manifestFileRelativeUrl,
-          }),
-        ])
-
-        cancellationToken.throwIfRequested()
-
-        snapshot[directoryRelativeUrl] = {
-          manifest: directoryManifest,
-          report: directoryFileReport,
-          trackingConfig: directoryTrackingConfig,
+        const trackingResult = await applyTracking({
+          logger,
+          projectDirectoryUrl,
+          specifierMetaMap,
+          transformations,
+        })
+        snapshot[trackingName] = {
+          tracking,
+          ...trackingResult,
         }
+        cancellationToken.throwIfRequested()
       }),
     )
 
     logger.info(`write snapshot file at ${urlToFileSystemPath(snapshotFileUrl)}`)
-    const snapshotFileContent = JSON.stringify(snapshot, null, "  ")
+    const versionnedSnapshot = {
+      version: SNAPSHOT_VERSION,
+      snapshot,
+    }
+    const snapshotFileContent = JSON.stringify(versionnedSnapshot, null, "  ")
     logger.debug(snapshotFileContent)
     await writeFile(snapshotFileUrl, snapshotFileContent)
   }).catch((e) => {
@@ -90,57 +78,76 @@ export const generateSnapshotFile = async ({
   })
 }
 
-const readDirectoryManifest = async ({ logger, manifestFileUrl }) => {
-  try {
-    const manifestFileContent = await readFile(manifestFileUrl)
-    return JSON.parse(manifestFileContent)
-  } catch (e) {
-    if (e && e.code === "ENOENT") {
-      logger.debug(`manifest file not found at ${urlToFileSystemPath(manifestFileUrl)}`)
-      return null
-    }
-    throw e
-  }
-}
-
-const generateDirectoryFileReport = async ({
+const applyTracking = async ({
   logger,
-  directoryUrl,
+  projectDirectoryUrl,
   specifierMetaMap,
-  manifest,
-  manifestFileRelativeUrl,
+  transformations,
 }) => {
-  const directoryFileReport = {}
-  try {
-    await collectFiles({
-      directoryUrl,
-      specifierMetaMap,
-      predicate: (meta) => meta.track === true,
-      matchingFileOperation: async ({ relativeUrl, fileStats }) => {
-        if (!fileStats.isFile()) {
-          return
-        }
-        if (manifest && relativeUrl === manifestFileRelativeUrl) {
-          return
-        }
-        const fileUrl = resolveUrl(relativeUrl, directoryUrl)
-        const fileContent = await readFile(fileUrl)
-        const hash = bufferToEtag(Buffer.from(fileContent))
+  const manifestMap = {}
+  const fileMap = {}
+  let files
 
-        directoryFileReport[relativeUrl] = {
-          size: fileStats.size,
-          hash,
-        }
-      },
+  try {
+    files = await collectFiles({
+      directoryUrl: projectDirectoryUrl,
+      specifierMetaMap,
+      predicate: (meta) => meta.track === true || meta.manifest === true,
     })
   } catch (e) {
-    const directoryPath = urlToFileSystemPath(directoryUrl)
+    const directoryPath = urlToFileSystemPath(projectDirectoryUrl)
     if (e.code === "ENOENT" && e.path === directoryPath) {
       logger.warn(`${directoryPath} does not exists`)
-      return directoryFileReport
+      return { fileMap, manifestMap }
     }
     throw e
   }
 
-  return directoryFileReport
+  // we use reduce and not Promise.all(files.map) because transformation can be expensive (gzip, brotli)
+  // so we won't benefit from concurrency (it might even make things worse)
+  await files.reduce(async (previous, { relativeUrl, meta }) => {
+    await previous
+
+    const fileUrl = resolveUrl(relativeUrl, projectDirectoryUrl)
+
+    if (meta.manifest) {
+      manifestMap[relativeUrl] = await readManifest(fileUrl)
+      return
+    }
+
+    const fileContent = await readFile(fileUrl)
+    const fileBuffer = Buffer.from(fileContent)
+    const sizeMap = await getFileSizeMap(fileBuffer, { transformations, logger, fileUrl })
+    const hash = bufferToEtag(fileBuffer)
+
+    fileMap[relativeUrl] = {
+      sizeMap,
+      hash,
+    }
+  }, Promise.resolve())
+
+  return { manifestMap, fileMap }
+}
+
+const getFileSizeMap = async (fileBuffer, { transformations, logger, fileUrl }) => {
+  const sizeMap = {}
+  await Object.keys(transformations).reduce(async (previous, sizeName) => {
+    await previous
+    const transform = transformations[sizeName]
+    try {
+      const transformResult = await transform(fileBuffer)
+      sizeMap[sizeName] = Buffer.from(transformResult).length
+    } catch (e) {
+      logger.debug(`error while transforming ${fileUrl} with ${sizeName}.
+--- error stack ---
+${e.stack}`)
+      sizeMap[sizeName] = "error"
+    }
+  }, Promise.resolve())
+  return sizeMap
+}
+
+const readManifest = async (manifestFileUrl) => {
+  const manifestFileContent = await readFile(manifestFileUrl)
+  return JSON.parse(manifestFileContent)
 }

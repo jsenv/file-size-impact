@@ -4,146 +4,177 @@ import {
   metaMapToSpecifierMetaMap,
   urlToMeta,
   normalizeSpecifierMetaMap,
+  urlToRelativeUrl,
 } from "@jsenv/util"
 
 export const compareTwoSnapshots = (baseSnapshot, headSnapshot) => {
   const comparison = {}
-  Object.keys(headSnapshot).forEach((directoryRelativeUrl) => {
-    // || {} exists in case directory was not tracked in base branch
+  Object.keys(headSnapshot).forEach((group) => {
+    // || {} exists in case group was not tracked in base branch
     // and is now tracked in head branch.
-    // compareDirectorySnapshot will handle the empty object and consider everything as added
-    const baseDirectorySnapshot = baseSnapshot[directoryRelativeUrl] || {}
-    const headDirectorySnapshot = headSnapshot[directoryRelativeUrl]
-    comparison[directoryRelativeUrl] = compareDirectorySnapshot(
-      baseDirectorySnapshot,
-      headDirectorySnapshot,
-    )
+    // compareTwoGroups will handle the empty object and consider everything as added
+    const baseGroup = baseSnapshot[group] || {}
+    const headGroup = headSnapshot[group]
+    comparison[group] = compareTwoGroups(baseGroup, headGroup)
   })
   return comparison
 }
 
-const compareDirectorySnapshot = (baseSnapshot, headSnapshot) => {
-  const snapshotComparison = {}
+const compareTwoGroups = (baseGroup, headGroup) => {
+  const groupComparison = {}
 
-  const baseManifest = baseSnapshot.manifest || {}
-  const headManifest = headSnapshot.manifest || {}
-  const baseReport = baseSnapshot.report || {}
-  const headReport = headSnapshot.report || {}
-  const baseMappings = manifestToMappings(baseManifest)
-  const headMappings = manifestToMappings(headManifest)
+  const baseManifestMap = baseGroup.manifestMap || {}
+  const headManifestMap = headGroup.manifestMap || {}
+  const baseFileMap = baseGroup.fileMap || {}
+  const headFileMap = headGroup.fileMap || {}
+  const baseMappings = manifestToMappings(baseManifestMap)
+  const headMappings = manifestToMappings(headManifestMap)
 
   const added = (relativeUrl, headRelativeUrl) => {
-    snapshotComparison[relativeUrl] = {
+    groupComparison[relativeUrl] = {
       base: null,
       head: {
         relativeUrl: headRelativeUrl,
-        ...headReport[headRelativeUrl],
+        ...headFileMap[headRelativeUrl],
       },
     }
   }
   const removed = (relativeUrl, baseRelativeUrl) => {
-    snapshotComparison[relativeUrl] = {
+    groupComparison[relativeUrl] = {
       base: {
         relativeUrl: baseRelativeUrl,
-        ...baseReport[baseRelativeUrl],
+        ...baseFileMap[baseRelativeUrl],
       },
       head: null,
     }
   }
   const updated = (relativeUrl, baseRelativeUrl, headRelativeUrl) => {
-    snapshotComparison[relativeUrl] = {
+    groupComparison[relativeUrl] = {
       base: {
         relativeUrl: baseRelativeUrl,
-        ...baseReport[baseRelativeUrl],
+        ...baseFileMap[baseRelativeUrl],
       },
       head: {
         relativeUrl: headRelativeUrl,
-        ...headReport[headRelativeUrl],
+        ...headFileMap[headRelativeUrl],
       },
     }
   }
 
-  Object.keys(headReport).forEach((headRelativeUrl) => {
-    if (headRelativeUrl in headMappings) {
-      const headRelativeUrlMapped = headMappings[headRelativeUrl]
-      if (headRelativeUrlMapped in baseManifest) {
+  Object.keys(headFileMap).forEach((headRelativeUrl) => {
+    const originalHeadRelativeUrl = getOriginalRelativeUrl(headRelativeUrl, headMappings)
+    if (originalHeadRelativeUrl) {
+      const baseRelativeUrl = getRenamedRelativeUrl(originalHeadRelativeUrl, baseMappings)
+      if (baseRelativeUrl) {
         // the mapping should be the same and already found while iterating
         // baseReport, otherwise it means the mappings
         // of heads and base are different right ?
-        const baseRelativeUrl = baseManifest[headRelativeUrlMapped]
-        updated(headRelativeUrlMapped, baseRelativeUrl, headRelativeUrl)
-      } else if (headRelativeUrl in baseReport) {
-        updated(headRelativeUrlMapped, headRelativeUrl, headRelativeUrl)
+        updated(originalHeadRelativeUrl, baseRelativeUrl, headRelativeUrl)
+      } else if (headRelativeUrl in baseFileMap) {
+        updated(originalHeadRelativeUrl, headRelativeUrl, headRelativeUrl)
       } else {
-        added(headRelativeUrlMapped, headRelativeUrl)
+        added(originalHeadRelativeUrl, headRelativeUrl)
       }
-    } else if (headRelativeUrl in baseReport) {
+    } else if (headRelativeUrl in baseFileMap) {
       updated(headRelativeUrl, headRelativeUrl, headRelativeUrl)
     } else {
       added(headRelativeUrl, headRelativeUrl)
     }
   })
 
-  // const fileIsTrackedInBase = trackingConfigToPredicate(baseSnapshot.trackingConfig)
-  const fileIsTrackedInHead = trackingConfigToPredicate(headSnapshot.trackingConfig)
+  // const fileIsTrackedInBase = trackingConfigToPredicate(baseSnapshot.tracking)
+  const fileIsTrackedInHead = trackingToPredicate(headGroup.tracking)
 
-  Object.keys(baseReport).forEach((baseRelativeUrl) => {
+  Object.keys(baseFileMap).forEach((baseRelativeUrl) => {
     if (!fileIsTrackedInHead(baseRelativeUrl)) {
       // head tracking config is not interested into this file anymore
       return
     }
 
-    if (baseRelativeUrl in baseMappings) {
-      const baseRelativeUrlMapped = baseMappings[baseRelativeUrl]
-      if (baseRelativeUrlMapped in headManifest) {
-        const headRelativeUrl = headManifest[baseRelativeUrlMapped]
-        updated(baseRelativeUrlMapped, baseRelativeUrl, headRelativeUrl)
-      } else if (baseRelativeUrl in headReport) {
-        updated(baseRelativeUrlMapped, baseRelativeUrl, baseRelativeUrl)
+    const originalBaseRelativeUrl = getOriginalRelativeUrl(baseRelativeUrl, baseMappings)
+    if (originalBaseRelativeUrl) {
+      const headRelativeUrl = getRenamedRelativeUrl(originalBaseRelativeUrl, headMappings)
+      if (headRelativeUrl) {
+        updated(originalBaseRelativeUrl, baseRelativeUrl, headRelativeUrl)
+      } else if (baseRelativeUrl in headFileMap) {
+        updated(originalBaseRelativeUrl, baseRelativeUrl, baseRelativeUrl)
       } else {
-        removed(baseRelativeUrlMapped, baseRelativeUrl)
+        removed(originalBaseRelativeUrl, baseRelativeUrl)
       }
-    } else if (baseRelativeUrl in headReport) {
+    } else if (baseRelativeUrl in headFileMap) {
       updated(baseRelativeUrl, baseRelativeUrl, baseRelativeUrl)
     } else {
       removed(baseRelativeUrl, baseRelativeUrl)
     }
   })
 
-  return sortDirectoryStructure(snapshotComparison)
+  return sortFileStructure(groupComparison)
 }
 
-const trackingConfigToPredicate = (trackingConfig) => {
-  const directoryUrl = "file:///directory/"
+const ABSTRACT_DIRECTORY_URL = "file:///directory/"
+
+const trackingToPredicate = (tracking) => {
+  // not ideal but here for the ease of unit test so that no need to specify tracking everywhere
+  if (!tracking) {
+    return () => true
+  }
+
   const specifierMetaMap = normalizeSpecifierMetaMap(
     metaMapToSpecifierMetaMap({
-      track: trackingConfig,
+      track: tracking,
     }),
-    directoryUrl,
+    ABSTRACT_DIRECTORY_URL,
   )
   return (relativeUrl) => {
     return urlToMeta({
-      url: resolveUrl(relativeUrl, directoryUrl),
+      url: resolveUrl(relativeUrl, ABSTRACT_DIRECTORY_URL),
       specifierMetaMap,
     }).track
   }
 }
 
-const manifestToMappings = (manifest) => {
+const manifestToMappings = (manifestMap) => {
   const mappings = {}
-  if (manifest) {
-    Object.keys(manifest).forEach((originalRelativeUrl) => {
-      mappings[manifest[originalRelativeUrl]] = originalRelativeUrl
+  Object.keys(manifestMap).forEach((manifestRelativeUrl) => {
+    const manifest = manifestMap[manifestRelativeUrl]
+    const manifestAbstractUrl = resolveUrl(manifestRelativeUrl, ABSTRACT_DIRECTORY_URL)
+    Object.keys(manifest).forEach((originalFileManifestRelativeUrl) => {
+      const fileManifestRelativeUrl = manifest[originalFileManifestRelativeUrl]
+
+      const originalFileAbstractUrl = resolveUrl(
+        originalFileManifestRelativeUrl,
+        manifestAbstractUrl,
+      )
+      const fileAbstractUrl = resolveUrl(fileManifestRelativeUrl, manifestAbstractUrl)
+
+      const fileRelativeUrl = urlToRelativeUrl(fileAbstractUrl, ABSTRACT_DIRECTORY_URL)
+      const originalFileRelativeUrl = urlToRelativeUrl(
+        originalFileAbstractUrl,
+        ABSTRACT_DIRECTORY_URL,
+      )
+      mappings[fileRelativeUrl] = originalFileRelativeUrl
     })
-  }
+  })
   return mappings
 }
 
-const sortDirectoryStructure = (directoryStructure) => {
-  const relativeUrlSortedArray = Object.keys(directoryStructure).sort(comparePathnames)
-  const directoryStructureSorted = {}
-  relativeUrlSortedArray.forEach((relativeUrl) => {
-    directoryStructureSorted[relativeUrl] = directoryStructure[relativeUrl]
+const getOriginalRelativeUrl = (relativeUrl, mappings) => {
+  return relativeUrl in mappings ? mappings[relativeUrl] : null
+}
+
+const getRenamedRelativeUrl = (originalRelativeUrl, mappings) => {
+  const relativeUrl = Object.keys(mappings).find((relativeUrlCandidate) => {
+    const originalRelativeUrlCandidate = mappings[relativeUrlCandidate]
+    return originalRelativeUrlCandidate === originalRelativeUrl
   })
-  return directoryStructureSorted
+  return relativeUrl
+}
+
+const sortFileStructure = (fileStructure) => {
+  const relativeUrlSortedArray = Object.keys(fileStructure).sort(comparePathnames)
+  const fileStructureSorted = {}
+  relativeUrlSortedArray.forEach((relativeUrl) => {
+    fileStructureSorted[relativeUrl] = fileStructure[relativeUrl]
+  })
+  return fileStructureSorted
 }

@@ -39,16 +39,16 @@ jobs:
         run: npm config set //npm.pkg.github.com/:_authToken ${{ secrets.GITHUB_TOKEN }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      # Please note || echo "{}" > ../snapshot.base.json
-      # It means we fallback on an empty snapshot when left command fails.
-      # It exists in case the base branch does not contains size-impact files.
-      # Happens at least when a pull request introduces
-      # @jsenv/github-pull-request-filesize-impact to a repository for the first time.
       - name: Git checkout base
         run: |
           git fetch --no-tags --prune --depth=1 origin $GITHUB_BASE_REF
           git checkout origin/$GITHUB_BASE_REF
           git log -1
+      # Please note || echo "{}" > ../snapshot.base.json
+      # It means we fallback on an empty snapshot when left command fails.
+      # It exists in case the base branch does not contains size-impact files.
+      # Happens at least when a pull request introduces
+      # @jsenv/github-pull-request-filesize-impact to a repository for the first time.
       - name: Generate snapshot for base
         run: |
           npm install
