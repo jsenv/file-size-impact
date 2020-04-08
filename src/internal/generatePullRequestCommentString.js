@@ -1,3 +1,4 @@
+import { compareTwoSnapshots } from "./compareTwoSnapshots.js"
 import { renderDirectoryImpact } from "./renderDirectoryImpact.js"
 import { renderFilesImpact } from "./renderFilesImpact.js"
 import { renderCacheImpact } from "./renderCacheImpact.js"
@@ -5,15 +6,47 @@ import { renderCacheImpact } from "./renderCacheImpact.js"
 export const generatePullRequestCommentString = ({
   pullRequestBase,
   pullRequestHead,
-  warnings = [],
-  snapshotComparison,
+  baseVersionnedSnapshot,
+  headVersionnedSnapshot,
   formatSize,
   commentSections,
   generatedByLink,
 }) => {
-  const directories = Object.keys(snapshotComparison)
+  const warnings = []
 
-  if (directories.length === 0) {
+  let baseSnapshot
+  const headSnapshot = headVersionnedSnapshot.snapshot
+
+  // this is an indirect way of detecting that there is an error while generating snapshot
+  // There is || echo "{}" > ../snapshot.base.json in size-impact.yml
+  if (Object.keys(baseVersionnedSnapshot).length === 0) {
+    baseSnapshot = {}
+    warnings.push(
+      `**Warning:** Only \`${pullRequestHead}\` files are taken into account below.
+It happens because \`${pullRequestBase}\` files are missing.
+This occurs when there is an error executing \`@jsenv/github-pull-request-filesize-impact\` scripts.
+It's likely because scripts are not in \`${pullRequestBase}\` branch.
+This is normal when adding \`@jsenv/github-pull-request-filesize-impact\` for the first time.`,
+    )
+  } else {
+    const baseVersion = baseVersionnedSnapshot.version
+    const headVersion = headVersionnedSnapshot.version
+
+    if (baseVersion === headVersion) {
+      baseSnapshot = baseVersionnedSnapshot.snapshot
+    } else {
+      baseSnapshot = {}
+      warnings.push(
+        `**Warning:** Only \`${pullRequestHead}\` files are taken into account below.
+It happens because versions of \`@jsenv/github-pull-request-filesize-impact\` are too different on \`${pullRequestBase}\` and \`${pullRequestHead}\`.`,
+      )
+    }
+  }
+
+  const snapshotComparison = compareTwoSnapshots(baseSnapshot, headSnapshot)
+  const groups = Object.keys(snapshotComparison)
+
+  if (groups.length === 0) {
     warnings.push(`**Warning:**: The comparison is empty, check your tracking config.`)
   }
 

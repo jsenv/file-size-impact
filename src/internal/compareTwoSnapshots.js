@@ -111,23 +111,28 @@ const compareTwoGroups = (baseGroup, headGroup) => {
   return sortFileStructure(groupComparison)
 }
 
+const ABSTRACT_DIRECTORY_URL = "file:///directory/"
+
 const trackingToPredicate = (tracking) => {
-  const directoryUrl = "file:///directory/"
+  // not ideal but here for the ease of unit test so that no need to specify tracking everywhere
+  if (!tracking) {
+    return () => true
+  }
+
   const specifierMetaMap = normalizeSpecifierMetaMap(
     metaMapToSpecifierMetaMap({
       track: tracking,
     }),
-    directoryUrl,
+    ABSTRACT_DIRECTORY_URL,
   )
   return (relativeUrl) => {
     return urlToMeta({
-      url: resolveUrl(relativeUrl, directoryUrl),
+      url: resolveUrl(relativeUrl, ABSTRACT_DIRECTORY_URL),
       specifierMetaMap,
     }).track
   }
 }
 
-const ABSTRACT_DIRECTORY_URL = "file:///directory/"
 const manifestToMappings = (manifestMap) => {
   const mappings = {}
   Object.keys(manifestMap).forEach((manifestRelativeUrl) => {
