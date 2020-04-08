@@ -22,7 +22,7 @@ export const reportSizeImpactIntoGithubPullRequest = async ({
   baseSnapshotFileRelativeUrl,
   headSnapshotFileRelativeUrl,
   formatSize = jsenvFormatSize,
-  commentSections = { directoryImpact: true, filesImpact: true, cacheImpact: true },
+  commentSections = { groupImpact: true, fileByFileImpact: true, cacheImpact: true },
   generatedByLink = true,
 }) => {
   return catchCancellation(async () => {

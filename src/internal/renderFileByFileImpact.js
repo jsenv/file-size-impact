@@ -1,21 +1,55 @@
 import { isNew, isDeleted, isChanged } from "./helper.js"
 
-export const renderFilesImpact = (
-  directoryComparison,
-  { directoryRelativeUrl, pullRequestBase, pullRequestHead, formatSize },
+export const renderFileByFileImpact = (
+  groupComparison,
+  { groupName, pullRequestBase, pullRequestHead, formatSize },
 ) => {
-  const filesImpact = directoryComparisonToFilesImpact(directoryComparison)
+  const filesImpact = groupComparisonToFilesImpact(groupComparison)
   const noImpact = Object.keys(filesImpact).length === 0
   return `
   <h3>File by file impact</h3>
   ${
     noImpact
-      ? `<p>Pull request changes have no impact on <code>${directoryRelativeUrl}</code> files.</p>`
-      : renderFilesImpactTable(filesImpact, { pullRequestBase, pullRequestHead, formatSize })
+      ? `<p>Pull request changes have no impact on <code>${groupName}</code> files.</p>`
+      : renderFileByFileTable(filesImpact, { pullRequestBase, pullRequestHead, formatSize })
   }`
 }
 
-const renderFilesImpactTable = (filesImpact, { pullRequestBase, pullRequestHead, formatSize }) => {
+const groupComparisonToFilesImpact = (groupComparison) => {
+  const filesImpact = {}
+  Object.keys(groupComparison).forEach((fileRelativeUrl) => {
+    const { base, head } = groupComparison[fileRelativeUrl]
+
+    if (isNew({ base, head })) {
+      filesImpact[fileRelativeUrl] = {
+        base,
+        head,
+        event: "created",
+      }
+      return
+    }
+
+    if (isDeleted({ base, head })) {
+      filesImpact[fileRelativeUrl] = {
+        base,
+        head,
+        event: "deleted",
+      }
+      return
+    }
+
+    if (isChanged({ base, head })) {
+      filesImpact[fileRelativeUrl] = {
+        base,
+        head,
+        event: "changed",
+      }
+    }
+  })
+  return filesImpact
+}
+
+const renderFileByFileTable = (filesImpact, { pullRequestBase, pullRequestHead, formatSize }) => {
   const noneOnly = analyseNoneOnly(filesImpact)
 
   const headerCells = [
@@ -95,40 +129,6 @@ const renderFilesTableBody = (filesImpact, { noneOnly, formatSize }) => {
       </tr>
       <tr>`)}
       </tr>`
-}
-
-const directoryComparisonToFilesImpact = (directoryComparison) => {
-  const filesImpact = {}
-  Object.keys(directoryComparison).forEach((fileRelativeUrl) => {
-    const { base, head } = directoryComparison[fileRelativeUrl]
-
-    if (isNew({ base, head })) {
-      filesImpact[fileRelativeUrl] = {
-        base,
-        head,
-        event: "created",
-      }
-      return
-    }
-
-    if (isDeleted({ base, head })) {
-      filesImpact[fileRelativeUrl] = {
-        base,
-        head,
-        event: "deleted",
-      }
-      return
-    }
-
-    if (isChanged({ base, head })) {
-      filesImpact[fileRelativeUrl] = {
-        base,
-        head,
-        event: "changed",
-      }
-    }
-  })
-  return filesImpact
 }
 
 const renderFileCell = ({ rowSpan, merged, fileRelativePath }) => {

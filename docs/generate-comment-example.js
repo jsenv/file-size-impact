@@ -7,7 +7,7 @@ const generateComment = (data) =>
     pullRequestBase: "base",
     pullRequestHead: "head",
     formatSize: jsenvFormatSize,
-    commentSections: { directoryImpact: true, filesImpact: true, cacheImpact: true },
+    commentSections: { groupImpact: true, fileByFileImpact: true, cacheImpact: true },
     ...data,
   })
 
@@ -238,8 +238,8 @@ const examples = {
       },
     },
   }),
-  "directory disabled, files enabled, cache disabled": generateComment({
-    commentSections: { filesImpact: true },
+  "group disabled, filebyfile enabled, cache disabled": generateComment({
+    commentSections: { fileByFileImpact: true },
     baseVersionnedSnapshot: {
       snapshot: {
         dist: {
@@ -259,8 +259,8 @@ const examples = {
       },
     },
   }),
-  "files enabled, directory enabed, cache disabled": generateComment({
-    commentSections: { filesImpact: true, directoryImpact: true },
+  "filebyfile enabled, group enabled, cache disabled": generateComment({
+    commentSections: { fileByFileImpact: true, groupImpact: true },
     baseVersionnedSnapshot: {
       snapshot: {
         dist: {

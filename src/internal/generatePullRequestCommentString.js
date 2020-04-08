@@ -1,6 +1,6 @@
 import { compareTwoSnapshots } from "./compareTwoSnapshots.js"
-import { renderDirectoryImpact } from "./renderDirectoryImpact.js"
-import { renderFilesImpact } from "./renderFilesImpact.js"
+import { renderGroupImpact } from "./renderGroupImpact.js"
+import { renderFileByFileImpact } from "./renderFileByFileImpact.js"
 import { renderCacheImpact } from "./renderCacheImpact.js"
 
 export const generatePullRequestCommentString = ({
@@ -90,13 +90,13 @@ const renderBody = ({
   commentSections,
   formatSize,
 }) => {
-  const directoryMessages = Object.keys(snapshotComparison).map((directoryRelativeUrl) => {
-    const directoryComparison = snapshotComparison[directoryRelativeUrl]
+  const groupMessages = Object.keys(snapshotComparison).map((groupName) => {
+    const groupComparison = snapshotComparison[groupName]
 
     return `<details>
-  <summary>${generateSummary(directoryRelativeUrl)}</summary>
-${generateDetails(directoryComparison, {
-  directoryRelativeUrl,
+  <summary>${generateSummary(groupName)}</summary>
+${generateDetails(groupComparison, {
+  groupName,
   pullRequestBase,
   pullRequestHead,
   commentSections,
@@ -109,7 +109,7 @@ ${generateDetails(directoryComparison, {
 </details>`
   })
 
-  return directoryMessages.join(`
+  return groupMessages.join(`
 
 `)
 }
@@ -117,14 +117,14 @@ ${generateDetails(directoryComparison, {
 const generateSummary = (directoryRelativeUrl) => directoryRelativeUrl
 
 const COMMENT_NAME_TO_RENDER = {
-  directoryImpact: renderDirectoryImpact,
-  filesImpact: renderFilesImpact,
+  groupImpact: renderGroupImpact,
+  fileByFileImpact: renderFileByFileImpact,
   cacheImpact: renderCacheImpact,
 }
 
 const generateDetails = (
-  directoryComparison,
-  { directoryRelativeUrl, pullRequestBase, pullRequestHead, commentSections, formatSize },
+  groupComparison,
+  { groupName, pullRequestBase, pullRequestHead, commentSections, formatSize },
 ) => {
   return Object.keys(commentSections)
     .filter((commentSectionName) => commentSections[commentSectionName])
@@ -138,8 +138,8 @@ const generateDetails = (
         )
         return ""
       }
-      return renderCommentSection(directoryComparison, {
-        directoryRelativeUrl,
+      return renderCommentSection(groupComparison, {
+        groupName,
         pullRequestBase,
         pullRequestHead,
         formatSize,
