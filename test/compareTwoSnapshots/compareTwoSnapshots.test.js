@@ -5,33 +5,37 @@ import { compareTwoSnapshots } from "../../src/internal/compareTwoSnapshots.js"
   const actual = compareTwoSnapshots(
     {
       dist: {
-        manifest: {
-          "dir/file.js": "dir/file.base.js",
-          "old.js": "old.base.js",
-        },
-        trackingConfig: {
+        tracking: {
           "**/*": true,
         },
-        report: {
-          "dir/file.base.js": { size: 10, hash: "hash1" },
-          "old.base.js": { size: 20, hash: "hash2" },
-          "whatever.js": { size: 30, hash: "hash3" },
+        manifestMap: {
+          "manifest.json": {
+            "dir/file.js": "dir/file.base.js",
+            "old.js": "old.base.js",
+          },
+        },
+        fileMap: {
+          "dir/file.base.js": { hash: "hash1" },
+          "old.base.js": { hash: "hash2" },
+          "whatever.js": { hash: "hash3" },
         },
       },
     },
     {
       dist: {
-        manifest: {
-          "dir/file.js": "dir/file.head.js",
-          "new.js": "new.head.js",
-        },
-        trackingConfig: {
+        tracking: {
           "**/*": true,
         },
-        report: {
-          "dir/file.head.js": { size: 100, hash: "hash4" },
-          "new.head.js": { size: 200, hash: "hash5" },
-          "whatever.js": { size: 300, hash: "hash6" },
+        manifestMap: {
+          "manifest.json": {
+            "dir/file.js": "dir/file.head.js",
+            "new.js": "new.head.js",
+          },
+        },
+        fileMap: {
+          "dir/file.head.js": { hash: "hash4" },
+          "new.head.js": { hash: "hash5" },
+          "whatever.js": { hash: "hash6" },
         },
       },
     },
@@ -41,12 +45,10 @@ import { compareTwoSnapshots } from "../../src/internal/compareTwoSnapshots.js"
       "dir/file.js": {
         base: {
           relativeUrl: "dir/file.base.js",
-          size: 10,
           hash: "hash1",
         },
         head: {
           relativeUrl: "dir/file.head.js",
-          size: 100,
           hash: "hash4",
         },
       },
@@ -54,14 +56,12 @@ import { compareTwoSnapshots } from "../../src/internal/compareTwoSnapshots.js"
         base: null,
         head: {
           relativeUrl: "new.head.js",
-          size: 200,
           hash: "hash5",
         },
       },
       "old.js": {
         base: {
           relativeUrl: "old.base.js",
-          size: 20,
           hash: "hash2",
         },
         head: null,
@@ -69,12 +69,10 @@ import { compareTwoSnapshots } from "../../src/internal/compareTwoSnapshots.js"
       "whatever.js": {
         base: {
           relativeUrl: "whatever.js",
-          size: 30,
           hash: "hash3",
         },
         head: {
           relativeUrl: "whatever.js",
-          size: 300,
           hash: "hash6",
         },
       },
@@ -88,27 +86,31 @@ import { compareTwoSnapshots } from "../../src/internal/compareTwoSnapshots.js"
   const actual = compareTwoSnapshots(
     {
       dist: {
-        manifest: {
-          "foo.html": "bar.html",
-        },
-        trackingConfig: {
+        tracking: {
           "foo.html": false,
         },
-        report: {
-          "whatever.js": { size: 10, hash: "hash" },
+        manifestMap: {
+          "manifest.json": {
+            "foo.html": "bar.html",
+          },
+        },
+        fileMap: {
+          "whatever.js": { hash: "hash" },
         },
       },
     },
     {
       dist: {
-        manifest: {
-          "foo.html": "bar.html",
-        },
-        trackingConfig: {
+        tracking: {
           "foo.html": false,
         },
-        report: {
-          "whatever.js": { size: 11, hash: "hash2" },
+        manifestMap: {
+          "manifest.json": {
+            "foo.html": "bar.html",
+          },
+        },
+        fileMap: {
+          "whatever.js": { hash: "hash2" },
         },
       },
     },
@@ -118,12 +120,10 @@ import { compareTwoSnapshots } from "../../src/internal/compareTwoSnapshots.js"
       "whatever.js": {
         base: {
           relativeUrl: "whatever.js",
-          size: 10,
           hash: "hash",
         },
         head: {
           relativeUrl: "whatever.js",
-          size: 11,
           hash: "hash2",
         },
       },
@@ -137,23 +137,23 @@ import { compareTwoSnapshots } from "../../src/internal/compareTwoSnapshots.js"
   const actual = compareTwoSnapshots(
     {
       dist: {
-        report: {
-          "file.js": { size: 10, hash: "hash1" },
+        fileMap: {
+          "file.js": { hash: "hash1" },
         },
       },
       src: {
-        report: {
-          "file.js": { size: 10, hash: "hash2" },
+        fileMap: {
+          "file.js": { hash: "hash2" },
         },
       },
     },
     {
       dist: {
-        report: {
-          "file.js": { size: 20, hash: "hash3" },
-        },
-        trackingConfig: {
+        tracking: {
           "**/*": true,
+        },
+        fileMap: {
+          "file.js": { hash: "hash3" },
         },
       },
     },
@@ -163,12 +163,10 @@ import { compareTwoSnapshots } from "../../src/internal/compareTwoSnapshots.js"
       "file.js": {
         base: {
           relativeUrl: "file.js",
-          size: 10,
           hash: "hash1",
         },
         head: {
           relativeUrl: "file.js",
-          size: 20,
           hash: "hash3",
         },
       },
@@ -182,24 +180,24 @@ import { compareTwoSnapshots } from "../../src/internal/compareTwoSnapshots.js"
   const actual = compareTwoSnapshots(
     {
       dist: {
-        report: {
-          "foo.js": { size: 10, hash: "hash1" },
-          "bar.js": { size: 20, hash: "hash2" },
-        },
-        trackingConfig: {
+        tracking: {
           "foo.js": true,
           "bar.js": true,
+        },
+        fileMap: {
+          "foo.js": { hash: "hash1" },
+          "bar.js": { hash: "hash2" },
         },
       },
     },
     {
       dist: {
-        report: {
-          "foo.js": { size: 100, hash: "hash3" },
-        },
-        trackingConfig: {
+        tracking: {
           "foo.js": true,
           "bar.js": false,
+        },
+        fileMap: {
+          "foo.js": { hash: "hash3" },
         },
       },
     },
@@ -209,12 +207,10 @@ import { compareTwoSnapshots } from "../../src/internal/compareTwoSnapshots.js"
       "foo.js": {
         base: {
           relativeUrl: "foo.js",
-          size: 10,
           hash: "hash1",
         },
         head: {
           relativeUrl: "foo.js",
-          size: 100,
           hash: "hash3",
         },
       },
@@ -228,21 +224,21 @@ import { compareTwoSnapshots } from "../../src/internal/compareTwoSnapshots.js"
   const actual = compareTwoSnapshots(
     {
       "dist/commonjs": {
-        report: {
-          "foo.js": { size: 10, hash: "hash1" },
-        },
-        trackingConfig: {
+        tracking: {
           "foo.js": true,
+        },
+        fileMap: {
+          "foo.js": { hash: "hash1" },
         },
       },
     },
     {
       "dist/systemjs": {
-        report: {
-          "foo.js": { size: 100, hash: "hash3" },
-        },
-        trackingConfig: {
+        tracking: {
           "foo.js": true,
+        },
+        fileMap: {
+          "foo.js": { hash: "hash3" },
         },
       },
     },
@@ -253,7 +249,6 @@ import { compareTwoSnapshots } from "../../src/internal/compareTwoSnapshots.js"
         base: null,
         head: {
           relativeUrl: "foo.js",
-          size: 100,
           hash: "hash3",
         },
       },
@@ -267,24 +262,24 @@ import { compareTwoSnapshots } from "../../src/internal/compareTwoSnapshots.js"
   const actual = compareTwoSnapshots(
     {
       "dist/commonjs": {
-        report: {
-          "foo.js": { size: 10, hash: "hash1" },
-        },
-        trackingConfig: {
+        tracking: {
           "bar.js": false,
           "foo.js": true,
+        },
+        fileMap: {
+          "foo.js": { hash: "hash1" },
         },
       },
     },
     {
       "dist/commonjs": {
-        report: {
-          "bar.js": { size: 100, hash: "hash2" },
-          "foo.js": { size: 100, hash: "hash3" },
-        },
-        trackingConfig: {
+        tracking: {
           "bar.js": true,
           "foo.js": true,
+        },
+        fileMap: {
+          "bar.js": { hash: "hash2" },
+          "foo.js": { hash: "hash3" },
         },
       },
     },
@@ -295,19 +290,16 @@ import { compareTwoSnapshots } from "../../src/internal/compareTwoSnapshots.js"
         base: null,
         head: {
           relativeUrl: "bar.js",
-          size: 100,
           hash: "hash2",
         },
       },
       "foo.js": {
         base: {
           relativeUrl: "foo.js",
-          size: 10,
           hash: "hash1",
         },
         head: {
           relativeUrl: "foo.js",
-          size: 100,
           hash: "hash3",
         },
       },
@@ -322,11 +314,11 @@ import { compareTwoSnapshots } from "../../src/internal/compareTwoSnapshots.js"
     {},
     {
       "dist/global": {
-        report: {
-          "foo.js": { size: 100, hash: "hash1" },
-        },
-        trackingConfig: {
+        tracking: {
           "foo.js": true,
+        },
+        fileMap: {
+          "foo.js": { hash: "hash1" },
         },
       },
     },
@@ -337,7 +329,6 @@ import { compareTwoSnapshots } from "../../src/internal/compareTwoSnapshots.js"
         base: null,
         head: {
           relativeUrl: "foo.js",
-          size: 100,
           hash: "hash1",
         },
       },
