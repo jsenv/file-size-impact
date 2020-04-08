@@ -4,7 +4,7 @@ export const name = "brotli"
 
 export const transform = (
   value,
-  { quality = constants.BROTLI_MAX_QUALITY, size = Buffer.from(value).length, ...rest },
+  { quality = constants.BROTLI_MAX_QUALITY, size = Buffer.from(value).length, ...rest } = {},
 ) => {
   return new Promise((resolve, reject) => {
     brotliCompress(
