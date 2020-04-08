@@ -5,10 +5,10 @@ generateSnapshotFile({
   logLevel: "debug",
   projectDirectoryUrl,
   snapshotFileRelativeUrl: process.argv[2],
-  directorySizeTrackingConfig: {
+  trackingConfig: {
     "dist/commonjs": {
-      "**/*": true,
-      "**/*.map": false,
+      "./dist/commonjs/**/*": true,
+      "./dist/commonjs/**/*.map": false,
     },
   },
 })
