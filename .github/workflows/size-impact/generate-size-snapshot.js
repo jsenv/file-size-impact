@@ -1,4 +1,4 @@
-import { generateSnapshotFile, none, gzip } from "../../../index.js"
+import { generateSnapshotFile, none, gzip, brotli } from "../../../index.js"
 import { projectDirectoryUrl } from "../../../jsenv.config.js"
 
 generateSnapshotFile({
@@ -11,5 +11,5 @@ generateSnapshotFile({
       "./dist/commonjs/**/*.map": false,
     },
   },
-  transformations: { none, gzip },
+  transformations: { none, gzip, brotli },
 })
