@@ -39,6 +39,10 @@ export const generateSnapshotFile = async ({
     const snapshotFileUrl = resolveUrl(snapshotFileRelativeUrl, projectDirectoryUrl)
     const snapshot = {}
 
+    // ensure snapshot keys order is the same as trackingConfig (despite Promise.all below)
+    trackingNames.forEach((trackingName) => {
+      snapshot[trackingName] = null
+    })
     await Promise.all(
       trackingNames.map(async (trackingName) => {
         const tracking = trackingConfig[trackingName]

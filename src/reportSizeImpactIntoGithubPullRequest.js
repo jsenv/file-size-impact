@@ -49,7 +49,7 @@ export const reportSizeImpactIntoGithubPullRequest = async ({
       githubToken,
     } = getOptionsFromGithubAction()
 
-    const pullRequestNumber = await readPullRequestNumber()
+    const pullRequestNumber = await readPullRequestNumber({ logger })
 
     const baseSnapshotFileUrl = resolveUrl(baseSnapshotFileRelativeUrl, projectDirectoryUrl)
     const headSnapshotFileUrl = resolveUrl(headSnapshotFileRelativeUrl, projectDirectoryUrl)
@@ -193,7 +193,7 @@ const getOptionsFromGithubAction = () => {
   }
 }
 
-const readPullRequestNumber = async () => {
+const readPullRequestNumber = async ({ logger }) => {
   const githubRef = process.env.GITHUB_REF
   if (!githubRef) {
     throw new Error(`missing process.env.GITHUB_REF`)
@@ -205,9 +205,16 @@ const readPullRequestNumber = async () => {
   // https://github.com/actions/checkout/issues/58#issuecomment-589447479
   const githubEventFilePath = process.env.GITHUB_EVENT_PATH
   if (githubEventFilePath) {
+    logger.warn(`pull request number not found in process.env.GITHUB_REF, trying inside github event file.
+--- process.env.GITHUB_REF ---
+${githubRef}
+--- github event file path ---
+${githubEventFilePath}
+`)
     const githubEventFileContent = await readFile(githubEventFilePath)
     const githubEvent = JSON.parse(githubEventFileContent)
     const pullRequestNumber = githubEvent.pull_request.number
+    logger.warn(`pull request number found in the file: ${pullRequestNumber}`)
     if (pullRequestNumber) {
       return pullRequestNumber
     }
