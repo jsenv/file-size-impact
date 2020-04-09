@@ -44,11 +44,12 @@ export const reportSizeImpactIntoGithubPullRequest = async ({
     const {
       repositoryOwner,
       repositoryName,
-      pullRequestNumber,
       pullRequestBase,
       pullRequestHead,
       githubToken,
     } = getOptionsFromGithubAction()
+
+    const pullRequestNumber = await readPullRequestNumber()
 
     const baseSnapshotFileUrl = resolveUrl(baseSnapshotFileRelativeUrl, projectDirectoryUrl)
     const headSnapshotFileUrl = resolveUrl(headSnapshotFileRelativeUrl, projectDirectoryUrl)
@@ -166,17 +167,6 @@ const getOptionsFromGithubAction = () => {
 
   const [repositoryOwner, repositoryName] = githubRepository.split("/")
 
-  const githubRef = process.env.GITHUB_REF
-  if (!githubRef) {
-    throw new Error(`missing process.env.GITHUB_REF`)
-  }
-  const pullRequestNumber = githubRefToPullRequestNumber(githubRef)
-  if (!pullRequestNumber) {
-    throw new Error(`cannot get pull request number from process.env.GITHUB_REF
---- process.env.GITHUB_REF ---
-${githubRef}`)
-  }
-
   const githubBaseRef = process.env.GITHUB_BASE_REF
   if (!githubBaseRef) {
     throw new Error(`missing process.env.GITHUB_BASE_REF`)
@@ -197,19 +187,42 @@ ${githubRef}`)
   return {
     repositoryOwner,
     repositoryName,
-    pullRequestNumber,
     pullRequestBase,
     pullRequestHead,
     githubToken,
   }
 }
 
-const githubRefToPullRequestNumber = () => {
-  const ref = process.env.GITHUB_REF
+const readPullRequestNumber = async () => {
+  const githubRef = process.env.GITHUB_REF
+  if (!githubRef) {
+    throw new Error(`missing process.env.GITHUB_REF`)
+  }
+
+  const pullRequestNumber = githubRefToPullRequestNumber(githubRef)
+  if (pullRequestNumber) return pullRequestNumber
+
+  // https://github.com/actions/checkout/issues/58#issuecomment-589447479
+  const githubEventFilePath = process.env.GITHUB_EVENT_PATH
+  if (githubEventFilePath) {
+    const githubEventFileContent = await readFile(githubEventFilePath)
+    const githubEvent = JSON.parse(githubEventFileContent)
+    const pullRequestNumber = githubEvent.pull_request.number
+    if (pullRequestNumber) {
+      return pullRequestNumber
+    }
+  }
+
+  throw new Error(`cannot get pull request number from process.env.GITHUB_REF
+--- process.env.GITHUB_REF ---
+${githubRef}`)
+}
+
+const githubRefToPullRequestNumber = (githubRef) => {
   const pullPrefix = "refs/pull/"
-  const pullRequestNumberStartIndex = ref.indexOf(pullPrefix)
+  const pullRequestNumberStartIndex = githubRef.indexOf(pullPrefix)
   if (pullRequestNumberStartIndex === -1) return undefined
-  const afterPull = ref.slice(pullRequestNumberStartIndex + pullPrefix.length)
+  const afterPull = githubRef.slice(pullRequestNumberStartIndex + pullPrefix.length)
   const slashAfterPullIndex = afterPull.indexOf("/")
   if (slashAfterPullIndex === -1) return undefined
   const pullRequestNumberString = afterPull.slice(0, slashAfterPullIndex)
