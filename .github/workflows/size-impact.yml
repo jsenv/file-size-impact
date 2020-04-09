@@ -15,7 +15,7 @@ jobs:
     # https://help.github.com/en/actions/configuring-and-managing-workflows/authenticating-with-the-github_token#permissions-for-the-github_token
     # https://github.community/t5/GitHub-Actions/Token-permissions-for-forks-once-again/td-p/33839
     # https://github.com/WordPress/gutenberg/issues/17324
-    if: github.event.pull_request.base.repository == github.event.pull_request.head.repository
+    if: github.event.pull_request.base.repo.full_name == github.event.pull_request.head.repo.full_name
     strategy:
       matrix:
         os: [ubuntu-latest]
