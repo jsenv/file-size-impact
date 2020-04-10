@@ -74,8 +74,8 @@ const renderFileByFileTable = (filesImpact, { pullRequestBase, pullRequestHead, 
     `<th nowrap>File</th>`,
     ...(noneOnly ? [] : ["<th nowrap>Transform</th>"]),
     `<th nowrap>Diff</th>`,
-    `<th nowrap><code>${pullRequestBase}</code></th>`,
-    `<th nowrap><code>${pullRequestHead}</code></th>`,
+    `<th nowrap>${pullRequestBase}</th>`,
+    `<th nowrap>${pullRequestHead}</th>`,
     `<th nowrap>Event</th>`,
   ]
 

@@ -57,8 +57,8 @@ const renderGroupImpactBody = (groupImpact, { pullRequestBase, pullRequestHead, 
   const headerCells = [
     ...(noneOnly ? [] : ["<th nowrap>Transform</th>"]),
     `<th nowrap>Diff</th>`,
-    `<th nowrap><code>${pullRequestBase}</code></th>`,
-    `<th nowrap><code>${pullRequestHead}</code></th>`,
+    `<th nowrap>${pullRequestBase}</th>`,
+    `<th nowrap>${pullRequestHead}</th>`,
   ]
 
   return `<table>

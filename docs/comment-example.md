@@ -11,8 +11,8 @@
     <thead>
       <tr>
         <th nowrap>Diff</th>
-        <th nowrap><code>base</code></th>
-        <th nowrap><code>head</code></th>
+        <th nowrap>base</th>
+        <th nowrap>head</th>
       </tr>
     </thead>
     <tbody>
@@ -30,8 +30,8 @@
       <tr>
         <th nowrap>File</th>
         <th nowrap>Diff</th>
-        <th nowrap><code>base</code></th>
-        <th nowrap><code>head</code></th>
+        <th nowrap>base</th>
+        <th nowrap>head</th>
         <th nowrap>Event</th>
       </tr>
     </thead>
@@ -75,8 +75,8 @@
     <thead>
       <tr>
         <th nowrap>Diff</th>
-        <th nowrap><code>base</code></th>
-        <th nowrap><code>head</code></th>
+        <th nowrap>base</th>
+        <th nowrap>head</th>
       </tr>
     </thead>
     <tbody>
@@ -125,8 +125,8 @@
     <thead>
       <tr>
         <th nowrap>Diff</th>
-        <th nowrap><code>base</code></th>
-        <th nowrap><code>head</code></th>
+        <th nowrap>base</th>
+        <th nowrap>head</th>
       </tr>
     </thead>
     <tbody>
@@ -144,8 +144,8 @@
       <tr>
         <th nowrap>File</th>
         <th nowrap>Diff</th>
-        <th nowrap><code>base</code></th>
-        <th nowrap><code>head</code></th>
+        <th nowrap>base</th>
+        <th nowrap>head</th>
         <th nowrap>Event</th>
       </tr>
     </thead>
@@ -197,8 +197,8 @@
       <tr>
         <th nowrap>Transform</th>
         <th nowrap>Diff</th>
-        <th nowrap><code>base</code></th>
-        <th nowrap><code>head</code></th>
+        <th nowrap>base</th>
+        <th nowrap>head</th>
       </tr>
     </thead>
     <tbody>
@@ -224,8 +224,8 @@
         <th nowrap>File</th>
         <th nowrap>Transform</th>
         <th nowrap>Diff</th>
-        <th nowrap><code>base</code></th>
-        <th nowrap><code>head</code></th>
+        <th nowrap>base</th>
+        <th nowrap>head</th>
         <th nowrap>Event</th>
       </tr>
     </thead>
@@ -282,8 +282,8 @@
     <thead>
       <tr>
         <th nowrap>Diff</th>
-        <th nowrap><code>base</code></th>
-        <th nowrap><code>head</code></th>
+        <th nowrap>base</th>
+        <th nowrap>head</th>
       </tr>
     </thead>
     <tbody>
@@ -301,8 +301,8 @@
       <tr>
         <th nowrap>File</th>
         <th nowrap>Diff</th>
-        <th nowrap><code>base</code></th>
-        <th nowrap><code>head</code></th>
+        <th nowrap>base</th>
+        <th nowrap>head</th>
         <th nowrap>Event</th>
       </tr>
     </thead>
@@ -347,8 +347,8 @@
       <tr>
         <th nowrap>Transform</th>
         <th nowrap>Diff</th>
-        <th nowrap><code>base</code></th>
-        <th nowrap><code>head</code></th>
+        <th nowrap>base</th>
+        <th nowrap>head</th>
       </tr>
     </thead>
     <tbody>
@@ -380,8 +380,8 @@
         <th nowrap>File</th>
         <th nowrap>Transform</th>
         <th nowrap>Diff</th>
-        <th nowrap><code>base</code></th>
-        <th nowrap><code>head</code></th>
+        <th nowrap>base</th>
+        <th nowrap>head</th>
         <th nowrap>Event</th>
       </tr>
     </thead>
@@ -485,8 +485,8 @@
       <tr>
         <th nowrap>Transform</th>
         <th nowrap>Diff</th>
-        <th nowrap><code>base</code></th>
-        <th nowrap><code>head</code></th>
+        <th nowrap>base</th>
+        <th nowrap>head</th>
       </tr>
     </thead>
     <tbody>
@@ -518,8 +518,8 @@
         <th nowrap>File</th>
         <th nowrap>Transform</th>
         <th nowrap>Diff</th>
-        <th nowrap><code>base</code></th>
-        <th nowrap><code>head</code></th>
+        <th nowrap>base</th>
+        <th nowrap>head</th>
         <th nowrap>Event</th>
       </tr>
     </thead>
@@ -626,8 +626,8 @@
       <tr>
         <th nowrap>File</th>
         <th nowrap>Diff</th>
-        <th nowrap><code>base</code></th>
-        <th nowrap><code>head</code></th>
+        <th nowrap>base</th>
+        <th nowrap>head</th>
         <th nowrap>Event</th>
       </tr>
     </thead>
@@ -656,8 +656,8 @@
       <tr>
         <th nowrap>File</th>
         <th nowrap>Diff</th>
-        <th nowrap><code>base</code></th>
-        <th nowrap><code>head</code></th>
+        <th nowrap>base</th>
+        <th nowrap>head</th>
         <th nowrap>Event</th>
       </tr>
     </thead>
@@ -678,8 +678,8 @@
     <thead>
       <tr>
         <th nowrap>Diff</th>
-        <th nowrap><code>base</code></th>
-        <th nowrap><code>head</code></th>
+        <th nowrap>base</th>
+        <th nowrap>head</th>
       </tr>
     </thead>
     <tbody>
@@ -715,8 +715,8 @@ This is normal when adding `@jsenv/github-pull-request-filesize-impact` for the 
     <thead>
       <tr>
         <th nowrap>Diff</th>
-        <th nowrap><code>base</code></th>
-        <th nowrap><code>head</code></th>
+        <th nowrap>base</th>
+        <th nowrap>head</th>
       </tr>
     </thead>
     <tbody>
@@ -734,8 +734,8 @@ This is normal when adding `@jsenv/github-pull-request-filesize-impact` for the 
       <tr>
         <th nowrap>File</th>
         <th nowrap>Diff</th>
-        <th nowrap><code>base</code></th>
-        <th nowrap><code>head</code></th>
+        <th nowrap>base</th>
+        <th nowrap>head</th>
         <th nowrap>Event</th>
       </tr>
     </thead>
@@ -784,8 +784,8 @@ It happens because versions of `@jsenv/github-pull-request-filesize-impact` are 
     <thead>
       <tr>
         <th nowrap>Diff</th>
-        <th nowrap><code>base</code></th>
-        <th nowrap><code>head</code></th>
+        <th nowrap>base</th>
+        <th nowrap>head</th>
       </tr>
     </thead>
     <tbody>
@@ -803,8 +803,8 @@ It happens because versions of `@jsenv/github-pull-request-filesize-impact` are 
       <tr>
         <th nowrap>File</th>
         <th nowrap>Diff</th>
-        <th nowrap><code>base</code></th>
-        <th nowrap><code>head</code></th>
+        <th nowrap>base</th>
+        <th nowrap>head</th>
         <th nowrap>Event</th>
       </tr>
     </thead>
