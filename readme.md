@@ -43,6 +43,10 @@ The comment can be expanded to get more details.
 
 ![screenshot of pull request comment expanded](./docs/pull-request-comment-expanded.png)
 
+Comment can also track compressed file sizes.
+
+![screenshot of pull request with compressed file sizes](./docs/pull-request-comment-systemjs.png)
+
 # Installation
 
 ```console
@@ -171,7 +175,7 @@ And the generated comment will have two expandable section.
 
 ## transformations
 
-`transformations` parameter is an object used to transform files content before computing their size. This parameter is optional with a default value of `{ none: (buffer) => bufer }`.
+`transformations` parameter is an object used to transform files content before computing their size. This parameter is optional with a default tracking file size without transformation called `none`.
 
 You can use this parameter to track file size after gzip compression.
 
@@ -184,9 +188,21 @@ await generateSnapshotFile({
 })
 ```
 
-And the pull request comment now contains gzip size. Check [docs/comment-example.md#introduce-gzip](./docs/comment-example.md#introduce-gzip) to see how it looks like.
+And the pull request comment now contains gzip size. Check [docs/comment-example.md#introduce-gzip](./docs/comment-example.md#introduce-gzip) to see how it looks like. `none`, `gzip` and `brotli` compression can be enabled this way.
 
-You can enable `none`, `gzip` and `brotli` compression this way. `transformations` can be used to add custom transformations.
+It's also possible to control compression level.
+
+```js
+import { none, gzip } from "@jsenv/github-pull-request-filesize-impact"
+
+const transformations = {
+  none,
+  gzip7: (buffer) => gzip(buffer, { level: 7 }),
+  gzip9: (buffer) => gzip(buffer, { level: 9 }),
+}
+```
+
+Finally `transformations` can be used to add custom transformations.
 
 ```js
 import { none, gzip } from "@jsenv/github-pull-request-filesize-impact"
