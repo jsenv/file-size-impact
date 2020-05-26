@@ -80,7 +80,7 @@ Check https://github.community/t5/GitHub-Actions/Token-permissions-for-forks-onc
 
 ## Configuration outside GitHub workflow
 
-`generateSnapshotFile` needs to be runned twice in a given git state. To setup your git state check [Configuration for Github workflow](./Configuration-for-Github-workflow). The exact code is up to you according to your execution environment.
+`generateSnapshotFile` needs to be runned twice in a given git state. To setup your git state check [Configuration for Github workflow](#Configuration-for-Github-workflow). The exact code is up to you according to your execution environment.
 
 `reportSizeImpactIntoGithubPullRequest` needs special `process.env` values and throw if they are missing. These variables are available in a github workflow, when outside you must provide them manually. The code below shows what `process.env` values must be set.
 
