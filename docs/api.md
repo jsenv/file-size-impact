@@ -20,23 +20,23 @@ import { reportFileSizeImpact, none } from "@jsenv/file-size-impact"
 await reportFileSizeImpact({
   logLevel: "info",
   projectDirectoryUrl: "file:///directory",
-  githubToken: 'xxx',
-  repositoryOwner: 'jsenv',
-  repositoryName: 'jsenv-file-size-impact'.
+  githubToken: "xxx",
+  repositoryOwner: "jsenv",
+  repositoryName: "jsenv-file-size-impact",
   pullRequestNumber: 10,
-  installCommand:  "npm install",
+  installCommand: "npm install",
   buildCommand: "npm run build",
-  trackingConfig:  {
-  './dist/**/*.js': true
+  trackingConfig: {
+    "./dist/**/*.js": true,
   },
-  manifestFilePattern:  "./**/manifest.json",
+  manifestFilePattern: "./**/manifest.json",
   transformations: { none },
   commentSections: {
     overallSizeImpact: true,
     detailedSizeImpact: true,
     cacheImpact: true,
   },
-  generatedByLink:  true,
+  generatedByLink: true,
 })
 ```
 

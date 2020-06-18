@@ -106,7 +106,7 @@ export const reportFileSizeImpact = async ({
         cancellationToken,
         start: () =>
           getPullRequestCommentMatching(
-            ({ body }) => body.startsWith(HEADER),
+            ({ body }) => body.includes(HEADER),
             {
               repositoryOwner,
               repositoryName,
@@ -122,7 +122,23 @@ export const reportFileSizeImpact = async ({
       }
 
       const patchOrPostComment = async (commentBody) => {
+        /*
+        I predict myself or others would assume the impact failed if a comment
+        is not labelled as edited in github ui.
+        Even if conceptually the comment was not edited because the content is the same.
+
+        To ensure github ui shows comment as edited let's put
+        a comment with pull request head commit sha in the message body.
+        And let's put it all the time as it might be a valuable information
+        */
+        commentBody = `<!-- head-commit-sha=${pullRequest.head.sha} -->
+${commentBody}`
+
         if (existingComment) {
+          if (existingComment.body === commentBody) {
+            logger.info(` existing comment body is the same -> skip comment PATCH`)
+            return existingComment
+          }
           logger.info(`updating comment at ${existingComment.html_url}`)
           const comment = await patchPullRequestComment(
             existingComment.id,
