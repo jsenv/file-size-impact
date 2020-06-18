@@ -117,7 +117,7 @@ import { reportFileSizeImpact } from "@jsenv/file-size-impact"
 
 reportFileSizeImpact({
   projectDirectoryUrl: process.env.TRAVIS_BUILD_DIR,
-  githubToken: process.env.GITHUB_TOKEN, // make it available somehow
+  githubToken: process.env.GITHUB_TOKEN,
   repositoryOwner: process.env.TRAVIS_REPO_SLUG.split("/")[0],
   repositoryName: process.env.TRAVIS_REPO_SLUG.split("/")[1],
   pullRequestNumber: process.env.TRAVIS_PULL_REQUEST,
@@ -131,6 +131,8 @@ reportFileSizeImpact({
   },
 })
 ```
+
+In order to have `process.env.GITHUB_TOKEN` you need to create a github token with `repo` scope at https://github.com/settings/tokens/new. After that you need to setup this environment variable. The exact way to do this is specific to your project and tools. Applied to travis you could add it to your environment variables as documented in https://docs.travis-ci.com/user/environment-variables/#defining-variables-in-repository-settings.
 
 Please note `reportFileSizeImpact` must be called in a state where your git repository has been cloned and you are currently on the pull request branch. Inside github workflow this is done by the following lines in `file-size-impact.yml`.
 
@@ -170,6 +172,6 @@ Check the [api](./docs/api.md) to get more details.
 
 # See also
 
-- [jsenv-lighthouse-score-merge-impact](https://github.com/jsenv/jsenv-lighthouse-score-merge-impact)
+- [jsenv-lighthouse-score-impact](https://github.com/jsenv/jsenv-lighthouse-score-impact)
 - [compressed-size-action](https://github.com/preactjs/compressed-size-action)
 - [size-limit-action](https://github.com/andresz1/size-limit-action)
