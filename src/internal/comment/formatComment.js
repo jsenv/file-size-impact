@@ -77,9 +77,9 @@ const renderBody = ({
   <summary>${groupName} (no impact)</summary>
   <p>No file matching <code>${groupName}</code> (see <code>${groupName}</code> config below).</p>
 
-  \`\`\`json
-  ${JSON.stringify(trackingConfig[groupName], null, "    ")}
-  \`\`\`
+\`\`\`json
+${JSON.stringify(trackingConfig[groupName], null, "  ")}
+\`\`\`
 
   </details>`
     }
