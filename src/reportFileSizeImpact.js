@@ -122,16 +122,21 @@ export const reportFileSizeImpact = async ({
       }
 
       const patchOrPostComment = async (commentBody) => {
+        /*
+        I predict myself or others would assume the impact failed if a comment
+        is not labelled as edited in github ui.
+        Even if conceptually the comment was not edited because the content is the same.
+
+        To ensure github ui shows comment as edited let's put
+        a comment with pull request head commit sha in the message body.
+        And let's put it all the time as it might be a valuable information
+        */
+        commentBody = `<!-- head-commit-sha=${pullRequest.head.sha} -->
+${commentBody}`
+
         if (existingComment) {
           if (existingComment.body === commentBody) {
-            // maybe users will think
-            // "hey my comment was not edited, the workflow have failed ?"
-            // but because github will not put the "edited" label if
-            // comment body are exactly the same it means
-            // our comment should contains something unique to the run
-            // maybe the head commit sha in comment as below
-            // <!-- head-commit-sha=${pullRequest.head.sha} -->
-            logger.info(`skipping comment updated because existing comment body is the same`)
+            logger.info(` existing comment body is the same -> skip comment PATCH`)
             return existingComment
           }
           logger.info(`updating comment at ${existingComment.html_url}`)
