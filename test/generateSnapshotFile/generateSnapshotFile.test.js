@@ -1,7 +1,9 @@
 import { assert } from "@jsenv/assert"
-import { resolveUrl, ensureEmptyDirectory, readFile, writeFile, writeDirectory } from "@jsenv/util"
-import { generateSnapshotFile } from "../../index.js"
+import { resolveUrl, ensureEmptyDirectory, writeFile, writeDirectory } from "@jsenv/util"
+import { generateSnapshotFile } from "../../src/internal/generateSnapshotFile.js"
+import { none } from "../../index.js"
 
+const transformations = { none }
 const tempDirectoryUrl = resolveUrl("./temp/", import.meta.url)
 
 // .js + .js.map without manifest
@@ -11,34 +13,24 @@ const tempDirectoryUrl = resolveUrl("./temp/", import.meta.url)
   const fileMapUrl = resolveUrl("dist/file.js.map", tempDirectoryUrl)
   await writeFile(fileUrl, `console.log("hello")`)
   await writeFile(fileMapUrl, `{ "file": "foo" }`)
-  const snapshotFileRelativeUrl = "./snapshot.json"
-  const snapshotFileUrl = resolveUrl(snapshotFileRelativeUrl, tempDirectoryUrl)
 
-  await generateSnapshotFile({
+  const actual = await generateSnapshotFile({
     logLevel: "warn",
     projectDirectoryUrl: tempDirectoryUrl,
-    snapshotFileRelativeUrl,
     trackingConfig: {
       dist: {
         "./dist/**/*.js": true,
       },
     },
+    transformations,
   })
-  const snapshotFileContent = await readFile(snapshotFileUrl)
-  const actual = JSON.parse(snapshotFileContent)
   const expected = {
-    version: 1,
-    snapshot: {
-      dist: {
-        tracking: {
-          "./dist/**/*.js": true,
-        },
-        manifestMap: {},
-        fileMap: {
-          "dist/file.js": {
-            sizeMap: { none: 20 },
-            hash: '"14-qK8urhYN/nZoik6niqmvkolkCK0"',
-          },
+    dist: {
+      manifestMap: {},
+      fileMap: {
+        "dist/file.js": {
+          sizeMap: { none: 20 },
+          hash: '"14-qK8urhYN/nZoik6niqmvkolkCK0"',
         },
       },
     },
@@ -53,38 +45,29 @@ const tempDirectoryUrl = resolveUrl("./temp/", import.meta.url)
   const manifestUrl = resolveUrl("dist/manifest.json", tempDirectoryUrl)
   await writeFile(fileUrl, `console.log("hello")`)
   await writeFile(manifestUrl, `{ "file.js": "file.hash.js" }`)
-  const snapshotFileRelativeUrl = "./snapshot.json"
-  const snapshotFileUrl = resolveUrl(snapshotFileRelativeUrl, tempDirectoryUrl)
 
-  await generateSnapshotFile({
+  const actual = await generateSnapshotFile({
     logLevel: "warn",
     projectDirectoryUrl: tempDirectoryUrl,
-    snapshotFileRelativeUrl,
     trackingConfig: {
       dist: {
         "./dist/**/*": true,
       },
     },
+    transformations,
+    manifestFilePattern: "./**/manifest.json",
   })
-  const snapshotFileContent = await readFile(snapshotFileUrl)
-  const actual = JSON.parse(snapshotFileContent)
   const expected = {
-    version: 1,
-    snapshot: {
-      dist: {
-        tracking: {
-          "./dist/**/*": true,
+    dist: {
+      manifestMap: {
+        "dist/manifest.json": {
+          "file.js": "file.hash.js",
         },
-        manifestMap: {
-          "dist/manifest.json": {
-            "file.js": "file.hash.js",
-          },
-        },
-        fileMap: {
-          "dist/file.hash.js": {
-            sizeMap: { none: 20 },
-            hash: '"14-qK8urhYN/nZoik6niqmvkolkCK0"',
-          },
+      },
+      fileMap: {
+        "dist/file.hash.js": {
+          sizeMap: { none: 20 },
+          hash: '"14-qK8urhYN/nZoik6niqmvkolkCK0"',
         },
       },
     },
@@ -97,31 +80,21 @@ const tempDirectoryUrl = resolveUrl("./temp/", import.meta.url)
   await ensureEmptyDirectory(tempDirectoryUrl)
   const directoryUrl = resolveUrl("dist", tempDirectoryUrl)
   await writeDirectory(directoryUrl)
-  const snapshotFileRelativeUrl = "./snapshot.json"
-  const snapshotFileUrl = resolveUrl(snapshotFileRelativeUrl, tempDirectoryUrl)
 
-  await generateSnapshotFile({
+  const actual = await generateSnapshotFile({
     logLevel: "warn",
     projectDirectoryUrl: tempDirectoryUrl,
-    snapshotFileRelativeUrl,
     trackingConfig: {
       dist: {
         "./dist/**/*.js": true,
       },
     },
+    transformations,
   })
-  const snapshotFileContent = await readFile(snapshotFileUrl)
-  const actual = JSON.parse(snapshotFileContent)
   const expected = {
-    version: 1,
-    snapshot: {
-      dist: {
-        tracking: {
-          "./dist/**/*.js": true,
-        },
-        manifestMap: {},
-        fileMap: {},
-      },
+    dist: {
+      manifestMap: {},
+      fileMap: {},
     },
   }
   assert({ actual, expected })

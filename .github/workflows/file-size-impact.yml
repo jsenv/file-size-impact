@@ -1,0 +1,39 @@
+name: file-size-impact
+
+on:
+  pull_request:
+    # In theory it would be more efficient to enable this workflow only
+    # if certain file changes (the one that could impact dist/ files)
+    # In practice humans will wonder why the workflow did not run.
+    # paths:
+    #   - "index.js"
+    #   - "src/**"
+
+jobs:
+  file-size-impact:
+    # Do not run this workflow on forks because they are not authorized to post comments, see links below:
+    # https://help.github.com/en/actions/configuring-and-managing-workflows/authenticating-with-the-github_token#permissions-for-the-github_token
+    # https://github.community/t5/GitHub-Actions/Token-permissions-for-forks-once-again/td-p/33839
+    # https://github.com/WordPress/gutenberg/issues/17324
+    if: github.event.pull_request.base.repo.full_name == github.event.pull_request.head.repo.full_name
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        node: [13.12.0]
+    runs-on: ${{ matrix.os }}
+    name: report file size impact
+    env:
+      CI: true
+    steps:
+      - name: Setup git
+        uses: actions/checkout@v2
+      - name: Setup node ${{ matrix.node }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node }}
+      - name: npm install
+        run: npm install
+      - name: Report file size impact
+        run: node ./.github/workflows/report-file-size-impact.js
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

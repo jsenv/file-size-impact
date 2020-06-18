@@ -1,8 +1,14 @@
+// https://gist.github.com/borekb/f83e48479aceaafa43108e021600f7e3
+export const anchor = (text, id) => {
+  return `<a href="#user-content-${id.replace()}">${text}<a>`
+}
+
 export const isNew = ({ base }) => !base
 
-export const isDeleted = ({ base, head }) => base && !head
+export const isDeleted = ({ base, afterMerge }) => base && !afterMerge
 
-export const isChanged = ({ base, head }) => base && head && base.hash !== head.hash
+export const isChanged = ({ base, afterMerge }) =>
+  base && afterMerge && base.hash !== afterMerge.hash
 
 export const sumSize = (from, into, sizeName) => {
   if (sizeName in into) {

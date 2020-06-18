@@ -1,348 +1,175 @@
-# github-pull-request-filesize-impact
+# file-size-impact
 
-Monitor pull request impact on file sizes.
+Add files size impact into pull requests.
 
-[![github package](https://img.shields.io/github/package-json/v/jsenv/jsenv-github-pull-request-filesize-impact.svg?label=package&logo=github)](https://github.com/jsenv/jsenv-github-pull-request-filesize-impact/packages)
-[![npm package](https://img.shields.io/npm/v/@jsenv/github-pull-request-filesize-impact.svg?logo=npm&label=package)](https://www.npmjs.com/package/@jsenv/github-pull-request-filesize-impact)
-[![workflow status](https://github.com/jsenv/jsenv-github-pull-request-filesize-impact/workflows/ci/badge.svg)](https://github.com/jsenv/jsenv-github-pull-request-filesize-impact/actions?workflow=ci)
-[![codecov](https://codecov.io/gh/jsenv/jsenv-github-pull-request-filesize-impact/branch/master/graph/badge.svg)](https://codecov.io/gh/jsenv/jsenv-github-pull-request-filesize-impact)
+[![github package](https://img.shields.io/github/package-json/v/jsenv/jsenv-file-size-impact.svg?label=package&logo=github)](https://github.com/jsenv/jsenv-file-size-impact/packages)
+[![npm package](https://img.shields.io/npm/v/@jsenv/file-size-impact.svg?logo=npm&label=package)](https://www.npmjs.com/package/@jsenv/file-size-impact)
+[![workflow status](https://github.com/jsenv/jsenv-file-size-impact/workflows/ci/badge.svg)](https://github.com/jsenv/jsenv-file-size-impact/actions?workflow=ci)
+[![codecov](https://codecov.io/gh/jsenv/jsenv-file-size-impact/branch/master/graph/badge.svg)](https://codecov.io/gh/jsenv/jsenv-file-size-impact)
 
 # Table of contents
 
 - [Presentation](#Presentation)
-- [Installation](#Installation)
 - [How it works](#How-it-works)
-  - [Configuration for Github workflow](#Configuration-for-github-workflow)
-    - [Fork issue](#Fork-issue)
-  - [Configuration outside Github workflow](#Configuration-outside-github-workflow)
-- [generateSnapshotFile](#generateSnapshotFile)
-  - [projectDirectoryUrl](#projectDirectoryUrl)
-  - [logLevel](#loglevel)
-  - [trackingConfig](#trackingConfig)
-  - [transformations](#transformations)
-  - [manifestFilePattern](#manifestFilePattern)
-- [reportSizeImpactIntoGithubPullRequest](#reportSizeImpactIntoGithubPullRequest)
-  - [projectDirectoryUrl](#projectDirectoryUrl)
-  - [logLevel](#loglevel)
-  - [baseSnapshotFileRelativeUrl](#baseSnapshotFileRelativeUrl)
-  - [headSnapshotFileRelativeUrl](#headSnapshotFileRelativeUrl)
-  - [commentSections](#commentSections)
-  - [generatedByLink](#generatedByLink)
-  - [formatSize](#formatsize)
-- [Why merge](#Why-merge)
+- [Usage in github workflow](#Usage-in-github-workflow)
+- [Usage outside github workflow](#Usage-outside-github-workflow)
+- [Monitor compressed size](#Monitor-compressed-size)
+- [See also](#See-also)
 
 # Presentation
 
-`@jsenv/github-pull-request-filesize-impact` comment your pull request on github to see the impact of changes on specific file sizes.
+`@jsenv/file-size-impact` analyses a pull request impact on specific files size. This analysis is posted in a comment of the pull request.
 
-The screenshot below shows how it is integrated to a github pull request.
-
-![screenshot of pull request comment](./docs/pull-request-comment-collapsed.png)
+![screenshot of pull request comment](./docs/comment-collapsed.png)
 
 The comment can be expanded to get more details.
 
-![screenshot of pull request comment expanded](./docs/pull-request-comment-expanded.png)
+![screenshot of pull request comment expanded](./docs/comment-expanded.png)
 
-Comment can also track compressed file sizes.
+It can also be configured to track size after compression.
 
-![screenshot of pull request with compressed file sizes](./docs/pull-request-comment-systemjs.png)
-
-# Installation
-
-```console
-npm install --save-dev @jsenv/github-pull-request-filesize-impact
-```
+![screenshot of pull request comment expanded with compression](./docs/comment-expanded-compression.png)
 
 # How it works
 
-In order to know a given pull request size impact two functions are needed: `generateSnapshotFile` and `reportSizeImpactIntoGithubPullRequest`.
+In order to analyse the impact of a pull request on file size the following steps are executed:
 
-`generateSnapshotFile` generates a `.json` file saving file size to compare them later. It must be runned twice:
+1. Checkout pull request base branch
+2. Execute command to generate files (`npm build` by default)
+3. Take a snapshot of generated files
+4. Merge pull request into its base
+5. Execute command to generate files again
+6. Take a second snapshot of generated files
+7. Analyse differences between the two snapshots
+8. Post or update comment in the pull request
 
-- Once on pull request base branch
-- Once on a state where pull request head has been merged into its base.
+# Usage in github workflow
 
-Then `reportSizeImpactIntoGithubPullRequest` can be called. It reads these two `.json` files, compare them and comment the pull request accordingly.
+You need:
 
-To configure this for your project check [Configuration for Github workflow](#Configuration-for-github-workflow) and [Configuration outside Github workflow](#Configuration-outside-Github-workflow).
+- [@jsenv/file-size-impact in devDependencies](#Installation-with-npm)
+- [The file runned against a pull request](#githubworkflowsreport-file-size-impactjs)
+- [A workflow.yml](#githubworkflowsfile-size-impactyml)
 
-## Configuration for GitHub workflow
+## Installation with npm
 
-You can see how this can be integrated in a GitHub workflow in [.github/workflows/size-impact.yml](https://github.com/jsenv/jsenv-github-pull-request-filesize-impact/blob/7318a582a18760794dfb86ec37c0a2c0b28430a4/.github/workflows/size-impact.yml)
-
-And also see several runs for this workflow at https://github.com/jsenv/jsenv-github-pull-request-filesize-impact/actions?workflow=size-impact
-
-### Fork issue
-
-Using GitHub workflow has one drawback: When a fork opens a pull request the workflow fails. This is because the workflow is runned inside the forked repository. GITHUB_TOKEN from forked repository is not allowed to post comment inside main repository.
-
-Check https://github.community/t5/GitHub-Actions/Token-permissions-for-forks-once-again/td-p/33839 for more information.
-
-## Configuration outside GitHub workflow
-
-`generateSnapshotFile` needs to be runned twice in a given git state. To setup your git state check [Configuration for Github workflow](#Configuration-for-Github-workflow). The exact code is up to you according to your execution environment.
-
-`reportSizeImpactIntoGithubPullRequest` needs special `process.env` values and throw if they are missing. These variables are available in a github workflow, when outside you must provide them manually. The code below shows what `process.env` values must be set.
-
-```js
-import { reportSizeImpactIntoGithubPullRequest } from "@jsenv/github-pull-request-filesize-impact"
-
-const githubToken = "github-personnal-access-token"
-const githubRepository = "repository-owner/repository-name"
-const pullRequestNumber = 1
-const pullRequestRef = "pr-name"
-
-process.env.GITHUB_EVENT_NAME = "pull_request"
-process.env.GITHUB_REPOSITORY = githubRepository
-process.env.GITHUB_REF = `refs/pull/${pullRequestNumber}/merge`
-process.env.GITHUB_BASE_REF = "master"
-process.env.GITHUB_HEAD_REF = pullRequestRef
-process.env.GITHUB_TOKEN = githubToken
-
-reportSizeImpactIntoGithubPullRequest({
-  projectDirectoryUrl: "file:///Users/directory",
-})
+```console
+npm install --save-dev @jsenv/file-size-impact
 ```
 
-If you where inside travis you would write `process.env.GITHUB_REPOSITORY = process.env.TRAVIS_REPO_SLUG`. As documented in https://docs.travis-ci.com/user/environment-variables/#default-environment-variables
-
-Also be sure `githubToken` has the right to read/write comments on issues.
-
-# generateSnapshotFile
-
-`generateSnapshotFile` is an async function analysing file sizes per directory and saving the result into a json file.
+## .github/workflows/report-file-size-impact.js
 
 ```js
-import { generateSnapshotFile } from "@jsenv/github-pull-request-filesize-impact"
+import { reportFileSizeImpact, readGithubWorkflowEnv } from "../../index.js"
 
-await generateSnapshotFile({
-  projectDirectoryUrl: "file:///directory",
+reportFileSizeImpact({
+  ...readGithubWorkflowEnv(),
+  buildCommand: "npm run dist",
   trackingConfig: {
-    dist: {
-      "./dist/**/*.js": true,
+    "dist/commonjs": {
+      "./dist/commonjs/**/*": true,
+      "./dist/commonjs/**/*.map": false,
     },
   },
-  snapshotFileRelativeUrl: "./size-snapshot.json",
 })
 ```
 
-— source code at [src/generateSnapshotFile.js](./src/generateSnapshotFile.js).
+## .github/workflows/file-size-impact.yml
 
-## projectDirectoryUrl
+```yml
+name: file-size-impact
 
-`projectDirectoryUrl` parameter is a string leading to your project root directory. This parameter is **required**.
+on: pull_request
 
-## logLevel
-
-`logLevel` parameter controls verbosity of logs during the function execution.
-
-The list of available logLevel values can be found on [@jsenv/logger documentation](https://github.com/jsenv/jsenv-logger#list-of-log-levels)
-
-## trackingConfig
-
-`trackingConfig` parameter is an object used to configure group of files you want to track. This parameter is optional with a default value exported in [src/jsenvTrackingConfig.js](./src/jsenvTrackingConfig.js)
-
-`trackingConfig` keys are group names that will appear in the generated comment.
-`trackingConfig` values are `specifierMetaMap` as documented in https://github.com/jsenv/jsenv-url-meta#normalizespecifiermetamap.
-
-For every group you track there will be a corresponding line in the generated pull request comment as visible in [docs/comment-example.md](./docs/comment-example.md)
-
-For example you can create two groups like this:
-
-```js
-const trackingConfig = {
-  whatever: {
-    "./dist/whatever/**/*.js": true,
-  },
-  dist: {
-    "./dist/**/*.js": true,
-    "./dist/whatever/**/*.js": false,
-  },
-}
+jobs:
+  file-size-impact:
+    # Skip workflow for forks because secrets.GITHUB_TOKEN not allowed to post comments
+    if: github.event.pull_request.base.repo.full_name == github.event.pull_request.head.repo.full_name
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        node: [13.12.0]
+    runs-on: ${{ matrix.os }}
+    name: report file size impact
+    steps:
+      - name: Setup git
+        uses: actions/checkout@v2
+      - name: Setup node ${{ matrix.node }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node }}
+      - name: npm install
+        run: npm install
+      - name: Report file size impact
+        run: node ./.github/workflows/report-file-size-impact.js
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 ```
 
-And the generated comment will have two expandable section.
+# Usage outside github workflow
 
-<details>
-  <summary>whatever</summary>
-  Analysis for files matching whatever group
-</details>
+When outside a github workflow you must provide `{ projectDirectoryUrl, githubToken, repositoryOwner, repositoryName, pullRequestNumber }` "manually" to `reportFileSizeImpact`.
 
-<details>
-  <summary>dist</summary>
-  Analysis for files matching dist group
-</details>
-
-## transformations
-
-`transformations` parameter is an object used to transform files content before computing their size. This parameter is optional with a default tracking file size without transformation called `none`.
-
-You can use this parameter to track file size after gzip compression.
+For Travis it would be something as below.
 
 ```js
-import { generateSnapshotFile, none, gzip } from "@jsenv/github-pull-request-filesize-impact"
+import { reportFileSizeImpact } from "@jsenv/file-size-impact"
 
-await generateSnapshotFile({
-  projectDirectoryUrl: "file:///directory",
+reportFileSizeImpact({
+  projectDirectoryUrl: process.env.TRAVIS_BUILD_DIR,
+  githubToken: process.env.GITHUB_TOKEN, // make it available somehow
+  repositoryOwner: process.env.TRAVIS_REPO_SLUG.split("/")[0],
+  repositoryName: process.env.TRAVIS_REPO_SLUG.split("/")[1],
+  pullRequestNumber: process.env.TRAVIS_PULL_REQUEST,
+
+  buildCommand: "npm run dist",
+  trackingConfig: {
+    "dist/commonjs": {
+      "./dist/commonjs/**/*": true,
+      "./dist/commonjs/**/*.map": false,
+    },
+  },
+})
+```
+
+Please note `reportFileSizeImpact` must be called in a state where your git repository has been cloned and you are currently on the pull request branch. Inside github workflow this is done by the following lines in `file-size-impact.yml`.
+
+```yml
+uses: actions/checkout@v2
+uses: actions/setup-node@v1
+with:
+  node-version: ${{ matrix.node }}
+run: npm install
+```
+
+In your CI you must replicate this, the corresponding commands looks as below:
+
+```console
+git init
+git remote add origin $GITHUB_REPOSITORY_URL
+git fetch --no-tags --prune --depth=1 origin $PULL_REQUEST_HEAD_REF
+git checkout origin/$PULL_REQUEST_HEAD_REF
+npm install
+```
+
+# Enable compressed size
+
+You can enable compressed file size tracking using the `transformations` parameter.
+The following code would track raw and compressed file size (using gzip).
+
+```js
+import { reportFileSizeImpact, none, gzip } from "@jsenv/file-size-impact"
+
+reportFileSizeImpact({
+  ...readGithubWorkflowEnv(),
   transformations: { none, gzip },
 })
 ```
 
-And the pull request comment now contains gzip size. Check [docs/comment-example.md#introduce-gzip](./docs/comment-example.md#introduce-gzip) to see how it looks like. `none`, `gzip` and `brotli` compression can be enabled this way.
+Check the [api](./docs/api.md) to get more details.
 
-It's also possible to control compression level.
+# See also
 
-```js
-import { none, gzip } from "@jsenv/github-pull-request-filesize-impact"
-
-const transformations = {
-  none,
-  gzip7: (buffer) => gzip(buffer, { level: 7 }),
-  gzip9: (buffer) => gzip(buffer, { level: 9 }),
-}
-```
-
-Finally `transformations` can be used to add custom transformations.
-
-```js
-import { none, gzip } from "@jsenv/github-pull-request-filesize-impact"
-
-const transformations = {
-  none,
-  trim: (buffer) => String(buffer).trim(),
-}
-```
-
-## manifestFilePattern
-
-`manifestFilePattern` parameter is a string controlling if a manifest json file will be taken into account when generating snapshot. The parameter also control the name of the manifest file. This parameter is optional with a default value of `./**/manifest.json`.
-
-Manifest where introduced by webpack in https://github.com/danethurber/webpack-manifest-plugin. There is the equivalent for rollup at https://github.com/shuizhongyueming/rollup-plugin-output-manifest.
-
-The concept is to be able to remap generated file like `file.4798774987w97er984798.js` back to `file.js`.
-
-Without this, comparison of directories accross branches would consider generated files as always new because of their dynamic names.
-
-# reportSizeImpactIntoGithubPullRequest
-
-`reportSizeImpactIntoGithubPullRequest` is an async function comparing two directory snapshots and commenting a github pull request with the comparison result.
-
-```js
-import { reportSizeImpactIntoGithubPullRequest } from "@jsenv/github-pull-request-filesize-impact"
-
-await reportSizeImpactIntoGithubPullRequest({
-  projectDirectoryUrl: "file:///directory",
-  baseSnapshotFileRelativeUrl: "../snapshot.base.json",
-  headSnapshotFileRelativeUrl: "../snapshot.head.json",
-  logLevel: "info",
-  generatedByLink: true,
-})
-```
-
-— source code at [src/reportSizeImpactIntoGithubPullRequest.js](./src/reportSizeImpactIntoGithubPullRequest.js).
-
-## baseSnapshotFileRelativeUrl
-
-`baseSnapshotFileRelativeUrl` parameter is a string leading to the base snapshot file. This parameter is **required**.
-
-## headSnapshotFileRelativeUrl
-
-`headSnapshotFileRelativeUrl` parameter is a string leading to the head snapshot file. This parameter is **required**.
-
-## commentSections
-
-`commentSections` parameter is an object controlling which comment sections are enabled and their order. This parameter is optionnal and enable `groupImpact`, `fileByFileImpact` and `cacheImpact` section in that order. Check [docs/comment-example.md#basic-example](./docs/comment-example.md#basic-example) to see the comment sections.
-
-You can control sections order because it follow `commentSections` keys order. You can also control which section are enabled at all. For instance [docs/comment-example.md#group-disabled-filebyfile-enabled-cache-disabled](./docs/comment-example.md#group-disabled-filebyfile-enabled-cache-disabled) can be generated by passing `commentSections` below.
-
-```js
-const commentSections = { fileByFileImpact: true }
-```
-
-> This parameter could be an array. Using an object was decided in case each section becomes configurable in the future.
-
-## generatedByLink
-
-`generatedByLink` parameter controls if pull request comment contains a generated by message. This parameter is optionnal and enabled by default. This parameter allows someone to understand where the pull request message comes from.
-
-## formatSize
-
-`formatSize` parameter controls the display of file size. This parameter is optionnal, the default value doing an english formatting of a number. Check source code if you want to pass a custom function.
-
-# Why merge
-
-As documented in [How it works](#How-it-works) `generateSnapshotFile` must be called in a state where the pull request is merged into its target. This part explains why it's needed.
-
-To know impacts of a pull request changes on a given branch, these changes must be on the branch. To understand why we will simulate what happens starting from a git tree where:
-
-- There is a `master` branch
-- `me` branch is one commit ahead of `master`
-- `other` branch is one commit ahead of `master`
-- A pull request wants to merge `me` into `master`
-
-> In upcoming "schemas", a capital letter represent a commit.
-
-## Initial git tree
-
-```txt
-   ┌───D─── other (A+D)
-   │
-───A─────── master (A)
-   │
-   └───B─── me (A+B)
-```
-
-Now `other` gets merged into master
-
-## Git tree after merging other branch
-
-```txt
-   ┌───D───┐ other (A+D)
-   │       │
-───A───────D─── master (A+D)
-   │
-   └───B──── me (A+B)
-```
-
-Now we push a commit to `me`
-
-## Git tree after pushing into me branch
-
-```txt
-   ┌───D───┐ other (A+D)
-   │       │
-───A───────D─── master (A+D)
-   │
-   └───B───E─── me (A+B+E)
-```
-
-In this state:
-
-- `me` is 1 commit behind `master` and 2 commits ahead
-  > Pull request wants to merge `B,E` and does not contain `D`.
-- merging pull request means adding `B+E` into `master`. Master would become `A+D+B+E`.
-  > Depending how pull request gets merged order may differ but that's not important for this demonstration.
-
-To compute the actual impact of merging `me` into `master` we must simulate the merge. Let's create a `merge` branch with this state.
-
-## Git tree after creating merge branch
-
-```txt
-   ┌───D───┐ other (A+D)
-   │       │
-───A───────D──── master (A+D)
-   │       │
-   │       └───┬─── merge (A+D+B+E)
-   │           │
-   └───B───E───┘ me (A+B+E)
-```
-
-If `D` changes overlaps with `E` changes, impact is analysed after these changes are merged.
-
-Moreover `D` changes that are not in `B` or `E` are ignored thanks to diff between `merge` and `master`.
-
-```
-merge = A+D+B+E
-master = A+D
-merge - master = B+E
-```
+- [jsenv-lighthouse-score-merge-impact](https://github.com/jsenv/jsenv-lighthouse-score-merge-impact)
+- [compressed-size-action](https://github.com/preactjs/compressed-size-action)
+- [size-limit-action](https://github.com/andresz1/size-limit-action)
