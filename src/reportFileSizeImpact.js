@@ -124,6 +124,13 @@ export const reportFileSizeImpact = async ({
       const patchOrPostComment = async (commentBody) => {
         if (existingComment) {
           if (existingComment.body === commentBody) {
+            // maybe users will think
+            // "hey my comment was not edited, the workflow have failed ?"
+            // but because github will not put the "edited" label if
+            // comment body are exactly the same it means
+            // our comment should contains something unique to the run
+            // maybe the head commit sha in comment as below
+            // <!-- head-commit-sha=${pullRequest.head.sha} -->
             logger.info(`skipping comment updated because existing comment body is the same`)
             return existingComment
           }
