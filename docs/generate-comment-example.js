@@ -1,132 +1,143 @@
 import { writeFile, resolveUrl } from "@jsenv/util"
-import { jsenvFormatSize } from "../src/internal/jsenvFormatSize.js"
-import { generatePullRequestCommentString } from "../src/internal/generatePullRequestCommentString.js"
+import { jsenvFormatSize } from "../src/internal/comment/jsenvFormatSize.js"
+import { formatComment } from "../src/internal/comment/formatComment.js"
 
 const generateComment = (data) =>
-  generatePullRequestCommentString({
+  formatComment({
     pullRequestBase: "base",
     pullRequestHead: "head",
     formatSize: jsenvFormatSize,
-    commentSections: { groupImpact: true, fileByFileImpact: true, cacheImpact: true },
+    commentSections: {
+      overallSizeImpact: true,
+      detailedSizeImpact: true,
+      cacheImpact: true,
+    },
     ...data,
   })
 
 const examples = {
   "basic example": generateComment({
-    baseVersionnedSnapshot: {
-      snapshot: {
-        dist: {
-          fileMap: {
-            "dist/bar.js": { hash: "a", sizeMap: { none: 100 } },
+    baseSnapshot: {
+      dist: {
+        fileMap: {
+          "dist/bar.js": { hash: "a", sizeMap: { none: 100 } },
+        },
+      },
+    },
+    afterMergeSnapshot: {
+      dist: {
+        fileMap: {
+          "dist/bar.js": { hash: "b", sizeMap: { none: 110 } },
+        },
+      },
+    },
+  }),
+  "basic example + gzip + brotli": generateComment({
+    baseSnapshot: {
+      dist: {
+        fileMap: {
+          "dist/bar.js": {
+            hash: "a",
+            sizeMap: { none: 100, gzip: 20, brotli: 18 },
           },
         },
       },
     },
-    headVersionnedSnapshot: {
-      snapshot: {
-        dist: {
-          fileMap: {
-            "dist/bar.js": { hash: "b", sizeMap: { none: 110 } },
+    afterMergeSnapshot: {
+      dist: {
+        fileMap: {
+          "dist/bar.js": {
+            hash: "b",
+            sizeMap: { none: 110, gzip: 22, brotli: 19 },
           },
         },
       },
     },
   }),
   "no changes": generateComment({
-    baseVersionnedSnapshot: {
-      snapshot: {
-        dist: {
-          fileMap: {
-            "dist/bar.js": { hash: "a", sizeMap: { none: 110 } },
-          },
+    baseSnapshot: {
+      dist: {
+        fileMap: {
+          "dist/bar.js": { hash: "a", sizeMap: { none: 110 } },
         },
       },
     },
-    headVersionnedSnapshot: {
-      snapshot: {
-        dist: {
-          fileMap: {
-            "dist/bar.js": { hash: "a", sizeMap: { none: 110 } },
-          },
+    afterMergeSnapshot: {
+      dist: {
+        fileMap: {
+          "dist/bar.js": { hash: "a", sizeMap: { none: 110 } },
         },
       },
     },
   }),
   "no files": generateComment({
-    baseVersionnedSnapshot: {
-      snapshot: {
-        dist: {
-          fileMap: {},
-        },
+    trackingConfig: {
+      dist: {
+        "*/**": false,
       },
     },
-    headVersionnedSnapshot: {
-      snapshot: {
-        dist: {
-          fileMap: {},
-        },
+    baseSnapshot: {
+      dist: {
+        fileMap: {},
+      },
+    },
+    afterMergeSnapshot: {
+      dist: {
+        fileMap: {},
       },
     },
   }),
   "changes impact cancels each other": generateComment({
-    baseVersionnedSnapshot: {
-      snapshot: {
-        dist: {
-          fileMap: {
-            "dist/file-a.js": {
-              hash: "hash1",
-              sizeMap: { none: 10 },
-            },
-            "dist/file-b.js": {
-              hash: "hash3",
-              sizeMap: { none: 15 },
-            },
+    baseSnapshot: {
+      dist: {
+        fileMap: {
+          "dist/file-a.js": {
+            hash: "hash1",
+            sizeMap: { none: 10 },
+          },
+          "dist/file-b.js": {
+            hash: "hash3",
+            sizeMap: { none: 15 },
           },
         },
       },
     },
-    headVersionnedSnapshot: {
-      snapshot: {
-        dist: {
-          fileMap: {
-            "dist/file-a.js": {
-              hash: "hash2",
-              sizeMap: { none: 15 },
-            },
-            "dist/file-b.js": {
-              hash: "hash4",
-              sizeMap: { none: 10 },
-            },
+    afterMergeSnapshot: {
+      dist: {
+        fileMap: {
+          "dist/file-a.js": {
+            hash: "hash2",
+            sizeMap: { none: 15 },
+          },
+          "dist/file-b.js": {
+            hash: "hash4",
+            sizeMap: { none: 10 },
           },
         },
       },
     },
   }),
   "introduce gzip": generateComment({
-    baseVersionnedSnapshot: {
-      snapshot: {
-        dist: {
-          fileMap: {
-            "dist/bar.js": {
-              hash: "a",
-              sizeMap: {
-                none: 100,
-              },
+    baseSnapshot: {
+      dist: {
+        fileMap: {
+          "dist/bar.js": {
+            hash: "a",
+            sizeMap: {
+              none: 100,
             },
           },
         },
       },
     },
-    headVersionnedSnapshot: {
-      snapshot: {
-        dist: {
-          fileMap: {
-            "dist/bar.js": {
-              hash: "b",
-              sizeMap: {
-                none: 110,
-                gzip: 10,
-              },
+    afterMergeSnapshot: {
+      dist: {
+        fileMap: {
+          "dist/bar.js": {
+            hash: "b",
+            sizeMap: {
+              none: 110,
+              gzip: 10,
             },
           },
         },
@@ -134,30 +145,26 @@ const examples = {
     },
   }),
   "remove gzip": generateComment({
-    baseVersionnedSnapshot: {
-      snapshot: {
-        dist: {
-          fileMap: {
-            "dist/bar.js": {
-              hash: "a",
-              sizeMap: {
-                none: 100,
-                gzip: 10,
-              },
+    baseSnapshot: {
+      dist: {
+        fileMap: {
+          "dist/bar.js": {
+            hash: "a",
+            sizeMap: {
+              none: 100,
+              gzip: 10,
             },
           },
         },
       },
     },
-    headVersionnedSnapshot: {
-      snapshot: {
-        dist: {
-          fileMap: {
-            "dist/bar.js": {
-              hash: "b",
-              sizeMap: {
-                none: 110,
-              },
+    afterMergeSnapshot: {
+      dist: {
+        fileMap: {
+          "dist/bar.js": {
+            hash: "b",
+            sizeMap: {
+              none: 110,
             },
           },
         },
@@ -165,178 +172,128 @@ const examples = {
     },
   }),
   "multiple + gzip + brotli": generateComment({
-    baseVersionnedSnapshot: {
-      snapshot: {
-        "dist/commonjs": {
-          fileMap: {
-            "dist/commonjs/bar.js": {
-              hash: "a",
-              sizeMap: {
-                none: 100,
-                gzip: 10,
-                brotli: 9,
-              },
+    baseSnapshot: {
+      "dist/commonjs": {
+        fileMap: {
+          "dist/commonjs/bar.js": {
+            hash: "a",
+            sizeMap: {
+              none: 100,
+              gzip: 10,
+              brotli: 9,
             },
-            "dist/commonjs/hello.js": {
-              hash: "a",
-              sizeMap: {
-                none: 167000,
-                gzip: 1600,
-                brotli: 1500,
-              },
+          },
+          "dist/commonjs/hello.js": {
+            hash: "a",
+            sizeMap: {
+              none: 167000,
+              gzip: 1600,
+              brotli: 1500,
             },
           },
         },
-        "dist/systemjs": {
-          fileMap: {
-            "dist/systemjs/bar.js": {
-              hash: "a",
-              sizeMap: {
-                none: 100,
-                gzip: 10,
-                brotli: 9,
-              },
+      },
+      "dist/systemjs": {
+        fileMap: {
+          "dist/systemjs/bar.js": {
+            hash: "a",
+            sizeMap: {
+              none: 100,
+              gzip: 10,
+              brotli: 9,
             },
-            "dist/systemjs/hello.js": {
-              hash: "a",
-              sizeMap: {
-                none: 167000,
-                gzip: 1600,
-                brotli: 1500,
-              },
+          },
+          "dist/systemjs/hello.js": {
+            hash: "a",
+            sizeMap: {
+              none: 167000,
+              gzip: 1600,
+              brotli: 1500,
             },
           },
         },
       },
     },
-    headVersionnedSnapshot: {
-      snapshot: {
-        "dist/commonjs": {
-          fileMap: {
-            "dist/commonjs/foo.js": {
-              hash: "a",
-              sizeMap: {
-                none: 120,
-                gzip: 12,
-                brotli: 11,
-              },
+    afterMergeSnapshot: {
+      "dist/commonjs": {
+        fileMap: {
+          "dist/commonjs/foo.js": {
+            hash: "a",
+            sizeMap: {
+              none: 120,
+              gzip: 12,
+              brotli: 11,
             },
-            "dist/commonjs/hello.js": {
-              hash: "b",
-              sizeMap: {
-                none: 187000,
-                gzip: 1800,
-                brotli: 1700,
-              },
+          },
+          "dist/commonjs/hello.js": {
+            hash: "b",
+            sizeMap: {
+              none: 187000,
+              gzip: 1800,
+              brotli: 1700,
             },
           },
         },
-        "dist/systemjs": {
-          fileMap: {
-            "dist/systemjs/foo.js": {
-              hash: "a",
-              sizeMap: {
-                none: 120,
-                gzip: 12,
-                brotli: 11,
-              },
+      },
+      "dist/systemjs": {
+        fileMap: {
+          "dist/systemjs/foo.js": {
+            hash: "a",
+            sizeMap: {
+              none: 120,
+              gzip: 12,
+              brotli: 11,
             },
-            "dist/systemjs/hello.js": {
-              hash: "b",
-              sizeMap: {
-                none: 187000,
-                gzip: 1800,
-                brotli: 1700,
-              },
+          },
+          "dist/systemjs/hello.js": {
+            hash: "b",
+            sizeMap: {
+              none: 187000,
+              gzip: 1800,
+              brotli: 1700,
             },
           },
         },
       },
     },
   }),
-  "group disabled, filebyfile enabled, cache disabled": generateComment({
-    commentSections: { fileByFileImpact: true },
-    baseVersionnedSnapshot: {
-      snapshot: {
-        dist: {
-          fileMap: {
-            "dist/bar.js": { hash: "a", sizeMap: { none: 100 } },
-          },
+  "overall size disabled, detailed size enabled, cache disabled": generateComment({
+    commentSections: { detailedSizeImpact: true },
+    baseSnapshot: {
+      dist: {
+        fileMap: {
+          "dist/bar.js": { hash: "a", sizeMap: { none: 100 } },
         },
       },
     },
-    headVersionnedSnapshot: {
-      snapshot: {
-        dist: {
-          fileMap: {
-            "dist/bar.js": { hash: "b", sizeMap: { none: 110 } },
-          },
+    afterMergeSnapshot: {
+      dist: {
+        fileMap: {
+          "dist/bar.js": { hash: "b", sizeMap: { none: 110 } },
         },
       },
     },
   }),
-  "filebyfile enabled, group enabled, cache disabled": generateComment({
-    commentSections: { fileByFileImpact: true, groupImpact: true },
-    baseVersionnedSnapshot: {
-      snapshot: {
-        dist: {
-          fileMap: {
-            "dist/bar.js": { hash: "a", sizeMap: { none: 100 } },
-          },
+  "detailed size enabled, overall size enabled, cache disabled": generateComment({
+    commentSections: { detailedSizeImpact: true, overallSizeImpact: true },
+    baseSnapshot: {
+      dist: {
+        fileMap: {
+          "dist/bar.js": { hash: "a", sizeMap: { none: 100 } },
         },
       },
     },
-    headVersionnedSnapshot: {
-      snapshot: {
-        dist: {
-          fileMap: {
-            "dist/bar.js": { hash: "b", sizeMap: { none: 110 } },
-          },
-        },
-      },
-    },
-  }),
-  "base missing warning": generateComment({
-    baseVersionnedSnapshot: {},
-    headVersionnedSnapshot: {
-      snapshot: {
-        dist: {
-          fileMap: {
-            "dist/bar.js": { hash: "b", sizeMap: { none: 110 } },
-          },
+    afterMergeSnapshot: {
+      dist: {
+        fileMap: {
+          "dist/bar.js": { hash: "b", sizeMap: { none: 110 } },
         },
       },
     },
   }),
   "empty warning": generateComment({
-    baseVersionnedSnapshot: {
-      snapshot: {},
-    },
-    headVersionnedSnapshot: {
-      snapshot: {},
-    },
-  }),
-  "base version too different warning": generateComment({
-    baseVersionnedSnapshot: {
-      version: 1,
-      snapshot: {
-        dist: {
-          fileMap: {
-            "dist/bar.js": { hash: "a", sizeMap: { none: 100 } },
-          },
-        },
-      },
-    },
-    headVersionnedSnapshot: {
-      version: 2,
-      snapshot: {
-        dist: {
-          fileMap: {
-            "dist/bar.js": { hash: "b", sizeMap: { none: 110 } },
-          },
-        },
-      },
-    },
+    baseSnapshot: {},
+    afterMergeSnapshot: {},
   }),
 }
 

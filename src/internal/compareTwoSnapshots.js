@@ -1,41 +1,34 @@
-import {
-  resolveUrl,
-  comparePathnames,
-  metaMapToSpecifierMetaMap,
-  urlToMeta,
-  normalizeSpecifierMetaMap,
-  urlToRelativeUrl,
-} from "@jsenv/util"
+import { resolveUrl, comparePathnames, urlToRelativeUrl } from "@jsenv/util"
 
-export const compareTwoSnapshots = (baseSnapshot, headSnapshot) => {
+export const compareTwoSnapshots = (baseSnapshot, afterMergeSnapshot) => {
   const comparison = {}
-  Object.keys(headSnapshot).forEach((group) => {
+  Object.keys(afterMergeSnapshot).forEach((group) => {
     // || {} exists in case group was not tracked in base branch
     // and is now tracked in head branch.
     // compareTwoGroups will handle the empty object and consider everything as added
     const baseGroup = baseSnapshot[group] || {}
-    const headGroup = headSnapshot[group]
-    comparison[group] = compareTwoGroups(baseGroup, headGroup)
+    const afterMergeGroup = afterMergeSnapshot[group]
+    comparison[group] = compareTwoGroups(baseGroup, afterMergeGroup)
   })
   return comparison
 }
 
-const compareTwoGroups = (baseGroup, headGroup) => {
+const compareTwoGroups = (baseGroup, afterMergeGroup) => {
   const groupComparison = {}
 
   const baseManifestMap = baseGroup.manifestMap || {}
-  const headManifestMap = headGroup.manifestMap || {}
+  const afterMergeManifestMap = afterMergeGroup.manifestMap || {}
   const baseFileMap = baseGroup.fileMap || {}
-  const headFileMap = headGroup.fileMap || {}
+  const afterMergeFileMap = afterMergeGroup.fileMap || {}
   const baseMappings = manifestToMappings(baseManifestMap)
-  const headMappings = manifestToMappings(headManifestMap)
+  const afterMergeMappings = manifestToMappings(afterMergeManifestMap)
 
-  const added = (relativeUrl, headRelativeUrl) => {
+  const added = (relativeUrl, afterMergeRelativeUrl) => {
     groupComparison[relativeUrl] = {
       base: null,
-      head: {
-        relativeUrl: headRelativeUrl,
-        ...headFileMap[headRelativeUrl],
+      afterMerge: {
+        relativeUrl: afterMergeRelativeUrl,
+        ...afterMergeFileMap[afterMergeRelativeUrl],
       },
     }
   }
@@ -45,63 +38,61 @@ const compareTwoGroups = (baseGroup, headGroup) => {
         relativeUrl: baseRelativeUrl,
         ...baseFileMap[baseRelativeUrl],
       },
-      head: null,
+      afterMerge: null,
     }
   }
-  const updated = (relativeUrl, baseRelativeUrl, headRelativeUrl) => {
+  const updated = (relativeUrl, baseRelativeUrl, afterMergeRelativeUrl) => {
     groupComparison[relativeUrl] = {
       base: {
         relativeUrl: baseRelativeUrl,
         ...baseFileMap[baseRelativeUrl],
       },
-      head: {
-        relativeUrl: headRelativeUrl,
-        ...headFileMap[headRelativeUrl],
+      afterMerge: {
+        relativeUrl: afterMergeRelativeUrl,
+        ...afterMergeFileMap[afterMergeRelativeUrl],
       },
     }
   }
 
-  Object.keys(headFileMap).forEach((headRelativeUrl) => {
-    const originalHeadRelativeUrl = getOriginalRelativeUrl(headRelativeUrl, headMappings)
-    if (originalHeadRelativeUrl) {
-      const baseRelativeUrl = getRenamedRelativeUrl(originalHeadRelativeUrl, baseMappings)
+  Object.keys(afterMergeFileMap).forEach((afterMergeRelativeUrl) => {
+    const originalAfterMergeRelativeUrl = getOriginalRelativeUrl(
+      afterMergeRelativeUrl,
+      afterMergeMappings,
+    )
+    if (originalAfterMergeRelativeUrl) {
+      const baseRelativeUrl = getRenamedRelativeUrl(originalAfterMergeRelativeUrl, baseMappings)
       if (baseRelativeUrl) {
         // the mapping should be the same and already found while iterating
         // baseReport, otherwise it means the mappings
-        // of heads and base are different right ?
-        updated(originalHeadRelativeUrl, baseRelativeUrl, headRelativeUrl)
-      } else if (headRelativeUrl in baseFileMap) {
-        updated(originalHeadRelativeUrl, headRelativeUrl, headRelativeUrl)
+        // afterMerge and base are different right ?
+        updated(originalAfterMergeRelativeUrl, baseRelativeUrl, afterMergeRelativeUrl)
+      } else if (afterMergeRelativeUrl in baseFileMap) {
+        updated(originalAfterMergeRelativeUrl, afterMergeRelativeUrl, afterMergeRelativeUrl)
       } else {
-        added(originalHeadRelativeUrl, headRelativeUrl)
+        added(originalAfterMergeRelativeUrl, afterMergeRelativeUrl)
       }
-    } else if (headRelativeUrl in baseFileMap) {
-      updated(headRelativeUrl, headRelativeUrl, headRelativeUrl)
+    } else if (afterMergeRelativeUrl in baseFileMap) {
+      updated(afterMergeRelativeUrl, afterMergeRelativeUrl, afterMergeRelativeUrl)
     } else {
-      added(headRelativeUrl, headRelativeUrl)
+      added(afterMergeRelativeUrl, afterMergeRelativeUrl)
     }
   })
 
-  // const fileIsTrackedInBase = trackingConfigToPredicate(baseSnapshot.tracking)
-  const fileIsTrackedInHead = trackingToPredicate(headGroup.tracking)
-
   Object.keys(baseFileMap).forEach((baseRelativeUrl) => {
-    if (!fileIsTrackedInHead(baseRelativeUrl)) {
-      // head tracking config is not interested into this file anymore
-      return
-    }
-
     const originalBaseRelativeUrl = getOriginalRelativeUrl(baseRelativeUrl, baseMappings)
     if (originalBaseRelativeUrl) {
-      const headRelativeUrl = getRenamedRelativeUrl(originalBaseRelativeUrl, headMappings)
-      if (headRelativeUrl) {
-        updated(originalBaseRelativeUrl, baseRelativeUrl, headRelativeUrl)
-      } else if (baseRelativeUrl in headFileMap) {
+      const afterMergeRelativeUrl = getRenamedRelativeUrl(
+        originalBaseRelativeUrl,
+        afterMergeMappings,
+      )
+      if (afterMergeRelativeUrl) {
+        updated(originalBaseRelativeUrl, baseRelativeUrl, afterMergeRelativeUrl)
+      } else if (baseRelativeUrl in afterMergeFileMap) {
         updated(originalBaseRelativeUrl, baseRelativeUrl, baseRelativeUrl)
       } else {
         removed(originalBaseRelativeUrl, baseRelativeUrl)
       }
-    } else if (baseRelativeUrl in headFileMap) {
+    } else if (baseRelativeUrl in afterMergeFileMap) {
       updated(baseRelativeUrl, baseRelativeUrl, baseRelativeUrl)
     } else {
       removed(baseRelativeUrl, baseRelativeUrl)
@@ -112,26 +103,6 @@ const compareTwoGroups = (baseGroup, headGroup) => {
 }
 
 const ABSTRACT_DIRECTORY_URL = "file:///directory/"
-
-const trackingToPredicate = (tracking) => {
-  // not ideal but here for the ease of unit test so that no need to specify tracking everywhere
-  if (!tracking) {
-    return () => true
-  }
-
-  const specifierMetaMap = normalizeSpecifierMetaMap(
-    metaMapToSpecifierMetaMap({
-      track: tracking,
-    }),
-    ABSTRACT_DIRECTORY_URL,
-  )
-  return (relativeUrl) => {
-    return urlToMeta({
-      url: resolveUrl(relativeUrl, ABSTRACT_DIRECTORY_URL),
-      specifierMetaMap,
-    }).track
-  }
-}
 
 const manifestToMappings = (manifestMap) => {
   const mappings = {}

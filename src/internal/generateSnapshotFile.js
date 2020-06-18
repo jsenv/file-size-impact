@@ -4,82 +4,57 @@ import {
   bufferToEtag,
   resolveUrl,
   urlToFileSystemPath,
-  writeFile,
   readFile,
   metaMapToSpecifierMetaMap,
   collectFiles,
-  catchCancellation,
-  createCancellationTokenForProcess,
 } from "@jsenv/util"
-import { jsenvTrackingConfig } from "./jsenvTrackingConfig.js"
-import { transform as noneTransform } from "./noneTransformation.js"
-
-// update this when snapshot file format changes and is not retro compatible
-const SNAPSHOT_VERSION = 1
+import { createCancellationToken } from "@jsenv/cancellation"
 
 export const generateSnapshotFile = async ({
-  cancellationToken = createCancellationTokenForProcess(),
+  cancellationToken = createCancellationToken(),
   logLevel,
   projectDirectoryUrl,
-  trackingConfig = jsenvTrackingConfig,
-  snapshotFileRelativeUrl = "./filesize-snapshot.json",
-  manifestFilePattern = "./**/manifest.json",
-  transformations = { none: noneTransform },
+  trackingConfig,
+  manifestFilePattern,
+  transformations,
 }) => {
-  return catchCancellation(async () => {
-    const logger = createLogger({ logLevel })
+  const logger = createLogger({ logLevel })
 
-    projectDirectoryUrl = assertAndNormalizeDirectoryUrl(projectDirectoryUrl)
+  projectDirectoryUrl = assertAndNormalizeDirectoryUrl(projectDirectoryUrl)
 
-    const trackingNames = Object.keys(trackingConfig)
-    if (trackingNames.length === 0) {
-      logger.warn(`trackingConfig is empty`)
-    }
+  const trackingNames = Object.keys(trackingConfig)
+  if (trackingNames.length === 0) {
+    logger.warn(`trackingConfig is empty`)
+  }
 
-    const snapshotFileUrl = resolveUrl(snapshotFileRelativeUrl, projectDirectoryUrl)
-    const snapshot = {}
+  const snapshot = {}
 
-    // ensure snapshot keys order is the same as trackingConfig (despite Promise.all below)
-    trackingNames.forEach((trackingName) => {
-      snapshot[trackingName] = null
-    })
-    await Promise.all(
-      trackingNames.map(async (trackingName) => {
-        const tracking = trackingConfig[trackingName]
-        const specifierMetaMap = metaMapToSpecifierMetaMap({
-          track: tracking,
-          ...(manifestFilePattern ? { manifest: { [manifestFilePattern]: true } } : {}),
-        })
-
-        const trackingResult = await applyTracking({
-          logger,
-          projectDirectoryUrl,
-          specifierMetaMap,
-          transformations,
-        })
-        snapshot[trackingName] = {
-          tracking,
-          ...trackingResult,
-        }
-        cancellationToken.throwIfRequested()
-      }),
-    )
-
-    logger.info(`write snapshot file at ${urlToFileSystemPath(snapshotFileUrl)}`)
-    const versionnedSnapshot = {
-      version: SNAPSHOT_VERSION,
-      snapshot,
-    }
-    const snapshotFileContent = JSON.stringify(versionnedSnapshot, null, "  ")
-    logger.debug(snapshotFileContent)
-    await writeFile(snapshotFileUrl, snapshotFileContent)
-  }).catch((e) => {
-    // this is required to ensure unhandledRejection will still
-    // set process.exitCode to 1 marking the process execution as errored
-    // preventing further command to run
-    process.exitCode = 1
-    throw e
+  // ensure snapshot keys order is the same as trackingConfig (despite Promise.all below)
+  trackingNames.forEach((trackingName) => {
+    snapshot[trackingName] = null
   })
+  await Promise.all(
+    trackingNames.map(async (trackingName) => {
+      const tracking = trackingConfig[trackingName]
+      const specifierMetaMap = metaMapToSpecifierMetaMap({
+        track: tracking,
+        ...(manifestFilePattern ? { manifest: { [manifestFilePattern]: true } } : {}),
+      })
+
+      const trackingResult = await applyTracking({
+        logger,
+        projectDirectoryUrl,
+        specifierMetaMap,
+        transformations,
+      })
+      snapshot[trackingName] = trackingResult
+      cancellationToken.throwIfRequested()
+    }),
+  )
+
+  const snapshotFileContent = JSON.stringify(snapshot, null, "  ")
+  logger.debug(snapshotFileContent)
+  return snapshot
 }
 
 const applyTracking = async ({

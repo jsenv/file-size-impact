@@ -1,13 +1,33 @@
-import { isChanged, sumSize } from "./helper.js"
+import { sumSize } from "./helper.js"
 
-export const renderCacheImpact = (groupComparison, { formatSize }) => {
-  const cacheImpact = groupComparisonToCacheImpact(groupComparison, { formatSize })
+export const renderCacheImpact = (fileByFileImpact, { groupName, formatSize }) => {
+  const cacheImpact = fileByFileImpactToCacheImpact(fileByFileImpact)
 
   return `
-  <h3>Cache impact</h3>
+  <h6>Impact on <bold>${groupName}</bold> files cache</h6>
   <p>${renderCacheImpactDescription(cacheImpact)}</p>${
     cacheImpact.fileChangedCount === 0 ? "" : renderCacheImpactTable(cacheImpact, { formatSize })
   }`
+}
+
+const fileByFileImpactToCacheImpact = (fileByFileImpact) => {
+  let fileChangedCount = 0
+  const outdatedBytesMap = {}
+
+  Object.keys(fileByFileImpact).forEach((fileRelativeUrl) => {
+    const { event, base } = fileByFileImpact[fileRelativeUrl]
+    if (event === "changed") {
+      fileChangedCount++
+      Object.keys(base.sizeMap).forEach((key) => {
+        outdatedBytesMap[key] = sumSize(base.sizeMap, outdatedBytesMap, key)
+      })
+    }
+  })
+
+  return {
+    fileChangedCount,
+    outdatedBytesMap,
+  }
 }
 
 const renderCacheImpactDescription = ({ fileChangedCount }) => {
@@ -18,44 +38,6 @@ const renderCacheImpactDescription = ({ fileChangedCount }) => {
     return `1 file in your users cache is now outdated because its content have changed.`
   }
   return `${fileChangedCount} files in you users cache are now outdated because their content have changed.`
-}
-
-const groupComparisonToCacheImpact = (groupComparison) => {
-  let fileChangedCount = 0
-  const outdatedBytesMap = {}
-
-  Object.keys(groupComparison).forEach((fileRelativeUrl) => {
-    const { base, head } = groupComparison[fileRelativeUrl]
-    if (isChanged({ base, head })) {
-      fileChangedCount++
-      Object.keys(base.sizeMap).forEach((key) => {
-        outdatedBytesMap[key] = sumSize(base.sizeMap, outdatedBytesMap, key)
-      })
-    }
-  })
-
-  Object.keys(groupComparison).find((fileRelativeUrl) => {
-    const { head } = groupComparison[fileRelativeUrl]
-    if (head) {
-      // adds sizeName we becomes interested in indicating "---"
-      Object.keys(head.sizeMap).forEach((sizeName) => {
-        if (sizeName in outdatedBytesMap) return
-        outdatedBytesMap[sizeName] = "---"
-      })
-      // remove sizeName that we are no longer interested in
-      Object.keys(outdatedBytesMap).forEach((sizeName) => {
-        if (sizeName in head.sizeMap) return
-        delete outdatedBytesMap[sizeName]
-      })
-      return true
-    }
-    return false
-  })
-
-  return {
-    fileChangedCount,
-    outdatedBytesMap,
-  }
 }
 
 const renderCacheImpactTable = (cacheImpact, { formatSize }) => {

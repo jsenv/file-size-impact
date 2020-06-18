@@ -1,73 +1,16 @@
-import { isNew, isDeleted, isChanged } from "./helper.js"
-
-export const renderFileByFileImpact = (
-  groupComparison,
-  { groupName, pullRequestBase, pullRequestHead, formatSize },
+export const renderDetailedSizeImpact = (
+  fileByFileImpact,
+  { groupName, pullRequestBase, formatSize },
 ) => {
   return `
-  <h3>File by file impact</h3>
-  ${renderFileByFileBody(groupComparison, {
-    groupName,
+  <h6>Detailed impact on <bold>${groupName}</bold> files size</h6>
+  ${renderFileByFileTable(fileByFileImpact, {
     pullRequestBase,
-    pullRequestHead,
     formatSize,
   })}`
 }
 
-const renderFileByFileBody = (
-  groupComparison,
-  { groupName, pullRequestBase, pullRequestHead, formatSize },
-) => {
-  const emptyGroup = Object.keys(groupComparison).length === 0
-  if (emptyGroup) {
-    return `<p>No file in <code>${groupName}</code> group.</p>`
-  }
-
-  const filesImpact = groupComparisonToFilesImpact(groupComparison)
-  const noImpact = Object.keys(filesImpact).length === 0
-
-  if (noImpact) {
-    return `<p>Pull request have no impact on <code>${groupName}</code> files.</p>`
-  }
-
-  return renderFileByFileTable(filesImpact, { pullRequestBase, pullRequestHead, formatSize })
-}
-
-const groupComparisonToFilesImpact = (groupComparison) => {
-  const filesImpact = {}
-  Object.keys(groupComparison).forEach((fileRelativeUrl) => {
-    const { base, head } = groupComparison[fileRelativeUrl]
-
-    if (isNew({ base, head })) {
-      filesImpact[fileRelativeUrl] = {
-        base,
-        head,
-        event: "created",
-      }
-      return
-    }
-
-    if (isDeleted({ base, head })) {
-      filesImpact[fileRelativeUrl] = {
-        base,
-        head,
-        event: "deleted",
-      }
-      return
-    }
-
-    if (isChanged({ base, head })) {
-      filesImpact[fileRelativeUrl] = {
-        base,
-        head,
-        event: "changed",
-      }
-    }
-  })
-  return filesImpact
-}
-
-const renderFileByFileTable = (filesImpact, { pullRequestBase, pullRequestHead, formatSize }) => {
+const renderFileByFileTable = (filesImpact, { pullRequestBase, formatSize }) => {
   const noneOnly = analyseNoneOnly(filesImpact)
 
   const headerCells = [
@@ -75,7 +18,7 @@ const renderFileByFileTable = (filesImpact, { pullRequestBase, pullRequestHead, 
     ...(noneOnly ? [] : ["<th nowrap>Transform</th>"]),
     `<th nowrap>Diff</th>`,
     `<th nowrap>${pullRequestBase}</th>`,
-    `<th nowrap>${pullRequestHead}</th>`,
+    `<th nowrap>after merge</th>`,
     `<th nowrap>Event</th>`,
   ]
 
@@ -94,11 +37,11 @@ const renderFileByFileTable = (filesImpact, { pullRequestBase, pullRequestHead, 
 
 const analyseNoneOnly = (filesImpact) => {
   const files = Object.keys(filesImpact)
-  const firstFileWithHead = files.find((file) => {
-    return Boolean(filesImpact[file].head)
+  const firstFileWithAfterMerge = files.find((file) => {
+    return Boolean(filesImpact[file].afterMerge)
   })
-  if (firstFileWithHead) {
-    const sizeMap = filesImpact[firstFileWithHead].head.sizeMap
+  if (firstFileWithAfterMerge) {
+    const sizeMap = filesImpact[firstFileWithAfterMerge].afterMerge.sizeMap
     return "none" in sizeMap && Object.keys(sizeMap).length === 1
   }
 
@@ -120,18 +63,18 @@ const renderFilesTableBody = (filesImpact, { noneOnly, formatSize }) => {
 
   Object.keys(filesImpact).forEach((fileRelativePath) => {
     const fileImpact = filesImpact[fileRelativePath]
-    const { event, base, head } = fileImpact
+    const { event, base, afterMerge } = fileImpact
 
-    const keys = Object.keys((head || base).sizeMap)
+    const keys = Object.keys((afterMerge || base).sizeMap)
     keys.forEach((sizeName, index) => {
       const rowSpan = index === 0 ? keys.length : 1
       const merged = index > 0
       const cells = [
         renderFileCell({ rowSpan, merged, fileRelativePath }),
         ...(noneOnly ? [] : [`<td nowrap>${sizeName}</td>`]),
-        renderDiffCell({ event, sizeName, base, head, formatSize }),
+        renderDiffCell({ event, sizeName, base, afterMerge, formatSize }),
         renderBaseCell({ rowSpan, merged, event, sizeName, base, formatSize }),
-        renderHeadCell({ rowSpan, merged, event, sizeName, head, formatSize }),
+        renderAfterMergeCell({ rowSpan, merged, event, sizeName, afterMerge, formatSize }),
         renderEventCell({ rowSpan, merged, event }),
       ].filter((cell) => cell.length > 0)
       lines.push(
@@ -153,7 +96,7 @@ const renderFileCell = ({ rowSpan, merged, fileRelativePath }) => {
   return merged ? "" : `<td nowrap rowspan="${rowSpan}">${fileRelativePath}</td>`
 }
 
-const renderDiffCell = ({ event, sizeName, base, head, formatSize }) => {
+const renderDiffCell = ({ event, sizeName, base, afterMerge, formatSize }) => {
   if (event === "deleted") {
     const baseSizeMap = base.sizeMap
     if (sizeName in baseSizeMap) {
@@ -163,17 +106,17 @@ const renderDiffCell = ({ event, sizeName, base, head, formatSize }) => {
   }
 
   if (event === "created") {
-    const headSizeMap = head.sizeMap
-    if (sizeName in headSizeMap) {
-      return `<td nowrap>${formatSize(headSizeMap[sizeName], { diff: true })}</td>`
+    const afterMergeSizeMap = afterMerge.sizeMap
+    if (sizeName in afterMergeSizeMap) {
+      return `<td nowrap>${formatSize(afterMergeSizeMap[sizeName], { diff: true })}</td>`
     }
     return `<td nowrap>---</td>`
   }
 
   const baseSizeMap = base.sizeMap
-  const headSizeMap = head.sizeMap
-  if (sizeName in baseSizeMap && sizeName in headSizeMap) {
-    return `<td nowrap>${formatSize(headSizeMap[sizeName] - base.sizeMap[sizeName], {
+  const afterMergeSizeMap = afterMerge.sizeMap
+  if (sizeName in baseSizeMap && sizeName in afterMergeSizeMap) {
+    return `<td nowrap>${formatSize(afterMergeSizeMap[sizeName] - base.sizeMap[sizeName], {
       diff: true,
     })}</td>`
   }
@@ -191,13 +134,13 @@ const renderBaseCell = ({ event, sizeName, base, formatSize }) => {
   return `<td nowrap>---</td>`
 }
 
-const renderHeadCell = ({ event, sizeName, head, formatSize }) => {
+const renderAfterMergeCell = ({ event, sizeName, afterMerge, formatSize }) => {
   if (event === "deleted") {
     return `<td nowrap>---</td>`
   }
-  const headSizeMap = head.sizeMap
-  if (sizeName in headSizeMap) {
-    return `<td nowrap>${formatSize(headSizeMap[sizeName])}</td>`
+  const afterMergeSizeMap = afterMerge.sizeMap
+  if (sizeName in afterMergeSizeMap) {
+    return `<td nowrap>${formatSize(afterMergeSizeMap[sizeName])}</td>`
   }
   return `<td nowrap>---</td>`
 }
