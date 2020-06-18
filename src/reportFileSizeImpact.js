@@ -106,7 +106,7 @@ export const reportFileSizeImpact = async ({
         cancellationToken,
         start: () =>
           getPullRequestCommentMatching(
-            ({ body }) => body.startsWith(HEADER),
+            ({ body }) => body.includes(HEADER),
             {
               repositoryOwner,
               repositoryName,
@@ -123,6 +123,10 @@ export const reportFileSizeImpact = async ({
 
       const patchOrPostComment = async (commentBody) => {
         if (existingComment) {
+          if (existingComment.body === commentBody) {
+            logger.info(`skipping comment updated because existing comment body is the same`)
+            return existingComment
+          }
           logger.info(`updating comment at ${existingComment.html_url}`)
           const comment = await patchPullRequestComment(
             existingComment.id,
