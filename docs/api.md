@@ -1,6 +1,6 @@
 # Table of contents
 
-- [reportFileSizeMergeImpact](#reportFileSizeMergeImpact)
+- [reportFileSizeImpact](#reportFileSizeImpact)
   - [logLevel](#loglevel)
   - [projectDirectoryUrl](#projectDirectoryUrl)
   - [trackingConfig](#trackingConfig)
@@ -10,19 +10,19 @@
   - [generatedByLink](#generatedByLink)
   - [formatSize](#formatSize)
 
-# reportFileSizeMergeImpact
+# reportFileSizeImpact
 
-`reportFileSizeMergeImpact` is an async function that will generate file size impact analysis on a pull request and post a comment with the result of this analysis.
+`reportFileSizeImpact` is an async function that will generate file size impact analysis on a pull request and post a comment with the result of this analysis.
 
 ```js
-import { reportFileSizeMergeImpact, none } from "@jsenv/github-pull-request-filesize-impact"
+import { reportFileSizeImpact, none } from "@jsenv/file-size-impact"
 
-await reportFileSizeMergeImpact({
+await reportFileSizeImpact({
   logLevel: "info",
   projectDirectoryUrl: "file:///directory",
   githubToken: 'xxx',
   repositoryOwner: 'jsenv',
-  repositoryName: 'jsenv-file-size-merge-impact'.
+  repositoryName: 'jsenv-file-size-impact'.
   pullRequestNumber: 10,
   installCommand:  "npm install",
   buildCommand: "npm run build",
@@ -110,7 +110,7 @@ And the pull request comment now contains gzip size. Check [docs/comment-example
 It's also possible to control compression level.
 
 ```js
-import { none, gzip } from "@jsenv/github-pull-request-filesize-impact"
+import { none, gzip } from "@jsenv/file-size-impact"
 
 const transformations = {
   none,
@@ -122,7 +122,7 @@ const transformations = {
 Finally `transformations` can be used to add custom transformations.
 
 ```js
-import { none, gzip } from "@jsenv/github-pull-request-filesize-impact"
+import { none, gzip } from "@jsenv/file-size-impact"
 
 const transformations = {
   none,
