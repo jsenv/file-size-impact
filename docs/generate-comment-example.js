@@ -12,6 +12,7 @@ const generateComment = (data) =>
       detailedSizeImpact: true,
       cacheImpact: true,
     },
+    generatedByLink: true,
     ...data,
   })
 
