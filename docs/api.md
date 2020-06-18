@@ -57,7 +57,7 @@ The list of available logLevel values can be found on [@jsenv/logger documentati
 `trackingConfig` keys are group names that will appear in the generated comment.
 `trackingConfig` values are `specifierMetaMap` as documented in https://github.com/jsenv/jsenv-url-meta#normalizespecifiermetamap.
 
-For every group you track there will be a corresponding line in the generated pull request comment as visible in [docs/comment-example.md](./docs/comment-example.md)
+For every group you track there will be a corresponding line in the generated pull request comment as visible in [docs/comment-example.md](./comment-example.md)
 
 For example you can create two groups like this:
 
@@ -97,15 +97,16 @@ import {
   readGithubWorkflowEnv,
   none,
   gzip,
+  brotli,
 } from "@jsenv/github-pull-request-filesize-impact"
 
 reportFileSizeMergeImpact({
   ...readGithubWorkflowEnv(),
-  transformations: { none, gzip },
+  transformations: { none, gzip, brotli },
 })
 ```
 
-And the pull request comment now contains gzip size. Check [docs/comment-example.md#introduce-gzip](./docs/comment-example.md#introduce-gzip) to see how it looks like. `none`, `gzip` and `brotli` compression can be enabled this way.
+And the pull request comment now contains gzip size. Check [docs/comment-example.md#basic-example--gzip--brotli](./comment-example.md#basic-example--gzip--brotli) to see how it looks like. `none`, `gzip` and `brotli` compression can be enabled this way.
 
 It's also possible to control compression level.
 
