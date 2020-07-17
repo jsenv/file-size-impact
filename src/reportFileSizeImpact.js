@@ -214,6 +214,10 @@ ${commentBody}`
 
       let afterMergeSnapshot
       try {
+        // buildCommand might generate files that could conflict when doing the merge
+        // reset to avoid potential merge conflicts
+        await execCommandInProjectDirectory(`git reset --hard origin/${pullRequestBase}`)
+
         await execCommandInProjectDirectory(`git fetch --no-tags --prune origin ${headRef}`)
         /*
         When this is running in a pull request opened from a fork
