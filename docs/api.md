@@ -9,6 +9,7 @@
   - [commentSections](#commentSections)
   - [runLink](#runLink)
   - [formatSize](#formatSize)
+- [readGithubWorkflowEnv](#readGithubWorkflowEnv)
 
 # reportFileSizeImpact
 
@@ -36,9 +37,10 @@ await reportFileSizeImpact({
     detailedSizeImpact: true,
     cacheImpact: true,
   },
-  generatedByLink: true,
 })
 ```
+
+— source code at [src/reportFileSizeImpact.js](../src/reportFileSizeImpact.js).
 
 ## logLevel
 
@@ -93,14 +95,14 @@ You can use this parameter to track file size after gzip compression.
 
 ```js
 import {
-  reportFileSizeMergeImpact,
+  reportFileSizeImpact,
   readGithubWorkflowEnv,
   none,
   gzip,
   brotli,
-} from "@jsenv/github-pull-request-filesize-impact"
+} from "@jsenv/file-size-impact"
 
-reportFileSizeMergeImpact({
+reportFileSizeImpact({
   ...readGithubWorkflowEnv(),
   transformations: { none, gzip, brotli },
 })
@@ -155,8 +157,40 @@ const commentSections = { detailedSizeImpact: true }
 
 ## runLink
 
-TODO
+`runLink` parameter allow to put a link in the generated comment body. It is used to indicates where file size impact was runned.
+
+![screenshot of pull request comment where runlink section is highlighted](./runlink-highlighted.png)
+
+By default this parameter is returned by [readGithubWorkflowEnv](#readGithubWorkflowEnv) meaning it comes for free inside a github workflow.
+
+When outside a github workflow you can pass you own `runLink` as in the example below where it is assumed that script is runned by jenkins.
+
+```js
+const runLink = {
+  url: process.env.BUILD_URL,
+  text: `${process.env.JOB_NAME}#${process.env.BUILD_ID}`,
+}
+```
 
 ## formatSize
 
 `formatSize` parameter controls the display of file size. This parameter is optionnal, the default value doing an english formatting of a number. Check source code if you want to pass a custom function.
+
+# readGithubWorkflowEnv
+
+`readGithubWorkflowEnv` is a function meant to be runned inside a github workflow. It returns an object with parameters that can be forwarded to `reportFileSizeImpact`.
+
+```js
+import { readGithubWorkflowEnv } from "@jsenv/file-size-impact"
+
+const {
+  projectDirectoryUrl,
+  githubToken,
+  repositoryOwner,
+  repositoryName,
+  pullRequestNumber,
+  runLink,
+} = readGithubWorkflowEnv()
+```
+
+— source code at [src/readGithubWorkflowEnv.js](../src/readGithubWorkflowEnv.js).

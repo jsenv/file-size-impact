@@ -133,7 +133,6 @@ export const reportFileSizeImpact = async ({
         */
         commentBody = `<!-- head-commit-sha=${pullRequest.head.sha} -->
 ${commentBody}
-<br />
 ${renderGeneratedBy({ runLink })}`
 
         if (existingComment) {
