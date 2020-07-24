@@ -1,4 +1,4 @@
-name: file-size-impact
+name: size-impact
 
 on:
   pull_request:
@@ -10,7 +10,7 @@ on:
     #   - "src/**"
 
 jobs:
-  file-size-impact:
+  size-impact:
     # Do not run this workflow on forks because they are not authorized to post comments, see links below:
     # https://help.github.com/en/actions/configuring-and-managing-workflows/authenticating-with-the-github_token#permissions-for-the-github_token
     # https://github.community/t5/GitHub-Actions/Token-permissions-for-forks-once-again/td-p/33839
@@ -19,9 +19,9 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest]
-        node: [13.12.0]
+        node: [14.5.0]
     runs-on: ${{ matrix.os }}
-    name: report file size impact
+    name: size impact
     env:
       CI: true
     steps:
@@ -31,9 +31,9 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: ${{ matrix.node }}
-      - name: npm install
+      - name: Setup npm
         run: npm install
       - name: Report file size impact
-        run: node ./.github/workflows/report-file-size-impact.js
+        run: node ./.github/workflows/size-impact/report-size-impact.js
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
