@@ -1,4 +1,4 @@
-import { reportFileSizeImpact, none, gzip, brotli, readGithubWorkflowEnv } from "../../index.js"
+import { reportFileSizeImpact, none, gzip, brotli, readGithubWorkflowEnv } from "../../../index.js"
 
 reportFileSizeImpact({
   ...readGithubWorkflowEnv(),
