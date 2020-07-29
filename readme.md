@@ -14,6 +14,7 @@ Add files size impact into pull requests.
 - [Usage in github workflow](#Usage-in-github-workflow)
 - [Usage outside github workflow](#Usage-outside-github-workflow)
 - [Monitor compressed size](#Monitor-compressed-size)
+- [api](#api)
 - [See also](#See-also)
 
 # Presentation
@@ -154,7 +155,7 @@ git checkout origin/$PULL_REQUEST_HEAD_REF
 npm install
 ```
 
-# Enable compressed size
+# Monitor compressed size
 
 You can enable compressed file size tracking using the `transformations` parameter.
 The following code would track raw and compressed file size (using gzip).
@@ -168,7 +169,9 @@ reportFileSizeImpact({
 })
 ```
 
-Check the [api](./docs/api.md) to get more details.
+# api
+
+Check [api](./docs/api.md) for documentation around `reportFileSizeImpact`.
 
 # See also
 
