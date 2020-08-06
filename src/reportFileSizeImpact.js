@@ -184,6 +184,21 @@ ${renderGeneratedBy({ runLink })}`
         })
       }
 
+      const ensuteGitConfig = async (name, valueIfMissing) => {
+        try {
+          await execCommandInProjectDirectory(`git config ${name}`)
+          return () => {}
+        } catch (e) {
+          await execCommandInProjectDirectory(`git config ${name} "${valueIfMissing}"`)
+          return async () => {
+            await execCommandInProjectDirectory(`git config --unset ${name}`)
+          }
+        }
+      }
+
+      const ensureGitUserEmail = () => ensuteGitConfig("user.email", "you@example.com")
+      const ensureGitUserName = () => ensuteGitConfig("user.name", "Your Name")
+
       let baseSnapshot
       try {
         await execCommandInProjectDirectory(
@@ -224,13 +239,9 @@ ${renderGeneratedBy({ runLink })}`
         await execCommandInProjectDirectory(
           `git fetch --depth=1 --no-tags --prune origin ${headRef}`,
         )
-        const email2 = await execCommandInProjectDirectory(`git config --get user.email`)
-        console.log({ email2 })
-        const email = await execCommandInProjectDirectory(`git config user.email`)
-        console.log({ email })
-        await execCommandInProjectDirectory(`git config user.email "you@example.com"`)
-        await execCommandInProjectDirectory(`git config user.name "Your Name"`)
 
+        const restoreGitUserEmail = await ensureGitUserEmail()
+        const restoreGitUserName = await ensureGitUserName()
         /*
         When this is running in a pull request opened from a fork
         the following happens:
@@ -246,6 +257,8 @@ ${renderGeneratedBy({ runLink })}`
         this code against forks from an other CI this needs to be fixed
         */
         await execCommandInProjectDirectory(`git merge --allow-unrelated-histories FETCH_HEAD`)
+        await restoreGitUserEmail()
+        await restoreGitUserName()
         await execCommandInProjectDirectory(installCommand)
         await execCommandInProjectDirectory(buildCommand)
         afterMergeSnapshot = await generateSnapshot({
