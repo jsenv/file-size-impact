@@ -256,7 +256,7 @@ ${renderGeneratedBy({ runLink })}`
         If one day fork becomes supported by github action or someone is running
         this code against forks from an other CI this needs to be fixed
         */
-        await execCommandInProjectDirectory(`git merge --allow-unrelated-histories FETCH_HEAD`)
+        await execCommandInProjectDirectory(`git merge FETCH_HEAD --allow-unrelated-histories`)
         await restoreGitUserEmail()
         await restoreGitUserName()
         await execCommandInProjectDirectory(installCommand)
