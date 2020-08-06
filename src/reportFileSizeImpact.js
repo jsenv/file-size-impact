@@ -31,7 +31,9 @@ export const reportFileSizeImpact = async ({
   buildCommand = "npm run-script build",
 
   trackingConfig = jsenvTrackingConfig,
-  manifestFilePattern = "./**/manifest.json",
+  manifestConfig = {
+    "./dist/**/manifest.json": true,
+  },
   transformations = { none: noneTransform },
 
   formatSize = jsenvFormatSize,
@@ -184,9 +186,7 @@ ${renderGeneratedBy({ runLink })}`
 
       let baseSnapshot
       try {
-        await execCommandInProjectDirectory(
-          `git fetch --no-tags --prune --depth=1 origin ${pullRequestBase}`,
-        )
+        await execCommandInProjectDirectory(`git fetch --no-tags --prune origin ${pullRequestBase}`)
         await execCommandInProjectDirectory(`git checkout origin/${pullRequestBase}`)
         await execCommandInProjectDirectory(installCommand)
         await execCommandInProjectDirectory(buildCommand)
@@ -195,7 +195,7 @@ ${renderGeneratedBy({ runLink })}`
           logLevel,
           projectDirectoryUrl,
           trackingConfig,
-          manifestFilePattern,
+          manifestConfig,
           transformations,
         })
       } catch (error) {
@@ -242,7 +242,7 @@ ${renderGeneratedBy({ runLink })}`
           logLevel,
           projectDirectoryUrl,
           trackingConfig,
-          manifestFilePattern,
+          manifestConfig,
           transformations,
         })
       } catch (error) {

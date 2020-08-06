@@ -55,7 +55,9 @@ const tempDirectoryUrl = resolveUrl("./temp/", import.meta.url)
       },
     },
     transformations,
-    manifestFilePattern: "./**/manifest.json",
+    manifestConfig: {
+      "./**/manifest.json": true,
+    },
   })
   const expected = {
     dist: {

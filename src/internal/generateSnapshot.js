@@ -15,7 +15,7 @@ export const generateSnapshot = async ({
   logLevel,
   projectDirectoryUrl,
   trackingConfig,
-  manifestFilePattern,
+  manifestConfig,
   transformations,
 }) => {
   const logger = createLogger({ logLevel })
@@ -36,15 +36,11 @@ export const generateSnapshot = async ({
   await Promise.all(
     trackingNames.map(async (trackingName) => {
       const tracking = trackingConfig[trackingName]
-      const specifierMetaMap = metaMapToSpecifierMetaMap({
-        track: tracking,
-        ...(manifestFilePattern ? { manifest: { [manifestFilePattern]: true } } : {}),
-      })
 
-      const trackingResult = await applyTracking({
+      const trackingResult = await applyTracking(tracking, {
         logger,
         projectDirectoryUrl,
-        specifierMetaMap,
+        manifestConfig,
         transformations,
       })
       snapshot[trackingName] = trackingResult
@@ -57,12 +53,15 @@ export const generateSnapshot = async ({
   return snapshot
 }
 
-const applyTracking = async ({
-  logger,
-  projectDirectoryUrl,
-  specifierMetaMap,
-  transformations,
-}) => {
+const applyTracking = async (
+  tracking,
+  { logger, projectDirectoryUrl, manifestConfig, transformations },
+) => {
+  const specifierMetaMap = metaMapToSpecifierMetaMap({
+    track: tracking,
+    ...(manifestConfig ? { manifest: manifestConfig } : {}),
+  })
+
   const manifestMap = {}
   const fileMap = {}
   let files
