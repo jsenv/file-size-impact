@@ -201,11 +201,13 @@ ${renderGeneratedBy({ runLink })}`
       const ensureGitUserEmail = () => ensuteGitConfig("user.email", "you@example.com")
       const ensureGitUserName = () => ensuteGitConfig("user.name", "Your Name")
 
+      const fetchRef = async (ref) => {
+        await execCommandInProjectDirectory(`git fetch --no-tags --prune origin ${ref}`)
+      }
+
       let baseSnapshot
       try {
-        await execCommandInProjectDirectory(
-          `git fetch --depth=1 --no-tags --prune origin ${pullRequestBase}`,
-        )
+        await fetchRef(pullRequestBase)
         await execCommandInProjectDirectory(`git checkout origin/${pullRequestBase}`)
         await execCommandInProjectDirectory(installCommand)
         await execCommandInProjectDirectory(buildCommand)
@@ -237,11 +239,7 @@ ${renderGeneratedBy({ runLink })}`
         // buildCommand might generate files that could conflict when doing the merge
         // reset to avoid potential merge conflicts
         await execCommandInProjectDirectory(`git reset --hard origin/${pullRequestBase}`)
-
-        await execCommandInProjectDirectory(
-          `git fetch --depth=1 --no-tags --prune origin ${headRef}`,
-        )
-
+        await fetchRef(headRef)
         const restoreGitUserEmail = await ensureGitUserEmail()
         const restoreGitUserName = await ensureGitUserName()
         /*
