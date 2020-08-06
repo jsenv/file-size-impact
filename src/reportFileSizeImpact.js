@@ -15,7 +15,7 @@ import {
 import { exec } from "./internal/exec.js"
 import { HEADER, formatComment } from "./internal/comment/formatComment.js"
 import { jsenvFormatSize } from "./internal/comment/jsenvFormatSize.js"
-import { generateSnapshotFile } from "./internal/generateSnapshotFile.js"
+import { generateSnapshot } from "./internal/generateSnapshot.js"
 import { jsenvTrackingConfig } from "./jsenvTrackingConfig.js"
 import { transform as noneTransform } from "./noneTransformation.js"
 
@@ -190,7 +190,7 @@ ${renderGeneratedBy({ runLink })}`
         await execCommandInProjectDirectory(`git checkout origin/${pullRequestBase}`)
         await execCommandInProjectDirectory(installCommand)
         await execCommandInProjectDirectory(buildCommand)
-        baseSnapshot = await generateSnapshotFile({
+        baseSnapshot = await generateSnapshot({
           cancellationToken,
           logLevel,
           projectDirectoryUrl,
@@ -237,7 +237,7 @@ ${renderGeneratedBy({ runLink })}`
         await execCommandInProjectDirectory(`git merge FETCH_HEAD`)
         await execCommandInProjectDirectory(installCommand)
         await execCommandInProjectDirectory(buildCommand)
-        afterMergeSnapshot = await generateSnapshotFile({
+        afterMergeSnapshot = await generateSnapshot({
           cancellationToken,
           logLevel,
           projectDirectoryUrl,

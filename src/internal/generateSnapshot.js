@@ -10,7 +10,7 @@ import {
 } from "@jsenv/util"
 import { createCancellationToken } from "@jsenv/cancellation"
 
-export const generateSnapshotFile = async ({
+export const generateSnapshot = async ({
   cancellationToken = createCancellationToken(),
   logLevel,
   projectDirectoryUrl,
