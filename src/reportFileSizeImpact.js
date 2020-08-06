@@ -181,12 +181,34 @@ ${renderGeneratedBy({ runLink })}`
         logger.info(`> ${command}`)
         return exec(command, {
           cwd: urlToFileSystemPath(projectDirectoryUrl),
+          onLog: (string) => logger.debug(string),
+          onErrorLog: (string) => logger.error(string),
         })
+      }
+
+      const ensuteGitConfig = async (name, valueIfMissing) => {
+        try {
+          await execCommandInProjectDirectory(`git config ${name}`)
+          return () => {}
+        } catch (e) {
+          await execCommandInProjectDirectory(`git config ${name} "${valueIfMissing}"`)
+          return async () => {
+            await execCommandInProjectDirectory(`git config --unset ${name}`)
+          }
+        }
+      }
+
+      const ensureGitUserEmail = () => ensuteGitConfig("user.email", "you@example.com")
+      const ensureGitUserName = () => ensuteGitConfig("user.name", "Your Name")
+
+      const fetchRef = async (ref) => {
+        // cannot use depth=1 arg otherwise git merge might have merge conflicts
+        await execCommandInProjectDirectory(`git fetch --no-tags --prune origin ${ref}`)
       }
 
       let baseSnapshot
       try {
-        await execCommandInProjectDirectory(`git fetch --no-tags --prune origin ${pullRequestBase}`)
+        await fetchRef(pullRequestBase)
         await execCommandInProjectDirectory(`git checkout origin/${pullRequestBase}`)
         await execCommandInProjectDirectory(installCommand)
         await execCommandInProjectDirectory(buildCommand)
@@ -218,23 +240,14 @@ ${renderGeneratedBy({ runLink })}`
         // buildCommand might generate files that could conflict when doing the merge
         // reset to avoid potential merge conflicts
         await execCommandInProjectDirectory(`git reset --hard origin/${pullRequestBase}`)
-
-        await execCommandInProjectDirectory(`git fetch --no-tags --prune origin ${headRef}`)
-        /*
-        When this is running in a pull request opened from a fork
-        the following happens:
-        - it works as expected
-        - git throw an error: Refusing to merge unrelated histories.
-        git merge accepts an --allow-unrelated-histories flag.
-        https://github.com/git/git/blob/master/Documentation/RelNotes/2.9.0.txt#L58-L68
-        But when using it git complains that it does not know who we are
-        and asks for git config email.
-
-        For now this work with fork but sometimes it does not.
-        If one day fork becomes supported by github action or someone is running
-        this code against forks from an other CI this needs to be fixed
-        */
+        await fetchRef(headRef)
+        // ensure there is user.email + user.name required to perform git merge command
+        // without them git would complain that it does not know who we are
+        const restoreGitUserEmail = await ensureGitUserEmail()
+        const restoreGitUserName = await ensureGitUserName()
         await execCommandInProjectDirectory(`git merge FETCH_HEAD`)
+        await restoreGitUserEmail()
+        await restoreGitUserName()
         await execCommandInProjectDirectory(installCommand)
         await execCommandInProjectDirectory(buildCommand)
         afterMergeSnapshot = await generateSnapshot({
