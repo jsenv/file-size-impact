@@ -56,11 +56,11 @@ jobs:
           npm config set //npm.pkg.github.com/:_authToken ${{ secrets.GITHUB_TOKEN }}
           npm install
       - name: publish package
-        run: node ./.github/release/publish-package.js
+        run: node ./.github/workflows/release/publish-package.js
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
       - name: ensure github release
-        run: node ./.github/release/ensure-github-release-for-package.js
+        run: node ./.github/workflows/release/ensure-github-release-for-package.js
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
