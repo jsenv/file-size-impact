@@ -4,10 +4,10 @@
   - [logLevel](#loglevel)
   - [projectDirectoryUrl](#projectDirectoryUrl)
   - [trackingConfig](#trackingConfig)
+  - [manifestConfig](#manifestConfig)
   - [installCommand](#installCommand)
   - [buildCommand](#buildCommand)
   - [transformations](#transformations)
-  - [manifestFilePattern](#manifestFilePattern)
   - [commentSections](#commentSections)
   - [runLink](#runLink)
   - [formatSize](#formatSize)
@@ -89,6 +89,24 @@ And the generated comment will have two expandable section.
   Analysis for files matching dist group
 </details>
 
+## manifestConfig
+
+Manifest where introduced by webpack in https://github.com/danethurber/webpack-manifest-plugin. There is the equivalent for rollup at https://github.com/shuizhongyueming/rollup-plugin-output-manifest.
+
+The concept is to be able to remap generated file like `file.4798774987w97er984798.js` back to `file.js`.
+
+Without this, comparison of directories accross branches would consider generated files as always new because of their dynamic names.
+
+`manifestConfig` parameter is an object controlling if a manifest json file will be taken into account when generating snapshot. The parameter also control the name of the manifest file. This parameter is optional with a default configured to handle any `manifest.json` file inside a `dist` directory as a manifest json file. It translates to the following value:
+
+```js
+const manifestConfig = {
+  "./dist/**/manifest.json": true,
+}
+```
+
+This parameter reuse [trackingConfig](#trackingConfig) type and `specifierMetaMap` as documented in https://github.com/jsenv/jsenv-url-meta#normalizespecifiermetamap.
+
 ## installCommand
 
 `installCommand` parameter is a string representing the command to run in order to install things just after a switching to a git branch. This parameter is optional with a default value of `"npm install"`.
@@ -142,16 +160,6 @@ const transformations = {
   trim: (buffer) => String(buffer).trim(),
 }
 ```
-
-## manifestFilePattern
-
-`manifestFilePattern` parameter is a string controlling if a manifest json file will be taken into account when generating snapshot. The parameter also control the name of the manifest file. This parameter is optional with a default value of `./**/manifest.json`.
-
-Manifest where introduced by webpack in https://github.com/danethurber/webpack-manifest-plugin. There is the equivalent for rollup at https://github.com/shuizhongyueming/rollup-plugin-output-manifest.
-
-The concept is to be able to remap generated file like `file.4798774987w97er984798.js` back to `file.js`.
-
-Without this, comparison of directories accross branches would consider generated files as always new because of their dynamic names.
 
 ## commentSections
 
