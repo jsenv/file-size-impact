@@ -181,6 +181,8 @@ ${renderGeneratedBy({ runLink })}`
         logger.info(`> ${command}`)
         return exec(command, {
           cwd: urlToFileSystemPath(projectDirectoryUrl),
+          onLog: (string) => logger.debug(string),
+          onErrorLog: (string) => logger.error(string),
         })
       }
 
