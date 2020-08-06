@@ -135,7 +135,7 @@ reportFileSizeImpact({
 
 In order to have `process.env.GITHUB_TOKEN` you need to create a github token with `repo` scope at https://github.com/settings/tokens/new. After that you need to setup this environment variable. The exact way to do this is specific to your project and tools. Applied to travis you could add it to your environment variables as documented in https://docs.travis-ci.com/user/environment-variables/#defining-variables-in-repository-settings.
 
-Please note `reportFileSizeImpact` must be called in a state where your git repository has been cloned and you are currently on the pull request branch. Inside github workflow this is done by the following lines in `file-size-impact.yml`.
+Please note `reportFileSizeImpact` must be called in a state where your git repository has been cloned and you are currently on the pull request branch. You also need a user name and email in your git config to perform the git merge command. Inside github workflow this is done by the following lines in `file-size-impact.yml`.
 
 ```yml
 uses: actions/checkout@v2
@@ -149,6 +149,8 @@ In your CI you must replicate this, the corresponding commands looks as below:
 
 ```console
 git init
+git config user.name 'John Doe'
+git config user.email 'foo@bar.bla'
 git remote add origin $GITHUB_REPOSITORY_URL
 git fetch --no-tags --prune --depth=1 origin $PULL_REQUEST_HEAD_REF
 git checkout origin/$PULL_REQUEST_HEAD_REF
