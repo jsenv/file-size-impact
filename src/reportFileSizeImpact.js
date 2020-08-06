@@ -186,7 +186,9 @@ ${renderGeneratedBy({ runLink })}`
 
       let baseSnapshot
       try {
-        await execCommandInProjectDirectory(`git fetch --no-tags --prune origin ${pullRequestBase}`)
+        await execCommandInProjectDirectory(
+          `git fetch --depth=1 --no-tags --prune origin ${pullRequestBase}`,
+        )
         await execCommandInProjectDirectory(`git checkout origin/${pullRequestBase}`)
         await execCommandInProjectDirectory(installCommand)
         await execCommandInProjectDirectory(buildCommand)
@@ -219,7 +221,9 @@ ${renderGeneratedBy({ runLink })}`
         // reset to avoid potential merge conflicts
         await execCommandInProjectDirectory(`git reset --hard origin/${pullRequestBase}`)
 
-        await execCommandInProjectDirectory(`git fetch --no-tags --prune origin ${headRef}`)
+        await execCommandInProjectDirectory(
+          `git fetch --depth=1 --no-tags --prune origin ${headRef}`,
+        )
         /*
         When this is running in a pull request opened from a fork
         the following happens:
@@ -234,7 +238,7 @@ ${renderGeneratedBy({ runLink })}`
         If one day fork becomes supported by github action or someone is running
         this code against forks from an other CI this needs to be fixed
         */
-        await execCommandInProjectDirectory(`git merge FETCH_HEAD`)
+        await execCommandInProjectDirectory(`git merge --allow-unrelated-histories FETCH_HEAD`)
         await execCommandInProjectDirectory(installCommand)
         await execCommandInProjectDirectory(buildCommand)
         afterMergeSnapshot = await generateSnapshot({
