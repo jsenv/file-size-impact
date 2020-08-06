@@ -4,6 +4,8 @@
   - [logLevel](#loglevel)
   - [projectDirectoryUrl](#projectDirectoryUrl)
   - [trackingConfig](#trackingConfig)
+  - [installCommand](#installCommand)
+  - [buildCommand](#buildCommand)
   - [transformations](#transformations)
   - [manifestFilePattern](#manifestFilePattern)
   - [commentSections](#commentSections)
@@ -86,6 +88,14 @@ And the generated comment will have two expandable section.
   <summary>dist</summary>
   Analysis for files matching dist group
 </details>
+
+## installCommand
+
+`installCommand` parameter is a string representing the command to run in order to install things just after a switching to a git branch. This parameter is optional with a default value of `"npm install"`.
+
+## buildCommand
+
+`buildCommand` parameter is a string representing the command to run in order to generate files. This parameter is optional with a default value of `"npm run-script build"`.
 
 ## transformations
 

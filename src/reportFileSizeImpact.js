@@ -28,7 +28,7 @@ export const reportFileSizeImpact = async ({
   repositoryName,
   pullRequestNumber,
   installCommand = "npm install",
-  buildCommand = "npm run build",
+  buildCommand = "npm run-script build",
 
   trackingConfig = jsenvTrackingConfig,
   manifestFilePattern = "./**/manifest.json",
