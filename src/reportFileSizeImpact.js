@@ -224,6 +224,13 @@ ${renderGeneratedBy({ runLink })}`
         await execCommandInProjectDirectory(
           `git fetch --depth=1 --no-tags --prune origin ${headRef}`,
         )
+        const email2 = await execCommandInProjectDirectory(`git config --get user.email`)
+        console.log({ email2 })
+        const email = await execCommandInProjectDirectory(`git config user.email`)
+        console.log({ email })
+        await execCommandInProjectDirectory(`git config user.email "you@example.com"`)
+        await execCommandInProjectDirectory(`git config user.name "Your Name"`)
+
         /*
         When this is running in a pull request opened from a fork
         the following happens:
