@@ -83,20 +83,27 @@ export const reportFileSizeImpact = async ({
       const pullRequestBase = pullRequest.base.ref
       const pullRequestHead = pullRequest.head.ref
 
+      const isFork = pullRequest.base.repo.full_name !== pullRequest.head.repo.full_name
+
       let headRef
-      if (pullRequest.base.repo.full_name === pullRequest.head.repo.full_name) {
-        headRef = pullRequestHead
-      } else {
-        const isInsideGithubWorkflow = Boolean(process.env.GITHUB_EVENT_NAME)
-        if (isInsideGithubWorkflow) {
-          // warn about
-          // https://help.github.com/en/actions/configuring-and-managing-workflows/authenticating-with-the-github_token#permissions-for-the-github_token
-          logger.warn(
-            `pull request comes from a fork, github token is likely going to be unauthorized to post comment`,
-          )
-        }
+      if (isFork) {
         // https://github.community/t/checkout-a-branch-from-a-fork/276/2
         headRef = `refs/pull/${pullRequestNumber}/merge`
+
+        const isInGithubWorkflow = Boolean(process.env.GITHUB_EVENT_NAME)
+        if (isInGithubWorkflow) {
+          const isInPullRequestWorkflow = process.env.GITHUB_EVENT_NAME === "pull_request"
+          if (isInPullRequestWorkflow) {
+            logger.warn(
+              `pull request comes from a fork, github token will not be authorized to post comment.
+See https://help.github.com/en/actions/configuring-and-managing-workflows/authenticating-with-the-github_token#permissions-for-the-github_token.
+To allow pull request from forks to run, enable pull_request_target.
+See https://github.blog/2020-08-03-github-actions-improvements-for-fork-and-pull-request-workflows/#improvements-for-public-repository-forks`,
+            )
+          }
+        }
+      } else {
+        headRef = pullRequestHead
       }
 
       logger.debug(
@@ -251,7 +258,7 @@ ${renderGeneratedBy({ runLink })}`
         // without them git would complain that it does not know who we are
         const restoreGitUserEmail = await ensureGitUserEmail()
         const restoreGitUserName = await ensureGitUserName()
-        await execCommandInProjectDirectory(`git merge FETCH_HEAD`)
+        await execCommandInProjectDirectory(`git merge FETCH_HEAD --allow-unrelated-histories`)
         await restoreGitUserEmail()
         await restoreGitUserName()
         await execCommandInProjectDirectory(installCommand)

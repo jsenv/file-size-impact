@@ -84,12 +84,10 @@ on: pull_request
 
 jobs:
   file-size-impact:
-    # Skip workflow for forks because secrets.GITHUB_TOKEN not allowed to post comments
-    if: github.event.pull_request.base.repo.full_name == github.event.pull_request.head.repo.full_name
     strategy:
       matrix:
         os: [ubuntu-latest]
-        node: [13.12.0]
+        node: [14.5.0]
     runs-on: ${{ matrix.os }}
     name: report file size impact
     steps:
