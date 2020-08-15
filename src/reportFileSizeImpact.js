@@ -251,7 +251,7 @@ ${renderGeneratedBy({ runLink })}`
         // without them git would complain that it does not know who we are
         const restoreGitUserEmail = await ensureGitUserEmail()
         const restoreGitUserName = await ensureGitUserName()
-        await execCommandInProjectDirectory(`git merge FETCH_HEAD`)
+        await execCommandInProjectDirectory(`git merge FETCH_HEAD --allow-unrelated-histories`)
         await restoreGitUserEmail()
         await restoreGitUserName()
         await execCommandInProjectDirectory(installCommand)
