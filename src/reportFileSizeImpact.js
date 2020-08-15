@@ -22,6 +22,8 @@ import { transform as noneTransform } from "./noneTransformation.js"
 export const reportFileSizeImpact = async ({
   cancellationToken = createCancellationTokenForProcess(),
   logLevel,
+  commandLogs = false,
+
   projectDirectoryUrl,
   githubToken,
   repositoryOwner,
@@ -181,7 +183,11 @@ ${renderGeneratedBy({ runLink })}`
         logger.info(`> ${command}`)
         return exec(command, {
           cwd: urlToFileSystemPath(projectDirectoryUrl),
-          onLog: (string) => logger.debug(string),
+          onLog: (string) => {
+            if (commandLogs) {
+              logger.info(string)
+            }
+          },
           onErrorLog: (string) => logger.error(string),
         })
       }
