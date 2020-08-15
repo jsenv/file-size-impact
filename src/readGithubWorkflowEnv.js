@@ -5,7 +5,7 @@ export const readGithubWorkflowEnv = () => {
   if (!eventName) {
     throw new Error(`missing process.env.GITHUB_EVENT_NAME, we are not in a github workflow`)
   }
-  if (eventName !== "pull_request") {
+  if (eventName !== "pull_request" && eventName !== "pull_request_target") {
     throw new Error(`must be called only in a pull request`)
   }
 
