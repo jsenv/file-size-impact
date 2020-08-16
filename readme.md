@@ -13,8 +13,7 @@ Add files size impact into pull requests.
 - [How it works](#How-it-works)
 - [Usage in github workflow](#Usage-in-github-workflow)
 - [Usage outside github workflow](#Usage-outside-github-workflow)
-- [Monitor compressed size](#Monitor-compressed-size)
-- [api](#api)
+- [Compression](#Compression)
 - [See also](#See-also)
 
 # Presentation
@@ -58,7 +57,7 @@ You need:
 npm install --save-dev @jsenv/file-size-impact
 ```
 
-## .github/workflows/report-file-size-impact.js
+## .github/workflows/report-size-impact.js
 
 ```js
 import { reportFileSizeImpact, readGithubWorkflowEnv } from "../../index.js"
@@ -75,21 +74,21 @@ reportFileSizeImpact({
 })
 ```
 
-## .github/workflows/file-size-impact.yml
+## .github/workflows/size-impact.yml
 
 ```yml
-name: file-size-impact
+name: size-impact
 
 on: pull_request_target
 
 jobs:
-  file-size-impact:
+  size-impact:
     strategy:
       matrix:
         os: [ubuntu-latest]
         node: [14.5.0]
     runs-on: ${{ matrix.os }}
-    name: report file size impact
+    name: report size impact
     steps:
       - name: Setup git
         uses: actions/checkout@v2
@@ -99,8 +98,8 @@ jobs:
           node-version: ${{ matrix.node }}
       - name: npm install
         run: npm install
-      - name: Report file size impact
-        run: node ./.github/workflows/report-file-size-impact.js
+      - name: Report size impact
+        run: node ./.github/workflows/report-size-impact.js
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 ```
@@ -148,12 +147,12 @@ In your CI you must replicate this, the corresponding commands looks as below:
 ```console
 git init
 git remote add origin $GITHUB_REPOSITORY_URL
-git fetch --no-tags --prune --depth=1 origin $PULL_REQUEST_HEAD_REF
+git fetch --no-tags --prune origin $PULL_REQUEST_HEAD_REF
 git checkout origin/$PULL_REQUEST_HEAD_REF
 npm install
 ```
 
-# Monitor compressed size
+# Compression
 
 You can enable compressed file size tracking using the `transformations` parameter.
 The following code would track raw and compressed file size (using gzip).
@@ -167,12 +166,12 @@ reportFileSizeImpact({
 })
 ```
 
-# api
-
-Check [api](./docs/api.md) for documentation around `reportFileSizeImpact`.
-
 # See also
 
-- [jsenv-lighthouse-score-impact](https://github.com/jsenv/jsenv-lighthouse-score-impact)
-- [compressed-size-action](https://github.com/preactjs/compressed-size-action)
-- [size-limit-action](https://github.com/andresz1/size-limit-action)
+- Advanced documentation around `reportFileSizeImpact`: [docs/api.md](./docs/api.md)
+
+- An other repository from jsenv monitoring pull requests impacts but on lighthouse score: https://github.com/jsenv/jsenv-lighthouse-score-impact
+
+- A similar GitHub action called `compressed-size-action`: https://github.com/preactjs/compressed-size-action
+
+- A related GitHub action called `size-limit`: https://github.com/andresz1/size-limit-action
