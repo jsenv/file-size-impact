@@ -1,15 +1,13 @@
 name: size-impact
 
 on:
-  pull_request:
+  pull_request_target:
   # In theory it would be more efficient to enable this workflow only
   # if certain file changes (the one that could impact dist/ files)
   # In practice humans will wonder why the workflow did not run.
   # paths:
   #   - "index.js"
   #   - "src/**"
-  pull_request_target:
-  # see https://github.blog/2020-08-03-github-actions-improvements-for-fork-and-pull-request-workflows/#improvements-for-public-repository-forks
 
 jobs:
   size-impact:

@@ -84,24 +84,18 @@ export const reportFileSizeImpact = async ({
       const pullRequestHead = pullRequest.head.ref
 
       const isFork = pullRequest.base.repo.full_name !== pullRequest.head.repo.full_name
+      const isInPullRequestWorkflow = process.env.GITHUB_EVENT_NAME === "pull_request"
+      if (isFork && isInPullRequestWorkflow) {
+        logger.warn(`The github token will certainly not be allowed to post comment in the pull request.
+This is because pull request comes from a fork and your workflow is runned on "pull_request".
+To fix this, change "pull_request" for "pull_request_target" in your workflow file.
+See https://docs.github.com/en/actions/reference/events-that-trigger-workflows#pull_request_target`)
+      }
 
       let headRef
       if (isFork) {
         // https://github.community/t/checkout-a-branch-from-a-fork/276/2
         headRef = `refs/pull/${pullRequestNumber}/merge`
-
-        const isInGithubWorkflow = Boolean(process.env.GITHUB_EVENT_NAME)
-        if (isInGithubWorkflow) {
-          const isInPullRequestWorkflow = process.env.GITHUB_EVENT_NAME === "pull_request"
-          if (isInPullRequestWorkflow) {
-            logger.warn(
-              `pull request comes from a fork, github token will not be authorized to post comment.
-See https://help.github.com/en/actions/configuring-and-managing-workflows/authenticating-with-the-github_token#permissions-for-the-github_token.
-To allow pull request from forks to run, enable pull_request_target.
-See https://github.blog/2020-08-03-github-actions-improvements-for-fork-and-pull-request-workflows/#improvements-for-public-repository-forks`,
-            )
-          }
-        }
       } else {
         headRef = pullRequestHead
       }

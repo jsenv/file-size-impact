@@ -80,7 +80,7 @@ reportFileSizeImpact({
 ```yml
 name: file-size-impact
 
-on: pull_request
+on: pull_request_target
 
 jobs:
   file-size-impact:
