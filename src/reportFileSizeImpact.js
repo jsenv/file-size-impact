@@ -19,6 +19,8 @@ import { generateSnapshot } from "./internal/generateSnapshot.js"
 import { jsenvTrackingConfig } from "./jsenvTrackingConfig.js"
 import { transform as noneTransform } from "./noneTransformation.js"
 
+// useless comment
+
 export const reportFileSizeImpact = async ({
   cancellationToken = createCancellationTokenForProcess(),
   logLevel,
