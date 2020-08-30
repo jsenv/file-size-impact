@@ -79,6 +79,8 @@
 <details>
   <summary>Cache impact (130,000 bytes)</summary>
 
+  <p>2 files modified or added for a total of 130,000 bytes to download for a returning user.</p>
+
   <table>
     <thead>
       <tr>
