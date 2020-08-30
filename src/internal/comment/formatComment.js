@@ -79,7 +79,7 @@ const renderBody = ({
 ${JSON.stringify(trackingConfig[groupName], null, "  ")}
 \`\`\`
 
-  </details>`
+</details>`
     }
 
     const fileByFileImpact = groupComparisonToFileByFileImpact(groupComparison)

@@ -117,60 +117,6 @@ const examples = {
       },
     },
   }),
-  "introduce gzip": generateComment({
-    baseSnapshot: {
-      dist: {
-        fileMap: {
-          "dist/bar.js": {
-            hash: "a",
-            sizeMap: {
-              none: 100,
-            },
-          },
-        },
-      },
-    },
-    afterMergeSnapshot: {
-      dist: {
-        fileMap: {
-          "dist/bar.js": {
-            hash: "b",
-            sizeMap: {
-              none: 110,
-              gzip: 10,
-            },
-          },
-        },
-      },
-    },
-  }),
-  "remove gzip": generateComment({
-    baseSnapshot: {
-      dist: {
-        fileMap: {
-          "dist/bar.js": {
-            hash: "a",
-            sizeMap: {
-              none: 100,
-              gzip: 10,
-            },
-          },
-        },
-      },
-    },
-    afterMergeSnapshot: {
-      dist: {
-        fileMap: {
-          "dist/bar.js": {
-            hash: "b",
-            sizeMap: {
-              none: 110,
-            },
-          },
-        },
-      },
-    },
-  }),
   "multiple + gzip + brotli": generateComment({
     baseSnapshot: {
       "dist/commonjs": {
