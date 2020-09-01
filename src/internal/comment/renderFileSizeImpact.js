@@ -19,8 +19,8 @@ const renderGroup = (groupComparison, { groupName, transformations, formatSize }
   const impactCount = Object.keys(fileByFileImpact).length
   const noImpact = impactCount === 0
   if (noImpact) {
-    return `<h5>${groupName}</h5>
-<p>No impact in ${groupName} group.</p>`
+    return `<h5 id=${groupName}>${groupName}</h5>
+<p>No impact on files in ${groupName} group.</p>`
   }
 
   return `<h5>${groupName}</h5>

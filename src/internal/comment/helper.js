@@ -74,7 +74,7 @@ export const renderEachGroup = (renderGroup, { snapshotComparison, trackingConfi
 }
 
 const renderEmptyGroup = (groupName, groupConfig) => {
-  return `<h5>${groupName} (0)</h5>
+  return `<h5>${groupName}</h5>
   <p>No file in ${groupName} group (see config below).</p>
 
 \`\`\`json
