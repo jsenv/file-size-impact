@@ -11,4 +11,5 @@ reportFileSizeImpact({
     },
   },
   transformations: { raw, gzip, brotli },
+  detailedSizeImpact: true,
 })
