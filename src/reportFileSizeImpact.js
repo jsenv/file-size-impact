@@ -39,11 +39,8 @@ export const reportFileSizeImpact = async ({
   transformations = { none: noneTransform },
 
   formatSize = jsenvFormatSize,
-  commentSections = {
-    overallSizeImpact: true,
-    detailedSizeImpact: true,
-    cacheImpact: true,
-  },
+  cacheImpact = false,
+  detailedSizeImpact = false,
   runLink,
 }) => {
   return wrapExternalFunction(
@@ -285,10 +282,12 @@ ${renderGeneratedBy({ runLink })}`
           pullRequestBase,
           pullRequestHead,
           trackingConfig,
+          transformations,
           baseSnapshot,
           afterMergeSnapshot,
           formatSize,
-          commentSections,
+          cacheImpact,
+          detailedSizeImpact,
         }),
       )
 

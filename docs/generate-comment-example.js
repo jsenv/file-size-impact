@@ -2,18 +2,40 @@ import { writeFile, resolveUrl } from "@jsenv/util"
 import { jsenvFormatSize } from "../src/internal/comment/jsenvFormatSize.js"
 import { formatComment } from "../src/internal/comment/formatComment.js"
 
-const generateComment = (data) =>
-  formatComment({
+const generateComment = (data) => {
+  const transformations = deduceTransformations(data)
+  return formatComment({
     pullRequestBase: "base",
     pullRequestHead: "head",
     formatSize: jsenvFormatSize,
-    commentSections: {
-      overallSizeImpact: true,
-      detailedSizeImpact: true,
-      cacheImpact: true,
-    },
+    transformations,
     ...data,
   })
+}
+
+const deduceTransformations = ({ baseSnapshot, afterMergeSnapshot }) => {
+  const baseKeys = Object.keys(baseSnapshot)
+  if (baseKeys.length) {
+    const baseFirstGroup = baseSnapshot[baseKeys[0]]
+    const baseFileMap = baseFirstGroup.fileMap
+    const files = Object.keys(baseFileMap)
+    if (files.length) {
+      return baseFileMap[files[0]].sizeMap
+    }
+  }
+
+  const afterMergeKeys = Object.keys(afterMergeSnapshot)
+  if (afterMergeKeys.length) {
+    const afterMergeFirstGroup = afterMergeSnapshot[afterMergeKeys[0]]
+    const afterMergeFileMap = afterMergeFirstGroup.fileMap
+    const files = Object.keys(afterMergeFileMap)
+    if (files.length) {
+      return afterMergeFileMap[files[0]].sizeMap
+    }
+  }
+
+  return {}
+}
 
 const examples = {
   "basic example": generateComment({
@@ -203,8 +225,8 @@ const examples = {
       },
     },
   }),
-  "overall size disabled, detailed size enabled, cache disabled": generateComment({
-    commentSections: { detailedSizeImpact: true },
+  "cache impact enabled": generateComment({
+    cacheImpact: true,
     baseSnapshot: {
       dist: {
         fileMap: {
@@ -220,23 +242,7 @@ const examples = {
       },
     },
   }),
-  "detailed size enabled, overall size enabled, cache disabled": generateComment({
-    commentSections: { detailedSizeImpact: true, overallSizeImpact: true },
-    baseSnapshot: {
-      dist: {
-        fileMap: {
-          "dist/bar.js": { hash: "a", sizeMap: { none: 100 } },
-        },
-      },
-    },
-    afterMergeSnapshot: {
-      dist: {
-        fileMap: {
-          "dist/bar.js": { hash: "b", sizeMap: { none: 110 } },
-        },
-      },
-    },
-  }),
+  // "detailed size impact enabled": () => {},
   "empty warning": generateComment({
     baseSnapshot: {},
     afterMergeSnapshot: {},

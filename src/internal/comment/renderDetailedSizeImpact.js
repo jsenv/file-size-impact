@@ -1,68 +1,83 @@
+import { groupComparisonToFileByFileImpact, renderEachGroup } from "./helper.js"
+
 export const renderDetailedSizeImpact = (
-  fileByFileImpact,
-  { groupName, pullRequestBase, formatSize },
+  pullRequestBase,
+  pullRequestHead,
+  snapshotComparison,
+  trackingConfig,
+  transformations,
+  formatSize,
 ) => {
-  return `
-  <h6>Detailed impact on <bold>${groupName}</bold> files size</h6>
-  ${renderFileByFileTable(fileByFileImpact, {
+  return renderEachGroup(
+    (groupComparison, groupName) => {
+      return renderDetailedSizeGroup(groupComparison, {
+        pullRequestBase,
+        groupName,
+        transformations,
+        formatSize,
+      })
+    },
+    { snapshotComparison, trackingConfig },
+  )
+}
+
+const renderDetailedSizeGroup = (
+  groupComparison,
+  {
+    // groupName,
     pullRequestBase,
+    transformations,
+    formatSize,
+  },
+) => {
+  const fileByFileImpact = groupComparisonToFileByFileImpact(groupComparison)
+
+  return `<h5>Detailed size impact (${Object.keys(fileByFileImpact).lenght})</h5>
+  ${renderDetailedSizeTable(fileByFileImpact, {
+    pullRequestBase,
+    transformations,
     formatSize,
   })}`
 }
 
-const renderFileByFileTable = (filesImpact, { pullRequestBase, formatSize }) => {
-  const noneOnly = analyseNoneOnly(filesImpact)
+const renderDetailedSizeTable = (
+  fileByFileImpact,
+  { pullRequestBase, transformations, formatSize },
+) => {
+  return `<table>
+    <thead>
+      ${renderDetailedSizeImpactTableHeader({ pullRequestBase, transformations })}
+    </thead>
+    <tbody>
+      ${renderDetailedSizeImpactTableBody(fileByFileImpact, { transformations, formatSize })}
+    </tbody>
+  </table>`
+}
+
+const renderDetailedSizeImpactTableHeader = ({ pullRequestBase, transformations }) => {
+  const singleSize = Object.keys(transformations).length === 1
 
   const headerCells = [
     `<th nowrap>File</th>`,
-    ...(noneOnly ? [] : ["<th nowrap>Transform</th>"]),
+    ...(singleSize ? [] : ["<th nowrap>Transform</th>"]),
     `<th nowrap>Diff</th>`,
     `<th nowrap>${pullRequestBase}</th>`,
     `<th nowrap>after merge</th>`,
     `<th nowrap>Event</th>`,
   ]
 
-  return `<table>
-    <thead>
-      <tr>
+  return `<tr>
         ${headerCells.join(`
         `)}
-      </tr>
-    </thead>
-    <tbody>
-      ${renderFilesTableBody(filesImpact, { noneOnly, formatSize })}
-    </tbody>
-  </table>`
+      </tr>`
 }
 
-const analyseNoneOnly = (filesImpact) => {
-  const files = Object.keys(filesImpact)
-  const firstFileWithAfterMerge = files.find((file) => {
-    return Boolean(filesImpact[file].afterMerge)
-  })
-  if (firstFileWithAfterMerge) {
-    const sizeMap = filesImpact[firstFileWithAfterMerge].afterMerge.sizeMap
-    return "none" in sizeMap && Object.keys(sizeMap).length === 1
-  }
-
-  // we are guaranteed to have at least one base file otherwise the message saying
-  // pull request have no impact would be displayed instead of the table.
-  // There is one case where a transform would be ignored though:
-  // A PR add a new transform and there 1+ deleted files, and zero created/changed files.
-  // But that's kinda ok because we would only display that transform with --- everywhere
-  // because base did'nt have this and file was deleted so head neither
-  const firstFileWithBase = files.find((file) => {
-    return Boolean(filesImpact[file].base)
-  })
-  const sizeMap = filesImpact[firstFileWithBase].base.sizeMap
-  return "none" in sizeMap && Object.keys(sizeMap).length === 1
-}
-
-const renderFilesTableBody = (filesImpact, { noneOnly, formatSize }) => {
+const renderDetailedSizeImpactTableBody = (fileByFileImpact, { transformations, formatSize }) => {
   const lines = []
+  const singleSize = Object.keys(transformations).length === 1
 
-  Object.keys(filesImpact).forEach((fileRelativePath) => {
-    const fileImpact = filesImpact[fileRelativePath]
+  Object.keys(fileByFileImpact).forEach((fileRelativePath) => {
+    const fileImpact = fileByFileImpact[fileRelativePath]
     const { event, base, afterMerge } = fileImpact
 
     const keys = Object.keys((afterMerge || base).sizeMap)
@@ -71,7 +86,7 @@ const renderFilesTableBody = (filesImpact, { noneOnly, formatSize }) => {
       const merged = index > 0
       const cells = [
         renderFileCell({ rowSpan, merged, fileRelativePath }),
-        ...(noneOnly ? [] : [`<td nowrap>${sizeName}</td>`]),
+        ...(singleSize ? [] : [`<td nowrap>${sizeName}</td>`]),
         renderDiffCell({ event, sizeName, base, afterMerge, formatSize }),
         renderBaseCell({ rowSpan, merged, event, sizeName, base, formatSize }),
         renderAfterMergeCell({ rowSpan, merged, event, sizeName, afterMerge, formatSize }),
@@ -105,7 +120,7 @@ const renderDiffCell = ({ event, sizeName, base, afterMerge, formatSize }) => {
     return `<td nowrap>---</td>`
   }
 
-  if (event === "created") {
+  if (event === "added") {
     const afterMergeSizeMap = afterMerge.sizeMap
     if (sizeName in afterMergeSizeMap) {
       return `<td nowrap>${formatSize(afterMergeSizeMap[sizeName], { diff: true })}</td>`
@@ -124,7 +139,7 @@ const renderDiffCell = ({ event, sizeName, base, afterMerge, formatSize }) => {
 }
 
 const renderBaseCell = ({ event, sizeName, base, formatSize }) => {
-  if (event === "created") {
+  if (event === "added") {
     return `<td nowrap>---</td>`
   }
   const baseSizeMap = base.sizeMap
