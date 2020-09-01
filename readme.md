@@ -20,15 +20,11 @@ Add files size impact into pull requests.
 
 `@jsenv/file-size-impact` analyses a pull request impact on specific files size. This analysis is posted in a comment of the pull request.
 
-![screenshot of pull request comment](./docs/comment-collapsed.png)
-
-The comment can be expanded to get more details.
-
-![screenshot of pull request comment expanded](./docs/comment-expanded.png)
+![screenshot of pull request comment](./docs/comment-screenshot.png)
 
 It can also be configured to track size after compression.
 
-![screenshot of pull request comment expanded with compression](./docs/comment-expanded-compression.png)
+![screenshot of pull request comment with compression](./docs/comment-compression-screenshot.png)
 
 # How it works
 
@@ -120,7 +116,7 @@ reportFileSizeImpact({
   repositoryName: process.env.TRAVIS_REPO_SLUG.split("/")[1],
   pullRequestNumber: process.env.TRAVIS_PULL_REQUEST,
 
-  buildCommand: "npm run dist",
+  buildCommand: "npm run-script dist",
   trackingConfig: {
     "dist/commonjs": {
       "./dist/commonjs/**/*": true,

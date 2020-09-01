@@ -145,7 +145,7 @@ const renderCacheImpactTableHeader = (transformations) => {
   const headerCells = [
     `<th nowrap>File</th>`,
     ...Object.keys(transformations).map((sizeName) => `<th nowrap>${sizeName}</th>`),
-    `<th nowrap>Reason</th>`,
+    `<th nowrap>Event</th>`,
   ]
 
   return `<tr>

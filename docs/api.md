@@ -163,11 +163,23 @@ const transformations = {
 
 ## cacheImpact
 
-TODO
+`cacheImpact` parameter controls if cache impact will appear in the generated comment. It is used to analyse how many files and bytes users will have to redownload if the pull request is merged. This parameter is optional and disabled by default.
+
+![screenshot of pull request comment with cache impact highlighted](./cache-impact-highlighted.png)
+
+The cache impact section can be expanded as shown in the image below.
+
+![screenshot of pull request comment with cache impact expanded](./cache-impact-expanded.png)
 
 ## detailedSizeImpact
 
-TODO
+`detailedSizeImpact` parameter controls if detailed size impact will appear in the generated comment. It contains more information such as file size before and after merge. Putting these information in the main message would be too verbose. This parameter is optional and disabled by default.
+
+![screenshot of pull request comment with detailed impact highlighted](./detailed-impact-highlighted.png)
+
+The detailed impact section can be expanded as shown in the image below.
+
+![screenshot of pull request comment with detailed impact expanded](./detailed-impact-expanded.png)
 
 ## runLink
 
