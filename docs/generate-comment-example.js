@@ -42,14 +42,14 @@ const examples = {
     baseSnapshot: {
       dist: {
         fileMap: {
-          "dist/bar.js": { hash: "a", sizeMap: { none: 100 } },
+          "dist/bar.js": { hash: "a", sizeMap: { raw: 100 } },
         },
       },
     },
     afterMergeSnapshot: {
       dist: {
         fileMap: {
-          "dist/bar.js": { hash: "b", sizeMap: { none: 110 } },
+          "dist/bar.js": { hash: "b", sizeMap: { raw: 110 } },
         },
       },
     },
@@ -60,7 +60,7 @@ const examples = {
         fileMap: {
           "dist/bar.js": {
             hash: "a",
-            sizeMap: { none: 100, gzip: 20, brotli: 18 },
+            sizeMap: { raw: 100, gzip: 20, brotli: 18 },
           },
         },
       },
@@ -70,7 +70,7 @@ const examples = {
         fileMap: {
           "dist/bar.js": {
             hash: "b",
-            sizeMap: { none: 110, gzip: 22, brotli: 19 },
+            sizeMap: { raw: 110, gzip: 22, brotli: 19 },
           },
         },
       },
@@ -80,14 +80,14 @@ const examples = {
     baseSnapshot: {
       dist: {
         fileMap: {
-          "dist/bar.js": { hash: "a", sizeMap: { none: 110 } },
+          "dist/bar.js": { hash: "a", sizeMap: { raw: 110 } },
         },
       },
     },
     afterMergeSnapshot: {
       dist: {
         fileMap: {
-          "dist/bar.js": { hash: "a", sizeMap: { none: 110 } },
+          "dist/bar.js": { hash: "a", sizeMap: { raw: 110 } },
         },
       },
     },
@@ -115,11 +115,11 @@ const examples = {
         fileMap: {
           "dist/file-a.js": {
             hash: "hash1",
-            sizeMap: { none: 10 },
+            sizeMap: { raw: 10 },
           },
           "dist/file-b.js": {
             hash: "hash3",
-            sizeMap: { none: 15 },
+            sizeMap: { raw: 15 },
           },
         },
       },
@@ -129,11 +129,11 @@ const examples = {
         fileMap: {
           "dist/file-a.js": {
             hash: "hash2",
-            sizeMap: { none: 15 },
+            sizeMap: { raw: 15 },
           },
           "dist/file-b.js": {
             hash: "hash4",
-            sizeMap: { none: 10 },
+            sizeMap: { raw: 10 },
           },
         },
       },
@@ -146,7 +146,7 @@ const examples = {
           "dist/commonjs/bar.js": {
             hash: "a",
             sizeMap: {
-              none: 100,
+              raw: 100,
               gzip: 10,
               brotli: 9,
             },
@@ -154,7 +154,7 @@ const examples = {
           "dist/commonjs/hello.js": {
             hash: "a",
             sizeMap: {
-              none: 167000,
+              raw: 167000,
               gzip: 1600,
               brotli: 1500,
             },
@@ -166,7 +166,7 @@ const examples = {
           "dist/systemjs/bar.js": {
             hash: "a",
             sizeMap: {
-              none: 100,
+              raw: 100,
               gzip: 10,
               brotli: 9,
             },
@@ -174,7 +174,7 @@ const examples = {
           "dist/systemjs/hello.js": {
             hash: "a",
             sizeMap: {
-              none: 167000,
+              raw: 167000,
               gzip: 1600,
               brotli: 1500,
             },
@@ -188,7 +188,7 @@ const examples = {
           "dist/commonjs/foo.js": {
             hash: "a",
             sizeMap: {
-              none: 120,
+              raw: 120,
               gzip: 12,
               brotli: 11,
             },
@@ -196,7 +196,7 @@ const examples = {
           "dist/commonjs/hello.js": {
             hash: "b",
             sizeMap: {
-              none: 187000,
+              raw: 187000,
               gzip: 1800,
               brotli: 1700,
             },
@@ -208,7 +208,7 @@ const examples = {
           "dist/systemjs/foo.js": {
             hash: "a",
             sizeMap: {
-              none: 120,
+              raw: 120,
               gzip: 12,
               brotli: 11,
             },
@@ -216,7 +216,7 @@ const examples = {
           "dist/systemjs/hello.js": {
             hash: "b",
             sizeMap: {
-              none: 187000,
+              raw: 187000,
               gzip: 1800,
               brotli: 1700,
             },
@@ -230,14 +230,14 @@ const examples = {
     baseSnapshot: {
       dist: {
         fileMap: {
-          "dist/bar.js": { hash: "a", sizeMap: { none: 100 } },
+          "dist/bar.js": { hash: "a", sizeMap: { raw: 100 } },
         },
       },
     },
     afterMergeSnapshot: {
       dist: {
         fileMap: {
-          "dist/bar.js": { hash: "b", sizeMap: { none: 110 } },
+          "dist/bar.js": { hash: "b", sizeMap: { raw: 110 } },
         },
       },
     },

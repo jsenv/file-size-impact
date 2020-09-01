@@ -37,8 +37,7 @@ const renderFileSizeImpactTable = (fileByFileImpact, { transformations, formatSi
   <tfoot>
     ${renderFileSizeImpactTableFooter(fileByFileImpact, { transformations, formatSize })}
   </tfoot>
-</table>
-<br />`
+</table>`
 }
 
 const renderFileSizeImpactTableHeader = (transformations) => {

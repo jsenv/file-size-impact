@@ -8,7 +8,7 @@
   <thead>
     <tr>
       <th nowrap>File</th>
-      <th nowrap>none</th>
+      <th nowrap>raw</th>
       <th nowrap>Reason</th>
     </tr>
   </thead>
@@ -27,7 +27,6 @@
     </tr>
   </tfoot>
 </table>
-<br />
 
 # basic example + gzip + brotli
 
@@ -39,7 +38,7 @@
   <thead>
     <tr>
       <th nowrap>File</th>
-      <th nowrap>none</th>
+      <th nowrap>raw</th>
       <th nowrap>gzip</th>
       <th nowrap>brotli</th>
       <th nowrap>Reason</th>
@@ -64,7 +63,6 @@
     </tr>
   </tfoot>
 </table>
-<br />
 
 # no changes
 
@@ -99,7 +97,7 @@
   <thead>
     <tr>
       <th nowrap>File</th>
-      <th nowrap>none</th>
+      <th nowrap>raw</th>
       <th nowrap>Reason</th>
     </tr>
   </thead>
@@ -123,7 +121,6 @@
     </tr>
   </tfoot>
 </table>
-<br />
 
 # multiple + gzip + brotli
 
@@ -135,7 +132,7 @@
   <thead>
     <tr>
       <th nowrap>File</th>
-      <th nowrap>none</th>
+      <th nowrap>raw</th>
       <th nowrap>gzip</th>
       <th nowrap>brotli</th>
       <th nowrap>Reason</th>
@@ -174,14 +171,13 @@
     </tr>
   </tfoot>
 </table>
-<br />
 
 <h5>dist/systemjs (3)</h5>
 <table>
   <thead>
     <tr>
       <th nowrap>File</th>
-      <th nowrap>none</th>
+      <th nowrap>raw</th>
       <th nowrap>gzip</th>
       <th nowrap>brotli</th>
       <th nowrap>Reason</th>
@@ -220,7 +216,6 @@
     </tr>
   </tfoot>
 </table>
-<br />
 
 # cache impact enabled
 
@@ -232,7 +227,7 @@
   <thead>
     <tr>
       <th nowrap>File</th>
-      <th nowrap>none</th>
+      <th nowrap>raw</th>
       <th nowrap>Reason</th>
     </tr>
   </thead>
@@ -251,19 +246,19 @@
     </tr>
   </tfoot>
 </table>
-<br />
 
 <details>
   <summary>Cache impact (1)</summary>
   <h5>dist (1)</h5>
 
-<p>1 file modified in dist group -> 1 file to download for a returning user.</p>
+  <p>1 file modified in dist group -> 1 file to download for a returning user.</p>
+
 
   <table>
     <thead>
       <tr>
       <th nowrap>File</th>
-      <th nowrap>none</th>
+      <th nowrap>raw</th>
       <th nowrap>Reason</th>
     </tr>
     </thead>

@@ -63,7 +63,7 @@ ${renderCacheImpactTable(cacheImpactOnGroup, { transformations, formatSize })}`
 }
 
 const renderCacheImpactDescription = (cacheImpactOnGroup, { groupName }) => {
-  return `<p>${renderCacheImpactLeftPart(
+  return `  <p>${renderCacheImpactLeftPart(
     cacheImpactOnGroup,
   )} in ${groupName} group -> ${renderCacheImpactRightPart(cacheImpactOnGroup)}</p>`
 }
