@@ -9,7 +9,7 @@
     <tr>
       <th nowrap>File</th>
       <th nowrap>raw</th>
-      <th nowrap>Reason</th>
+      <th nowrap>Event</th>
     </tr>
   </thead>
   <tbody>
@@ -18,11 +18,16 @@
         <td nowrap>+10</td>
         <td nowrap>modified</td>
       </tr>
+      <tr>
+        <td nowrap>dist/foo.js</td>
+        <td nowrap>+15</td>
+        <td nowrap>modified</td>
+      </tr>
   </tbody>
   <tfoot>
     <tr>
       <td nowrap><strong>Total</strong></td>
-      <td nowrap>+10</td>
+      <td nowrap>+25</td>
       <td nowrap></td>
     </tr>
   </tfoot>
@@ -41,7 +46,7 @@
       <th nowrap>raw</th>
       <th nowrap>gzip</th>
       <th nowrap>brotli</th>
-      <th nowrap>Reason</th>
+      <th nowrap>Event</th>
     </tr>
   </thead>
   <tbody>
@@ -52,13 +57,20 @@
         <td nowrap>+1</td>
         <td nowrap>modified</td>
       </tr>
+      <tr>
+        <td nowrap>dist/foo.js</td>
+        <td nowrap>+15</td>
+        <td nowrap>+4</td>
+        <td nowrap>+3</td>
+        <td nowrap>modified</td>
+      </tr>
   </tbody>
   <tfoot>
     <tr>
       <td nowrap><strong>Total</strong></td>
-      <td nowrap>+10</td>
-      <td nowrap>+2</td>
-      <td nowrap>+1</td>
+      <td nowrap>+25</td>
+      <td nowrap>+6</td>
+      <td nowrap>+4</td>
       <td nowrap></td>
     </tr>
   </tfoot>
@@ -99,7 +111,7 @@
     <tr>
       <th nowrap>File</th>
       <th nowrap>raw</th>
-      <th nowrap>Reason</th>
+      <th nowrap>Event</th>
     </tr>
   </thead>
   <tbody>
@@ -136,7 +148,7 @@
       <th nowrap>raw</th>
       <th nowrap>gzip</th>
       <th nowrap>brotli</th>
-      <th nowrap>Reason</th>
+      <th nowrap>Event</th>
     </tr>
   </thead>
   <tbody>
@@ -181,7 +193,7 @@
       <th nowrap>raw</th>
       <th nowrap>gzip</th>
       <th nowrap>brotli</th>
-      <th nowrap>Reason</th>
+      <th nowrap>Event</th>
     </tr>
   </thead>
   <tbody>
@@ -229,7 +241,7 @@
     <tr>
       <th nowrap>File</th>
       <th nowrap>raw</th>
-      <th nowrap>Reason</th>
+      <th nowrap>Event</th>
     </tr>
   </thead>
   <tbody>
@@ -262,7 +274,7 @@
       <tr>
       <th nowrap>File</th>
       <th nowrap>raw</th>
-      <th nowrap>Reason</th>
+      <th nowrap>Event</th>
     </tr>
     </thead>
     <tbody>
@@ -293,7 +305,7 @@
     <tr>
       <th nowrap>File</th>
       <th nowrap>raw</th>
-      <th nowrap>Reason</th>
+      <th nowrap>Event</th>
     </tr>
   </thead>
   <tbody>
@@ -329,7 +341,7 @@
     <tr>
       <th nowrap>File</th>
       <th nowrap>raw</th>
-      <th nowrap>Reason</th>
+      <th nowrap>Event</th>
     </tr>
   </thead>
   <tbody>
@@ -367,7 +379,7 @@
       <tr>
       <th nowrap>File</th>
       <th nowrap>raw</th>
-      <th nowrap>Reason</th>
+      <th nowrap>Event</th>
     </tr>
     </thead>
     <tbody>
@@ -408,7 +420,7 @@
     <tr>
       <th nowrap>File</th>
       <th nowrap>raw</th>
-      <th nowrap>Reason</th>
+      <th nowrap>Event</th>
     </tr>
   </thead>
   <tbody>
@@ -465,7 +477,7 @@
       <th nowrap>raw</th>
       <th nowrap>gzip</th>
       <th nowrap>brotli</th>
-      <th nowrap>Reason</th>
+      <th nowrap>Event</th>
     </tr>
   </thead>
   <tbody>
@@ -510,7 +522,7 @@
       <th nowrap>raw</th>
       <th nowrap>gzip</th>
       <th nowrap>brotli</th>
-      <th nowrap>Reason</th>
+      <th nowrap>Event</th>
     </tr>
   </thead>
   <tbody>

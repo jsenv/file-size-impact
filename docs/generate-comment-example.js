@@ -43,6 +43,7 @@ const examples = {
       dist: {
         fileMap: {
           "dist/bar.js": { hash: "a", sizeMap: { raw: 100 } },
+          "dist/foo.js": { hash: "a", sizeMap: { raw: 100 } },
         },
       },
     },
@@ -50,6 +51,7 @@ const examples = {
       dist: {
         fileMap: {
           "dist/bar.js": { hash: "b", sizeMap: { raw: 110 } },
+          "dist/foo.js": { hash: "b", sizeMap: { raw: 115 } },
         },
       },
     },
@@ -62,6 +64,10 @@ const examples = {
             hash: "a",
             sizeMap: { raw: 100, gzip: 20, brotli: 18 },
           },
+          "dist/foo.js": {
+            hash: "a",
+            sizeMap: { raw: 100, gzip: 20, brotli: 18 },
+          },
         },
       },
     },
@@ -71,6 +77,10 @@ const examples = {
           "dist/bar.js": {
             hash: "b",
             sizeMap: { raw: 110, gzip: 22, brotli: 19 },
+          },
+          "dist/foo.js": {
+            hash: "b",
+            sizeMap: { raw: 115, gzip: 24, brotli: 21 },
           },
         },
       },
