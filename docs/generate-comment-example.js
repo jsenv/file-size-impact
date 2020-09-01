@@ -109,7 +109,7 @@ const examples = {
       },
     },
   }),
-  "changes impact cancels each other": generateComment({
+  "changes cancels each other": generateComment({
     baseSnapshot: {
       dist: {
         fileMap: {
@@ -139,7 +139,7 @@ const examples = {
       },
     },
   }),
-  "multiple + gzip + brotli": generateComment({
+  "two groups + gzip + brotli": generateComment({
     baseSnapshot: {
       "dist/commonjs": {
         fileMap: {
@@ -225,7 +225,40 @@ const examples = {
       },
     },
   }),
-  "cache impact enabled": generateComment({
+  "cache impact + 1 cache impact": generateComment({
+    cacheImpact: true,
+    baseSnapshot: {
+      dist: {
+        fileMap: {
+          "dist/foo.js": { hash: "a", sizeMap: { raw: 100 } },
+          "dist/bar.js": { hash: "a", sizeMap: { raw: 100 } },
+        },
+      },
+    },
+    afterMergeSnapshot: {
+      dist: {
+        fileMap: {
+          "dist/bar.js": { hash: "b", sizeMap: { raw: 110 } },
+        },
+      },
+    },
+  }),
+  "cache impact + no cache impact": generateComment({
+    cacheImpact: true,
+    baseSnapshot: {
+      dist: {
+        fileMap: {
+          "dist/bar.js": { hash: "a", sizeMap: { raw: 100 } },
+        },
+      },
+    },
+    afterMergeSnapshot: {
+      dist: {
+        fileMap: {},
+      },
+    },
+  }),
+  "cache impact + several cache impact": generateComment({
     cacheImpact: true,
     baseSnapshot: {
       dist: {
@@ -237,6 +270,7 @@ const examples = {
     afterMergeSnapshot: {
       dist: {
         fileMap: {
+          "dist/foo.js": { hash: "a", sizeMap: { raw: 100 } },
           "dist/bar.js": { hash: "b", sizeMap: { raw: 110 } },
         },
       },

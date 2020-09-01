@@ -54,15 +54,21 @@ const groupComparisonToCacheImpactOnGroup = (groupComparison) => {
 }
 
 const renderCacheImpactGroup = (cacheImpactOnGroup, { groupName, transformations, formatSize }) => {
+  const cacheImpactCount = Object.keys(cacheImpactOnGroup).length
+  const parts = [
+    renderCacheImpactDescription(cacheImpactOnGroup, { groupName }),
+    ...(cacheImpactCount
+      ? [renderCacheImpactTable(cacheImpactOnGroup, { transformations, formatSize })]
+      : []),
+  ]
+
   return `<h5>${groupName}</h5>
-
-${renderCacheImpactDescription(cacheImpactOnGroup, { groupName })}
-
-${renderCacheImpactTable(cacheImpactOnGroup, { transformations, formatSize })}`
+  ${parts.join(`
+${"  "}`)}`
 }
 
 const renderCacheImpactDescription = (cacheImpactOnGroup, { groupName }) => {
-  return `  <p>${renderCacheImpactLeftPart(
+  return `<p>${renderCacheImpactLeftPart(
     cacheImpactOnGroup,
   )} in ${groupName} group -> ${renderCacheImpactRightPart(cacheImpactOnGroup)}</p>`
 }
@@ -122,8 +128,7 @@ const renderCacheImpactRightPart = (cacheImpactOnGroup) => {
 }
 
 const renderCacheImpactTable = (cacheImpactOnGroup, { transformations, formatSize }) => {
-  return `
-  <table>
+  return `<table>
     <thead>
       ${renderCacheImpactTableHeader(transformations)}
     </thead>
