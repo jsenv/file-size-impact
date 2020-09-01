@@ -343,20 +343,25 @@
         <td nowrap>+100</td>
         <td nowrap>added</td>
       </tr>
+      <tr>
+        <td nowrap>dist/hello.js</td>
+        <td nowrap>+10</td>
+        <td nowrap>modified</td>
+      </tr>
   </tbody>
   <tfoot>
     <tr>
       <td nowrap><strong>Total</strong></td>
-      <td nowrap>+110</td>
+      <td nowrap>+120</td>
       <td nowrap></td>
     </tr>
   </tfoot>
 </table>
 
 <details>
-  <summary>Cache impact (2)</summary>
+  <summary>Cache impact (3)</summary>
   <h5>dist</h5>
-  <p>1 file added and 1 file modified in dist group -> 2 files to download for a returning user.</p>
+  <p>1 file added and 2 files modified in dist group -> 3 files to download for a returning user.</p>
   <table>
     <thead>
       <tr>
@@ -376,11 +381,16 @@
         <td nowrap>100</td>
         <td nowrap>added</td>
       </tr>
+      <tr>
+        <td nowrap>dist/hello.js</td>
+        <td nowrap>110</td>
+        <td nowrap>modified</td>
+      </tr>
     </tbody>
     <tfoot>
       <tr>
       <td nowrap><strong>Total</strong></td>
-      <td nowrap>210</td>
+      <td nowrap>320</td>
       <td nowrap></td>
     </tr>
     </tfoot>

@@ -264,6 +264,7 @@ const examples = {
       dist: {
         fileMap: {
           "dist/bar.js": { hash: "a", sizeMap: { raw: 100 } },
+          "dist/hello.js": { hash: "a", sizeMap: { raw: 100 } },
         },
       },
     },
@@ -272,6 +273,7 @@ const examples = {
         fileMap: {
           "dist/foo.js": { hash: "a", sizeMap: { raw: 100 } },
           "dist/bar.js": { hash: "b", sizeMap: { raw: 110 } },
+          "dist/hello.js": { hash: "b", sizeMap: { raw: 110 } },
         },
       },
     },
