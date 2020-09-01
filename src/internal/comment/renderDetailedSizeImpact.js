@@ -1,5 +1,7 @@
 import { groupComparisonToFileByFileImpact, renderEachGroup } from "./helper.js"
 
+// TODO: this must be wrapped in a details + summary
+
 export const renderDetailedSizeImpact = (
   pullRequestBase,
   pullRequestHead,
@@ -23,16 +25,11 @@ export const renderDetailedSizeImpact = (
 
 const renderDetailedSizeGroup = (
   groupComparison,
-  {
-    // groupName,
-    pullRequestBase,
-    transformations,
-    formatSize,
-  },
+  { groupName, pullRequestBase, transformations, formatSize },
 ) => {
   const fileByFileImpact = groupComparisonToFileByFileImpact(groupComparison)
 
-  return `<h5>Detailed size impact (${Object.keys(fileByFileImpact).lenght})</h5>
+  return `<h5>${groupName}</h5>
   ${renderDetailedSizeTable(fileByFileImpact, {
     pullRequestBase,
     transformations,

@@ -54,8 +54,7 @@ const groupComparisonToCacheImpactOnGroup = (groupComparison) => {
 }
 
 const renderCacheImpactGroup = (cacheImpactOnGroup, { groupName, transformations, formatSize }) => {
-  const cacheImpactCount = Object.keys(cacheImpactOnGroup).length
-  return `<h5>${groupName} (${cacheImpactCount})</h5>
+  return `<h5>${groupName}</h5>
 
 ${renderCacheImpactDescription(cacheImpactOnGroup, { groupName })}
 
@@ -200,7 +199,7 @@ const renderCacheImpactTableFooter = (cacheImpactOnGroup, { transformations, for
     ...Object.keys(transformations).map(
       (sizeName) => `<td nowrap>${formatSize(renderTotal(sizeName))}</td>`,
     ),
-    `<td nowrap>---</td>`,
+    `<td nowrap></td>`,
   ]
 
   return `<tr>

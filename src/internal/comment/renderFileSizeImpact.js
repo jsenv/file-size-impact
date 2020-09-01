@@ -19,10 +19,11 @@ const renderGroup = (groupComparison, { groupName, transformations, formatSize }
   const impactCount = Object.keys(fileByFileImpact).length
   const noImpact = impactCount === 0
   if (noImpact) {
-    return `<h5>${groupName} (0)</h5>`
+    return `<h5>${groupName}</h5>
+<p>No impact in ${groupName} group.</p>`
   }
 
-  return `<h5>${groupName} (${impactCount})</h5>
+  return `<h5>${groupName}</h5>
 ${renderFileSizeImpactTable(fileByFileImpact, { transformations, formatSize })}`
 }
 
@@ -140,7 +141,7 @@ const renderFileSizeImpactTableFooter = (fileByFileImpact, { transformations, fo
     ...Object.keys(transformations).map(
       (sizeName) => `<td nowrap>${formatSize(renderTotal(sizeName), { diff: true })}</td>`,
     ),
-    `<td nowrap>---</td>`,
+    `<td nowrap></td>`,
   ]
 
   return `<tr>
