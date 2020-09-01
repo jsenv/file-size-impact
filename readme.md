@@ -158,11 +158,11 @@ You can enable compressed file size tracking using the `transformations` paramet
 The following code would track raw and compressed file size (using gzip).
 
 ```js
-import { reportFileSizeImpact, none, gzip } from "@jsenv/file-size-impact"
+import { reportFileSizeImpact, raw, gzip } from "@jsenv/file-size-impact"
 
 reportFileSizeImpact({
   ...readGithubWorkflowEnv(),
-  transformations: { none, gzip },
+  transformations: { raw, gzip },
 })
 ```
 

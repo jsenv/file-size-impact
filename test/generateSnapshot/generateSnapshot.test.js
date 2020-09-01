@@ -1,9 +1,9 @@
 import { assert } from "@jsenv/assert"
 import { resolveUrl, ensureEmptyDirectory, writeFile, writeDirectory } from "@jsenv/util"
 import { generateSnapshot } from "../../src/internal/generateSnapshot.js"
-import { none } from "../../index.js"
+import { raw } from "../../index.js"
 
-const transformations = { none }
+const transformations = { raw }
 const tempDirectoryUrl = resolveUrl("./temp/", import.meta.url)
 
 // .js + .js.map without manifest
@@ -29,7 +29,7 @@ const tempDirectoryUrl = resolveUrl("./temp/", import.meta.url)
       manifestMap: {},
       fileMap: {
         "dist/file.js": {
-          sizeMap: { none: 20 },
+          sizeMap: { raw: 20 },
           hash: '"14-qK8urhYN/nZoik6niqmvkolkCK0"',
         },
       },
@@ -68,7 +68,7 @@ const tempDirectoryUrl = resolveUrl("./temp/", import.meta.url)
       },
       fileMap: {
         "dist/file.hash.js": {
-          sizeMap: { none: 20 },
+          sizeMap: { raw: 20 },
           hash: '"14-qK8urhYN/nZoik6niqmvkolkCK0"',
         },
       },

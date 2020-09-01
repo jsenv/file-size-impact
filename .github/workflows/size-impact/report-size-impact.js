@@ -1,4 +1,4 @@
-import { reportFileSizeImpact, none, gzip, brotli, readGithubWorkflowEnv } from "../../../index.js"
+import { reportFileSizeImpact, raw, gzip, brotli, readGithubWorkflowEnv } from "../../../index.js"
 
 reportFileSizeImpact({
   ...readGithubWorkflowEnv(),
@@ -10,5 +10,5 @@ reportFileSizeImpact({
       "./dist/commonjs/**/*.map": false,
     },
   },
-  transformations: { none, gzip, brotli },
+  transformations: { raw, gzip, brotli },
 })

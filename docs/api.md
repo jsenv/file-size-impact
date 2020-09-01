@@ -18,7 +18,7 @@
 `reportFileSizeImpact` is an async function that will generate file size impact analysis on a pull request and post a comment with the result of this analysis.
 
 ```js
-import { reportFileSizeImpact, none } from "@jsenv/file-size-impact"
+import { reportFileSizeImpact, raw } from "@jsenv/file-size-impact"
 
 await reportFileSizeImpact({
   logLevel: "info",
@@ -33,7 +33,7 @@ await reportFileSizeImpact({
     "./dist/**/*.js": true,
   },
   manifestFilePattern: "./**/manifest.json",
-  transformations: { none },
+  transformations: { raw },
   commentSections: {
     overallSizeImpact: true,
     detailedSizeImpact: true,
@@ -117,7 +117,7 @@ This parameter reuse [trackingConfig](#trackingConfig) type and `specifierMetaMa
 
 ## transformations
 
-`transformations` parameter is an object used to transform files content before computing their size. This parameter is optional with a default tracking file size without transformation called `none`.
+`transformations` parameter is an object used to transform files content before computing their size. This parameter is optional with a default tracking file size without transformation called `raw`.
 
 You can use this parameter to track file size after gzip compression.
 
@@ -125,26 +125,26 @@ You can use this parameter to track file size after gzip compression.
 import {
   reportFileSizeImpact,
   readGithubWorkflowEnv,
-  none,
+  raw,
   gzip,
   brotli,
 } from "@jsenv/file-size-impact"
 
 reportFileSizeImpact({
   ...readGithubWorkflowEnv(),
-  transformations: { none, gzip, brotli },
+  transformations: { raw, gzip, brotli },
 })
 ```
 
-And the pull request comment now contains gzip size. Check [docs/comment-example.md#basic-example--gzip--brotli](./comment-example.md#basic-example--gzip--brotli) to see how it looks like. `none`, `gzip` and `brotli` compression can be enabled this way.
+And the pull request comment now contains gzip size. Check [docs/comment-example.md#basic-example--gzip--brotli](./comment-example.md#basic-example--gzip--brotli) to see how it looks like. `raw`, `gzip` and `brotli` compression can be enabled this way.
 
 It's also possible to control compression level.
 
 ```js
-import { none, gzip } from "@jsenv/file-size-impact"
+import { raw, gzip } from "@jsenv/file-size-impact"
 
 const transformations = {
-  none,
+  raw,
   gzip7: (buffer) => gzip(buffer, { level: 7 }),
   gzip9: (buffer) => gzip(buffer, { level: 9 }),
 }
@@ -153,10 +153,10 @@ const transformations = {
 Finally `transformations` can be used to add custom transformations.
 
 ```js
-import { none, gzip } from "@jsenv/file-size-impact"
+import { raw, gzip } from "@jsenv/file-size-impact"
 
 const transformations = {
-  none,
+  raw,
   trim: (buffer) => String(buffer).trim(),
 }
 ```

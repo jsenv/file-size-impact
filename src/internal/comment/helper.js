@@ -3,11 +3,11 @@ export const anchor = (text, id) => {
   return `<a href="#user-content-${id.replace()}">${text}<a>`
 }
 
-export const isNew = ({ base }) => !base
+export const isAdded = ({ base }) => !base
 
 export const isDeleted = ({ base, afterMerge }) => base && !afterMerge
 
-export const isChanged = ({ base, afterMerge }) =>
+export const isModified = ({ base, afterMerge }) =>
   base && afterMerge && base.hash !== afterMerge.hash
 
 export const sumSize = (from, into, sizeName) => {
@@ -22,4 +22,30 @@ export const sumSize = (from, into, sizeName) => {
     return currentSize
   }
   return from[sizeName]
+}
+
+export const renderEachGroup = (renderGroup, { snapshotComparison, trackingConfig }) => {
+  const groupMessages = Object.keys(snapshotComparison).map((groupName) => {
+    const groupComparison = snapshotComparison[groupName]
+    const emptyGroup = Object.keys(groupComparison).length === 0
+    if (emptyGroup) {
+      return renderEmptyGroup(groupName, trackingConfig[groupName])
+    }
+    return renderGroup(groupComparison, groupName)
+  })
+
+  return groupMessages.join(`
+
+`)
+}
+
+const renderEmptyGroup = (groupName, groupConfig) => {
+  return `<h5>${groupName}</h5>
+  <p>No file in ${groupName} group (see config below).</p>
+
+\`\`\`json
+${JSON.stringify(groupConfig, null, "  ")}
+\`\`\`
+
+</details>`
 }

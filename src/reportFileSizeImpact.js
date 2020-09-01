@@ -17,7 +17,7 @@ import { HEADER, formatComment } from "./internal/comment/formatComment.js"
 import { jsenvFormatSize } from "./internal/comment/jsenvFormatSize.js"
 import { generateSnapshot } from "./internal/generateSnapshot.js"
 import { jsenvTrackingConfig } from "./jsenvTrackingConfig.js"
-import { transform as noneTransform } from "./noneTransformation.js"
+import { transform as rawTransform } from "./rawTransformation.js"
 
 export const reportFileSizeImpact = async ({
   cancellationToken = createCancellationTokenForProcess(),
@@ -36,14 +36,11 @@ export const reportFileSizeImpact = async ({
   manifestConfig = {
     "./dist/**/manifest.json": true,
   },
-  transformations = { none: noneTransform },
+  transformations = { raw: rawTransform },
 
   formatSize = jsenvFormatSize,
-  commentSections = {
-    overallSizeImpact: true,
-    detailedSizeImpact: true,
-    cacheImpact: true,
-  },
+  cacheImpact = false,
+  detailedSizeImpact = false,
   runLink,
 }) => {
   return wrapExternalFunction(
@@ -285,10 +282,12 @@ ${renderGeneratedBy({ runLink })}`
           pullRequestBase,
           pullRequestHead,
           trackingConfig,
+          transformations,
           baseSnapshot,
           afterMergeSnapshot,
           formatSize,
-          commentSections,
+          cacheImpact,
+          detailedSizeImpact,
         }),
       )
 
