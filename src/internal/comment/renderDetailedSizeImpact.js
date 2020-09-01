@@ -1,18 +1,25 @@
-import { groupComparisonToFileByFileImpact, renderEachGroup } from "./helper.js"
+import { renderEachGroup, isAdded, isModified, isDeleted } from "./helper.js"
 
-// TODO: this must be wrapped in a details + summary
-
-export const renderDetailedSizeImpact = (
+export const renderDetailedSizeImpact = ({
   pullRequestBase,
-  pullRequestHead,
   snapshotComparison,
   trackingConfig,
   transformations,
   formatSize,
-) => {
-  return renderEachGroup(
+}) => {
+  const overallDetailedSizeImpact = snapshotComparisonToOverallDetailedSizeImpact(
+    snapshotComparison,
+  )
+  const overallDetailedSizeImpactCount = Object.keys(overallDetailedSizeImpact).reduce(
+    (previous, groupName) => {
+      const detailedSizeImpactOnGroup = overallDetailedSizeImpact[groupName]
+      return previous + Object.keys(detailedSizeImpactOnGroup).length
+    },
+    0,
+  )
+  const detailedSizeImpactBody = renderEachGroup(
     (groupComparison, groupName) => {
-      return renderDetailedSizeGroup(groupComparison, {
+      return renderDetailedSizeGroup(overallDetailedSizeImpact[groupName], {
         pullRequestBase,
         groupName,
         transformations,
@@ -21,16 +28,49 @@ export const renderDetailedSizeImpact = (
     },
     { snapshotComparison, trackingConfig },
   )
+
+  return `<details>
+  <summary>Detailed size impact (${overallDetailedSizeImpactCount})</summary>
+  ${detailedSizeImpactBody}
+</details>`
+}
+
+const snapshotComparisonToOverallDetailedSizeImpact = (snapshotComparison) => {
+  const overallDetailedSizeImpact = {}
+
+  Object.keys(snapshotComparison).forEach((groupName) => {
+    const groupComparison = snapshotComparison[groupName]
+    overallDetailedSizeImpact[groupName] = groupComparisonToDetailedSizeImpactOnGroup(
+      groupComparison,
+    )
+  })
+
+  return overallDetailedSizeImpact
+}
+
+const groupComparisonToDetailedSizeImpactOnGroup = (groupComparison) => {
+  const detailedSizeImpactOnGroup = {}
+  Object.keys(groupComparison).forEach((fileRelativePath) => {
+    const fileImpact = groupComparison[fileRelativePath]
+    if (isAdded(fileImpact)) {
+      detailedSizeImpactOnGroup[fileRelativePath] = { ...fileImpact, event: "added" }
+    }
+    if (isDeleted(fileImpact)) {
+      detailedSizeImpactOnGroup[fileRelativePath] = { ...fileImpact, event: "deleted" }
+    }
+    if (isModified(fileImpact)) {
+      detailedSizeImpactOnGroup[fileRelativePath] = { ...fileImpact, event: "modified" }
+    }
+  })
+  return detailedSizeImpactOnGroup
 }
 
 const renderDetailedSizeGroup = (
-  groupComparison,
+  detailedSizeImpactOnGroup,
   { groupName, pullRequestBase, transformations, formatSize },
 ) => {
-  const fileByFileImpact = groupComparisonToFileByFileImpact(groupComparison)
-
   return `<h5>${groupName}</h5>
-  ${renderDetailedSizeTable(fileByFileImpact, {
+  ${renderDetailedSizeTable(detailedSizeImpactOnGroup, {
     pullRequestBase,
     transformations,
     formatSize,
@@ -38,7 +78,7 @@ const renderDetailedSizeGroup = (
 }
 
 const renderDetailedSizeTable = (
-  fileByFileImpact,
+  detailedSizeImpactOnGroup,
   { pullRequestBase, transformations, formatSize },
 ) => {
   return `<table>
@@ -46,7 +86,10 @@ const renderDetailedSizeTable = (
       ${renderDetailedSizeImpactTableHeader({ pullRequestBase, transformations })}
     </thead>
     <tbody>
-      ${renderDetailedSizeImpactTableBody(fileByFileImpact, { transformations, formatSize })}
+      ${renderDetailedSizeImpactTableBody(detailedSizeImpactOnGroup, {
+        transformations,
+        formatSize,
+      })}
     </tbody>
   </table>`
 }
@@ -69,12 +112,15 @@ const renderDetailedSizeImpactTableHeader = ({ pullRequestBase, transformations 
       </tr>`
 }
 
-const renderDetailedSizeImpactTableBody = (fileByFileImpact, { transformations, formatSize }) => {
+const renderDetailedSizeImpactTableBody = (
+  detailedSizeImpactOnGroup,
+  { transformations, formatSize },
+) => {
   const lines = []
   const singleSize = Object.keys(transformations).length === 1
 
-  Object.keys(fileByFileImpact).forEach((fileRelativePath) => {
-    const fileImpact = fileByFileImpact[fileRelativePath]
+  Object.keys(detailedSizeImpactOnGroup).forEach((fileRelativePath) => {
+    const fileImpact = detailedSizeImpactOnGroup[fileRelativePath]
     const { event, base, afterMerge } = fileImpact
 
     const keys = Object.keys((afterMerge || base).sizeMap)

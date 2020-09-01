@@ -58,6 +58,8 @@ export const formatComment = ({
             pullRequestBase,
             pullRequestHead,
             snapshotComparison,
+            trackingConfig,
+            transformations,
             formatSize,
           }),
         ]

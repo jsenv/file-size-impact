@@ -1,4 +1,4 @@
-import { groupComparisonToFileByFileImpact, renderEachGroup } from "./helper.js"
+import { renderEachGroup, isAdded, isDeleted, isModified } from "./helper.js"
 
 export const renderFileSizeImpact = ({
   trackingConfig,
@@ -25,6 +25,40 @@ const renderGroup = (groupComparison, { groupName, transformations, formatSize }
 
   return `<h5>${groupName}</h5>
 ${renderFileSizeImpactTable(fileByFileImpact, { transformations, formatSize })}`
+}
+
+const groupComparisonToFileByFileImpact = (groupComparison) => {
+  const fileByFileImpact = {}
+  Object.keys(groupComparison).forEach((fileRelativeUrl) => {
+    const { base, afterMerge } = groupComparison[fileRelativeUrl]
+
+    if (isAdded({ base, afterMerge })) {
+      fileByFileImpact[fileRelativeUrl] = {
+        base,
+        afterMerge,
+        event: "added",
+      }
+      return
+    }
+
+    if (isDeleted({ base, afterMerge })) {
+      fileByFileImpact[fileRelativeUrl] = {
+        base,
+        afterMerge,
+        event: "deleted",
+      }
+      return
+    }
+
+    if (isModified({ base, afterMerge })) {
+      fileByFileImpact[fileRelativeUrl] = {
+        base,
+        afterMerge,
+        event: "modified",
+      }
+    }
+  })
+  return fileByFileImpact
 }
 
 const renderFileSizeImpactTable = (fileByFileImpact, { transformations, formatSize }) => {

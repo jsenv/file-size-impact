@@ -278,7 +278,110 @@ const examples = {
       },
     },
   }),
-  // "detailed size impact enabled": () => {},
+  "detailed impact": generateComment({
+    detailedSizeImpact: true,
+    baseSnapshot: {
+      dist: {
+        fileMap: {
+          "dist/bar.js": { hash: "a", sizeMap: { raw: 100 } },
+        },
+      },
+    },
+    afterMergeSnapshot: {
+      dist: {
+        fileMap: {
+          "dist/bar.js": { hash: "b", sizeMap: { raw: 110 } },
+        },
+      },
+    },
+  }),
+  "detailed impact + groups + gzip + brotli": generateComment({
+    detailedSizeImpact: true,
+    baseSnapshot: {
+      "dist/commonjs": {
+        fileMap: {
+          "dist/commonjs/bar.js": {
+            hash: "a",
+            sizeMap: {
+              raw: 100,
+              gzip: 10,
+              brotli: 9,
+            },
+          },
+          "dist/commonjs/hello.js": {
+            hash: "a",
+            sizeMap: {
+              raw: 167000,
+              gzip: 1600,
+              brotli: 1500,
+            },
+          },
+        },
+      },
+      "dist/systemjs": {
+        fileMap: {
+          "dist/systemjs/bar.js": {
+            hash: "a",
+            sizeMap: {
+              raw: 100,
+              gzip: 10,
+              brotli: 9,
+            },
+          },
+          "dist/systemjs/hello.js": {
+            hash: "a",
+            sizeMap: {
+              raw: 167000,
+              gzip: 1600,
+              brotli: 1500,
+            },
+          },
+        },
+      },
+    },
+    afterMergeSnapshot: {
+      "dist/commonjs": {
+        fileMap: {
+          "dist/commonjs/foo.js": {
+            hash: "a",
+            sizeMap: {
+              raw: 120,
+              gzip: 12,
+              brotli: 11,
+            },
+          },
+          "dist/commonjs/hello.js": {
+            hash: "b",
+            sizeMap: {
+              raw: 187000,
+              gzip: 1800,
+              brotli: 1700,
+            },
+          },
+        },
+      },
+      "dist/systemjs": {
+        fileMap: {
+          "dist/systemjs/foo.js": {
+            hash: "a",
+            sizeMap: {
+              raw: 120,
+              gzip: 12,
+              brotli: 11,
+            },
+          },
+          "dist/systemjs/hello.js": {
+            hash: "b",
+            sizeMap: {
+              raw: 187000,
+              gzip: 1800,
+              brotli: 1700,
+            },
+          },
+        },
+      },
+    },
+  }),
   "empty warning": generateComment({
     baseSnapshot: {},
     afterMergeSnapshot: {},

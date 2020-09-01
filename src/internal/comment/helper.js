@@ -24,40 +24,6 @@ export const sumSize = (from, into, sizeName) => {
   return from[sizeName]
 }
 
-export const groupComparisonToFileByFileImpact = (groupComparison) => {
-  const fileByFileImpact = {}
-  Object.keys(groupComparison).forEach((fileRelativeUrl) => {
-    const { base, afterMerge } = groupComparison[fileRelativeUrl]
-
-    if (isAdded({ base, afterMerge })) {
-      fileByFileImpact[fileRelativeUrl] = {
-        base,
-        afterMerge,
-        event: "added",
-      }
-      return
-    }
-
-    if (isDeleted({ base, afterMerge })) {
-      fileByFileImpact[fileRelativeUrl] = {
-        base,
-        afterMerge,
-        event: "deleted",
-      }
-      return
-    }
-
-    if (isModified({ base, afterMerge })) {
-      fileByFileImpact[fileRelativeUrl] = {
-        base,
-        afterMerge,
-        event: "modified",
-      }
-    }
-  })
-  return fileByFileImpact
-}
-
 export const renderEachGroup = (renderGroup, { snapshotComparison, trackingConfig }) => {
   const groupMessages = Object.keys(snapshotComparison).map((groupName) => {
     const groupComparison = snapshotComparison[groupName]
