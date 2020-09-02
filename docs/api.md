@@ -9,7 +9,6 @@
   - [buildCommand](#buildCommand)
   - [transformations](#transformations)
   - [cacheImpact](#cacheImpact)
-  - [detailedSizeImpact](#detailedSizeImpact)
   - [runLink](#runLink)
   - [formatSize](#formatSize)
 - [readGithubWorkflowEnv](#readGithubWorkflowEnv)
@@ -170,16 +169,6 @@ const transformations = {
 The cache impact section can be expanded as shown in the image below.
 
 ![screenshot of pull request comment with cache impact expanded](./cache-impact-expanded.png)
-
-## detailedSizeImpact
-
-`detailedSizeImpact` parameter controls if detailed size impact will appear in the generated comment. It contains more information such as file size before and after merge. Putting these information in the main message would be too verbose. This parameter is optional and disabled by default.
-
-![screenshot of pull request comment with detailed impact highlighted](./detailed-impact-highlighted.png)
-
-The detailed impact section can be expanded as shown in the image below.
-
-![screenshot of pull request comment with detailed impact expanded](./detailed-impact-expanded.png)
 
 ## runLink
 

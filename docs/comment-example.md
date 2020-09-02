@@ -14,20 +14,20 @@
   </thead>
   <tbody>
     <tr>
-        <td nowrap>dist/bar.js</td>
-        <td nowrap>+10</td>
-        <td nowrap>modified</td>
-      </tr>
-      <tr>
-        <td nowrap>dist/foo.js</td>
-        <td nowrap>+15</td>
-        <td nowrap>modified</td>
-      </tr>
+      <td nowrap>dist/bar.js</td>
+      <td nowrap>110 (+10)</td>
+      <td nowrap>modified</td>
+    </tr>
+    <tr>
+      <td nowrap>dist/foo.js</td>
+      <td nowrap>115 (+15)</td>
+      <td nowrap>modified</td>
+    </tr>
   </tbody>
   <tfoot>
     <tr>
       <td nowrap><strong>Total</strong></td>
-      <td nowrap>+25</td>
+      <td nowrap>225 (+25)</td>
       <td nowrap></td>
     </tr>
   </tfoot>
@@ -51,26 +51,26 @@
   </thead>
   <tbody>
     <tr>
-        <td nowrap>dist/bar.js</td>
-        <td nowrap>+10</td>
-        <td nowrap>+2</td>
-        <td nowrap>+1</td>
-        <td nowrap>modified</td>
-      </tr>
-      <tr>
-        <td nowrap>dist/foo.js</td>
-        <td nowrap>+15</td>
-        <td nowrap>+4</td>
-        <td nowrap>+3</td>
-        <td nowrap>modified</td>
-      </tr>
+      <td nowrap>dist/bar.js</td>
+      <td nowrap>110 (+10)</td>
+      <td nowrap>22 (+2)</td>
+      <td nowrap>19 (+1)</td>
+      <td nowrap>modified</td>
+    </tr>
+    <tr>
+      <td nowrap>dist/foo.js</td>
+      <td nowrap>115 (+15)</td>
+      <td nowrap>24 (+4)</td>
+      <td nowrap>21 (+3)</td>
+      <td nowrap>modified</td>
+    </tr>
   </tbody>
   <tfoot>
     <tr>
       <td nowrap><strong>Total</strong></td>
-      <td nowrap>+25</td>
-      <td nowrap>+6</td>
-      <td nowrap>+4</td>
+      <td nowrap>225 (+25)</td>
+      <td nowrap>46 (+6)</td>
+      <td nowrap>40 (+4)</td>
       <td nowrap></td>
     </tr>
   </tfoot>
@@ -116,20 +116,20 @@
   </thead>
   <tbody>
     <tr>
-        <td nowrap>dist/file-a.js</td>
-        <td nowrap>+5</td>
-        <td nowrap>modified</td>
-      </tr>
-      <tr>
-        <td nowrap>dist/file-b.js</td>
-        <td nowrap>-5</td>
-        <td nowrap>modified</td>
-      </tr>
+      <td nowrap>dist/file-a.js</td>
+      <td nowrap>15 (+5)</td>
+      <td nowrap>modified</td>
+    </tr>
+    <tr>
+      <td nowrap>dist/file-b.js</td>
+      <td nowrap>10 (-5)</td>
+      <td nowrap>modified</td>
+    </tr>
   </tbody>
   <tfoot>
     <tr>
       <td nowrap><strong>Total</strong></td>
-      <td nowrap>0</td>
+      <td nowrap>25 (0)</td>
       <td nowrap></td>
     </tr>
   </tfoot>
@@ -153,33 +153,33 @@
   </thead>
   <tbody>
     <tr>
-        <td nowrap>dist/commonjs/bar.js</td>
-        <td nowrap>-100</td>
-        <td nowrap>-10</td>
-        <td nowrap>-9</td>
-        <td nowrap>deleted</td>
-      </tr>
-      <tr>
-        <td nowrap>dist/commonjs/foo.js</td>
-        <td nowrap>+120</td>
-        <td nowrap>+12</td>
-        <td nowrap>+11</td>
-        <td nowrap>added</td>
-      </tr>
-      <tr>
-        <td nowrap>dist/commonjs/hello.js</td>
-        <td nowrap>+20,000</td>
-        <td nowrap>+200</td>
-        <td nowrap>+200</td>
-        <td nowrap>modified</td>
-      </tr>
+      <td nowrap>dist/commonjs/bar.js</td>
+      <td nowrap>0 (-100)</td>
+      <td nowrap>0 (-10)</td>
+      <td nowrap>0 (-9)</td>
+      <td nowrap>deleted</td>
+    </tr>
+    <tr>
+      <td nowrap>dist/commonjs/foo.js</td>
+      <td nowrap>120 (+120)</td>
+      <td nowrap>12 (+12)</td>
+      <td nowrap>11 (+11)</td>
+      <td nowrap>added</td>
+    </tr>
+    <tr>
+      <td nowrap>dist/commonjs/hello.js</td>
+      <td nowrap>187,000 (+20,000)</td>
+      <td nowrap>1,800 (+200)</td>
+      <td nowrap>1,700 (+200)</td>
+      <td nowrap>modified</td>
+    </tr>
   </tbody>
   <tfoot>
     <tr>
       <td nowrap><strong>Total</strong></td>
-      <td nowrap>+20,020</td>
-      <td nowrap>+202</td>
-      <td nowrap>+202</td>
+      <td nowrap>187,120 (+20,020)</td>
+      <td nowrap>1,812 (+202)</td>
+      <td nowrap>1,711 (+202)</td>
       <td nowrap></td>
     </tr>
   </tfoot>
@@ -198,33 +198,33 @@
   </thead>
   <tbody>
     <tr>
-        <td nowrap>dist/systemjs/bar.js</td>
-        <td nowrap>-100</td>
-        <td nowrap>-10</td>
-        <td nowrap>-9</td>
-        <td nowrap>deleted</td>
-      </tr>
-      <tr>
-        <td nowrap>dist/systemjs/foo.js</td>
-        <td nowrap>+120</td>
-        <td nowrap>+12</td>
-        <td nowrap>+11</td>
-        <td nowrap>added</td>
-      </tr>
-      <tr>
-        <td nowrap>dist/systemjs/hello.js</td>
-        <td nowrap>+20,000</td>
-        <td nowrap>+200</td>
-        <td nowrap>+200</td>
-        <td nowrap>modified</td>
-      </tr>
+      <td nowrap>dist/systemjs/bar.js</td>
+      <td nowrap>0 (-100)</td>
+      <td nowrap>0 (-10)</td>
+      <td nowrap>0 (-9)</td>
+      <td nowrap>deleted</td>
+    </tr>
+    <tr>
+      <td nowrap>dist/systemjs/foo.js</td>
+      <td nowrap>120 (+120)</td>
+      <td nowrap>12 (+12)</td>
+      <td nowrap>11 (+11)</td>
+      <td nowrap>added</td>
+    </tr>
+    <tr>
+      <td nowrap>dist/systemjs/hello.js</td>
+      <td nowrap>187,000 (+20,000)</td>
+      <td nowrap>1,800 (+200)</td>
+      <td nowrap>1,700 (+200)</td>
+      <td nowrap>modified</td>
+    </tr>
   </tbody>
   <tfoot>
     <tr>
       <td nowrap><strong>Total</strong></td>
-      <td nowrap>+20,020</td>
-      <td nowrap>+202</td>
-      <td nowrap>+202</td>
+      <td nowrap>187,120 (+20,020)</td>
+      <td nowrap>1,812 (+202)</td>
+      <td nowrap>1,711 (+202)</td>
       <td nowrap></td>
     </tr>
   </tfoot>
@@ -246,20 +246,20 @@
   </thead>
   <tbody>
     <tr>
-        <td nowrap>dist/bar.js</td>
-        <td nowrap>+10</td>
-        <td nowrap>modified</td>
-      </tr>
-      <tr>
-        <td nowrap>dist/foo.js</td>
-        <td nowrap>-100</td>
-        <td nowrap>deleted</td>
-      </tr>
+      <td nowrap>dist/bar.js</td>
+      <td nowrap>110 (+10)</td>
+      <td nowrap>modified</td>
+    </tr>
+    <tr>
+      <td nowrap>dist/foo.js</td>
+      <td nowrap>0 (-100)</td>
+      <td nowrap>deleted</td>
+    </tr>
   </tbody>
   <tfoot>
     <tr>
       <td nowrap><strong>Total</strong></td>
-      <td nowrap>-90</td>
+      <td nowrap>110 (-90)</td>
       <td nowrap></td>
     </tr>
   </tfoot>
@@ -310,15 +310,15 @@
   </thead>
   <tbody>
     <tr>
-        <td nowrap>dist/bar.js</td>
-        <td nowrap>-100</td>
-        <td nowrap>deleted</td>
-      </tr>
+      <td nowrap>dist/bar.js</td>
+      <td nowrap>0 (-100)</td>
+      <td nowrap>deleted</td>
+    </tr>
   </tbody>
   <tfoot>
     <tr>
       <td nowrap><strong>Total</strong></td>
-      <td nowrap>-100</td>
+      <td nowrap>0 (-100)</td>
       <td nowrap></td>
     </tr>
   </tfoot>
@@ -346,25 +346,25 @@
   </thead>
   <tbody>
     <tr>
-        <td nowrap>dist/bar.js</td>
-        <td nowrap>+10</td>
-        <td nowrap>modified</td>
-      </tr>
-      <tr>
-        <td nowrap>dist/foo.js</td>
-        <td nowrap>+100</td>
-        <td nowrap>added</td>
-      </tr>
-      <tr>
-        <td nowrap>dist/hello.js</td>
-        <td nowrap>+10</td>
-        <td nowrap>modified</td>
-      </tr>
+      <td nowrap>dist/bar.js</td>
+      <td nowrap>110 (+10)</td>
+      <td nowrap>modified</td>
+    </tr>
+    <tr>
+      <td nowrap>dist/foo.js</td>
+      <td nowrap>100 (+100)</td>
+      <td nowrap>added</td>
+    </tr>
+    <tr>
+      <td nowrap>dist/hello.js</td>
+      <td nowrap>110 (+10)</td>
+      <td nowrap>modified</td>
+    </tr>
   </tbody>
   <tfoot>
     <tr>
       <td nowrap><strong>Total</strong></td>
-      <td nowrap>+120</td>
+      <td nowrap>320 (+120)</td>
       <td nowrap></td>
     </tr>
   </tfoot>
@@ -406,311 +406,6 @@
       <td nowrap></td>
     </tr>
     </tfoot>
-  </table>
-</details>
-
-# detailed impact
-
-<!-- Generated by @jsenv/file-size-impact -->
-<h4 id="file-size-impact">File size impact</h4>
-
-<h5>dist</h5>
-<table>
-  <thead>
-    <tr>
-      <th nowrap>File</th>
-      <th nowrap>raw</th>
-      <th nowrap>Event</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-        <td nowrap>dist/bar.js</td>
-        <td nowrap>+10</td>
-        <td nowrap>modified</td>
-      </tr>
-  </tbody>
-  <tfoot>
-    <tr>
-      <td nowrap><strong>Total</strong></td>
-      <td nowrap>+10</td>
-      <td nowrap></td>
-    </tr>
-  </tfoot>
-</table>
-
-<details>
-  <summary>Detailed size impact (1)</summary>
-  <h5>dist</h5>
-  <table>
-    <thead>
-      <tr>
-        <th nowrap>File</th>
-        <th nowrap>Diff</th>
-        <th nowrap>base</th>
-        <th nowrap>after merge</th>
-        <th nowrap>Event</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td nowrap rowspan="1">dist/bar.js</td>
-        <td nowrap>+10</td>
-        <td nowrap>100</td>
-        <td nowrap>110</td>
-        <td nowrap rowspan="1">modified</td>
-      </tr>
-    </tbody>
-  </table>
-</details>
-
-# detailed impact + groups + gzip + brotli
-
-<!-- Generated by @jsenv/file-size-impact -->
-<h4 id="file-size-impact">File size impact</h4>
-
-<h5>dist/commonjs</h5>
-<table>
-  <thead>
-    <tr>
-      <th nowrap>File</th>
-      <th nowrap>raw</th>
-      <th nowrap>gzip</th>
-      <th nowrap>brotli</th>
-      <th nowrap>Event</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-        <td nowrap>dist/commonjs/bar.js</td>
-        <td nowrap>-100</td>
-        <td nowrap>-10</td>
-        <td nowrap>-9</td>
-        <td nowrap>deleted</td>
-      </tr>
-      <tr>
-        <td nowrap>dist/commonjs/foo.js</td>
-        <td nowrap>+120</td>
-        <td nowrap>+12</td>
-        <td nowrap>+11</td>
-        <td nowrap>added</td>
-      </tr>
-      <tr>
-        <td nowrap>dist/commonjs/hello.js</td>
-        <td nowrap>+20,000</td>
-        <td nowrap>+200</td>
-        <td nowrap>+200</td>
-        <td nowrap>modified</td>
-      </tr>
-  </tbody>
-  <tfoot>
-    <tr>
-      <td nowrap><strong>Total</strong></td>
-      <td nowrap>+20,020</td>
-      <td nowrap>+202</td>
-      <td nowrap>+202</td>
-      <td nowrap></td>
-    </tr>
-  </tfoot>
-</table>
-
-<h5>dist/systemjs</h5>
-<table>
-  <thead>
-    <tr>
-      <th nowrap>File</th>
-      <th nowrap>raw</th>
-      <th nowrap>gzip</th>
-      <th nowrap>brotli</th>
-      <th nowrap>Event</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-        <td nowrap>dist/systemjs/bar.js</td>
-        <td nowrap>-100</td>
-        <td nowrap>-10</td>
-        <td nowrap>-9</td>
-        <td nowrap>deleted</td>
-      </tr>
-      <tr>
-        <td nowrap>dist/systemjs/foo.js</td>
-        <td nowrap>+120</td>
-        <td nowrap>+12</td>
-        <td nowrap>+11</td>
-        <td nowrap>added</td>
-      </tr>
-      <tr>
-        <td nowrap>dist/systemjs/hello.js</td>
-        <td nowrap>+20,000</td>
-        <td nowrap>+200</td>
-        <td nowrap>+200</td>
-        <td nowrap>modified</td>
-      </tr>
-  </tbody>
-  <tfoot>
-    <tr>
-      <td nowrap><strong>Total</strong></td>
-      <td nowrap>+20,020</td>
-      <td nowrap>+202</td>
-      <td nowrap>+202</td>
-      <td nowrap></td>
-    </tr>
-  </tfoot>
-</table>
-
-<details>
-  <summary>Detailed size impact (6)</summary>
-  <h5>dist/commonjs</h5>
-  <table>
-    <thead>
-      <tr>
-        <th nowrap>File</th>
-        <th nowrap>Transform</th>
-        <th nowrap>Diff</th>
-        <th nowrap>base</th>
-        <th nowrap>after merge</th>
-        <th nowrap>Event</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td nowrap rowspan="3">dist/commonjs/bar.js</td>
-        <td nowrap>raw</td>
-        <td nowrap>-100</td>
-        <td nowrap>100</td>
-        <td nowrap>---</td>
-        <td nowrap rowspan="3">deleted</td>
-      </tr>
-      <tr>
-        <td nowrap>gzip</td>
-        <td nowrap>-10</td>
-        <td nowrap>10</td>
-        <td nowrap>---</td>
-      </tr>
-      <tr>
-        <td nowrap>brotli</td>
-        <td nowrap>-9</td>
-        <td nowrap>9</td>
-        <td nowrap>---</td>
-      </tr>
-      <tr>
-        <td nowrap rowspan="3">dist/commonjs/foo.js</td>
-        <td nowrap>raw</td>
-        <td nowrap>+120</td>
-        <td nowrap>---</td>
-        <td nowrap>120</td>
-        <td nowrap rowspan="3">added</td>
-      </tr>
-      <tr>
-        <td nowrap>gzip</td>
-        <td nowrap>+12</td>
-        <td nowrap>---</td>
-        <td nowrap>12</td>
-      </tr>
-      <tr>
-        <td nowrap>brotli</td>
-        <td nowrap>+11</td>
-        <td nowrap>---</td>
-        <td nowrap>11</td>
-      </tr>
-      <tr>
-        <td nowrap rowspan="3">dist/commonjs/hello.js</td>
-        <td nowrap>raw</td>
-        <td nowrap>+20,000</td>
-        <td nowrap>167,000</td>
-        <td nowrap>187,000</td>
-        <td nowrap rowspan="3">modified</td>
-      </tr>
-      <tr>
-        <td nowrap>gzip</td>
-        <td nowrap>+200</td>
-        <td nowrap>1,600</td>
-        <td nowrap>1,800</td>
-      </tr>
-      <tr>
-        <td nowrap>brotli</td>
-        <td nowrap>+200</td>
-        <td nowrap>1,500</td>
-        <td nowrap>1,700</td>
-      </tr>
-    </tbody>
-  </table>
-
-<h5>dist/systemjs</h5>
-  <table>
-    <thead>
-      <tr>
-        <th nowrap>File</th>
-        <th nowrap>Transform</th>
-        <th nowrap>Diff</th>
-        <th nowrap>base</th>
-        <th nowrap>after merge</th>
-        <th nowrap>Event</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td nowrap rowspan="3">dist/systemjs/bar.js</td>
-        <td nowrap>raw</td>
-        <td nowrap>-100</td>
-        <td nowrap>100</td>
-        <td nowrap>---</td>
-        <td nowrap rowspan="3">deleted</td>
-      </tr>
-      <tr>
-        <td nowrap>gzip</td>
-        <td nowrap>-10</td>
-        <td nowrap>10</td>
-        <td nowrap>---</td>
-      </tr>
-      <tr>
-        <td nowrap>brotli</td>
-        <td nowrap>-9</td>
-        <td nowrap>9</td>
-        <td nowrap>---</td>
-      </tr>
-      <tr>
-        <td nowrap rowspan="3">dist/systemjs/foo.js</td>
-        <td nowrap>raw</td>
-        <td nowrap>+120</td>
-        <td nowrap>---</td>
-        <td nowrap>120</td>
-        <td nowrap rowspan="3">added</td>
-      </tr>
-      <tr>
-        <td nowrap>gzip</td>
-        <td nowrap>+12</td>
-        <td nowrap>---</td>
-        <td nowrap>12</td>
-      </tr>
-      <tr>
-        <td nowrap>brotli</td>
-        <td nowrap>+11</td>
-        <td nowrap>---</td>
-        <td nowrap>11</td>
-      </tr>
-      <tr>
-        <td nowrap rowspan="3">dist/systemjs/hello.js</td>
-        <td nowrap>raw</td>
-        <td nowrap>+20,000</td>
-        <td nowrap>167,000</td>
-        <td nowrap>187,000</td>
-        <td nowrap rowspan="3">modified</td>
-      </tr>
-      <tr>
-        <td nowrap>gzip</td>
-        <td nowrap>+200</td>
-        <td nowrap>1,600</td>
-        <td nowrap>1,800</td>
-      </tr>
-      <tr>
-        <td nowrap>brotli</td>
-        <td nowrap>+200</td>
-        <td nowrap>1,500</td>
-        <td nowrap>1,700</td>
-      </tr>
-    </tbody>
   </table>
 </details>
 
