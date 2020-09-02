@@ -1,83 +1,40 @@
-import { isModified, isAdded, renderEachGroup } from "./helper.js"
+import { isModified } from "./helper.js"
 
-export const renderCacheImpact = ({
-  trackingConfig,
-  transformations,
-  snapshotComparison,
-  formatSize,
-}) => {
-  const overallCacheImpact = snapshotComparisonToOverallCacheImpact(snapshotComparison)
-  const overallCacheImpactCount = Object.keys(overallCacheImpact).reduce((previous, groupName) => {
-    const cacheImpactOnGroup = overallCacheImpact[groupName]
-    return previous + Object.keys(cacheImpactOnGroup).length
-  }, 0)
-  const cacheDetails = renderEachGroup(
-    (groupComparison, groupName) => {
-      return renderCacheImpactGroup(overallCacheImpact[groupName], {
-        groupName,
-        transformations,
-        formatSize,
-      })
-    },
-    { snapshotComparison, trackingConfig },
-  )
-
-  return `<details>
-  <summary>Cache impact (${overallCacheImpactCount})</summary>
-  ${cacheDetails}
-</details>`
-}
-
-const snapshotComparisonToOverallCacheImpact = (snapshotComparison) => {
-  const overallCacheImpact = {}
-
-  Object.keys(snapshotComparison).forEach((groupName) => {
-    const groupComparison = snapshotComparison[groupName]
-    overallCacheImpact[groupName] = groupComparisonToCacheImpactOnGroup(groupComparison)
-  })
-
-  return overallCacheImpact
-}
-
-const groupComparisonToCacheImpactOnGroup = (groupComparison) => {
-  const cacheImpactOnGroup = {}
-  Object.keys(groupComparison).forEach((fileRelativePath) => {
-    const fileImpact = groupComparison[fileRelativePath]
-    if (isAdded(fileImpact)) {
-      cacheImpactOnGroup[fileRelativePath] = fileImpact
-    }
-    if (isModified(fileImpact)) {
-      cacheImpactOnGroup[fileRelativePath] = fileImpact
-    }
-  })
-  return cacheImpactOnGroup
-}
-
-const renderCacheImpactGroup = (cacheImpactOnGroup, { groupName, transformations, formatSize }) => {
-  const cacheImpactCount = Object.keys(cacheImpactOnGroup).length
+export const renderCacheImpact = (groupImpact, { transformations, formatSize, groupName }) => {
+  const groupCacheImpact = groupImpactToGroupCacheImpact(groupImpact)
+  const cacheImpactCount = Object.keys(groupCacheImpact).length
   const parts = [
-    renderCacheImpactDescription(cacheImpactOnGroup, { groupName }),
+    renderCacheImpactDescription(groupCacheImpact, { groupName }),
     ...(cacheImpactCount
-      ? [renderCacheImpactTable(cacheImpactOnGroup, { transformations, formatSize })]
+      ? [renderCacheImpactTable(groupCacheImpact, { transformations, formatSize })]
       : []),
   ]
-
-  return `<h5>${groupName}</h5>
-  ${parts.join(`
-${"  "}`)}`
+  return parts.join(`
+  `)
 }
 
-const renderCacheImpactDescription = (cacheImpactOnGroup, { groupName }) => {
+const groupImpactToGroupCacheImpact = (groupImpact) => {
+  const groupCacheImpact = {}
+  Object.keys(groupImpact).forEach((fileRelativePath) => {
+    const fileImpact = groupImpact[fileRelativePath]
+    if (fileImpact.event === "added" || fileImpact.event === "modified") {
+      groupCacheImpact[fileRelativePath] = fileImpact
+    }
+  })
+  return groupCacheImpact
+}
+
+const renderCacheImpactDescription = (groupCacheImpact, { groupName }) => {
   return `<p>${renderCacheImpactLeftPart(
-    cacheImpactOnGroup,
-  )} in ${groupName} group -> ${renderCacheImpactRightPart(cacheImpactOnGroup)}</p>`
+    groupCacheImpact,
+  )} in ${groupName} group -> ${renderCacheImpactRightPart(groupCacheImpact)}</p>`
 }
 
-const renderCacheImpactLeftPart = (cacheImpactOnGroup) => {
+const renderCacheImpactLeftPart = (groupCacheImpact) => {
   let addedCount = 0
   let modifiedCount = 0
-  Object.keys(cacheImpactOnGroup).forEach((fileRelativePath) => {
-    if (isModified(cacheImpactOnGroup[fileRelativePath])) {
+  Object.keys(groupCacheImpact).forEach((fileRelativePath) => {
+    if (groupCacheImpact[fileRelativePath].event === "modified") {
       modifiedCount++
     } else {
       addedCount++
@@ -149,9 +106,9 @@ const renderCacheImpactTableHeader = (transformations) => {
   ]
 
   return `<tr>
-      ${headerCells.join(`
-      `)}
-    </tr>`
+        ${headerCells.join(`
+        `)}
+      </tr>`
 }
 
 const renderCacheImpactTableBody = (cacheImpactOnGroup, { transformations, formatSize }) => {
@@ -173,11 +130,9 @@ const renderCacheImpactTableBody = (cacheImpactOnGroup, { transformations, forma
       ...sizeNames.map((sizeName) => `<td nowrap>${renderSize(file, sizeName)}</td>`),
       `<td nowrap>${isModified(file) ? "modified" : "added"}</td>`,
     ]
-    lines.push(
-      `
+    lines.push(`
         ${cells.join(`
-        `)}`,
-    )
+        `)}`)
   })
 
   if (lines.length === 0) return ""
@@ -208,7 +163,7 @@ const renderCacheImpactTableFooter = (cacheImpactOnGroup, { transformations, for
   ]
 
   return `<tr>
-      ${footerCells.join(`
-      `)}
-    </tr>`
+        ${footerCells.join(`
+        `)}
+      </tr>`
 }

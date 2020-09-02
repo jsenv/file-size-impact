@@ -1,78 +1,37 @@
-import { renderEachGroup, isAdded, isDeleted, isModified } from "./helper.js"
-
-export const renderFileSizeImpact = ({
-  trackingConfig,
-  transformations,
-  snapshotComparison,
-  formatSize,
-}) => {
-  return renderEachGroup(
-    (groupComparison, groupName) => {
-      return renderGroup(groupComparison, { groupName, transformations, formatSize })
-    },
-    { snapshotComparison, trackingConfig },
-  )
+export const renderFileSizeImpact = (
+  groupImpact,
+  { transformations, formatSize, pullRequestHead, pullRequestBase, groupName },
+) => {
+  return `${renderFileSizeImpactDescription(groupImpact, {
+    pullRequestHead,
+    pullRequestBase,
+    groupName,
+  })}
+  ${renderFileSizeImpactTable(groupImpact, { transformations, formatSize })}`
 }
 
-const renderGroup = (groupComparison, { groupName, transformations, formatSize }) => {
-  const fileByFileImpact = groupComparisonToFileByFileImpact(groupComparison)
-  const impactCount = Object.keys(fileByFileImpact).length
-  const noImpact = impactCount === 0
-  if (noImpact) {
-    return `<h5 id=${groupName}>${groupName}</h5>
-<p>No impact on files in ${groupName} group.</p>`
-  }
-
-  return `<h5 id=${groupName}>${groupName}</h5>
-${renderFileSizeImpactTable(fileByFileImpact, { transformations, formatSize })}`
+const renderFileSizeImpactDescription = (
+  groupImpact,
+  { pullRequestHead, pullRequestBase, groupName },
+) => {
+  const impactCount = Object.keys(groupImpact).length
+  return `<p>Merging ${pullRequestHead} into ${pullRequestBase} will impact ${
+    impactCount === 1 ? "1 file" : `${impactCount} files`
+  } in ${groupName} group.</p>`
 }
 
-const groupComparisonToFileByFileImpact = (groupComparison) => {
-  const fileByFileImpact = {}
-  Object.keys(groupComparison).forEach((fileRelativeUrl) => {
-    const { base, afterMerge } = groupComparison[fileRelativeUrl]
-
-    if (isAdded({ base, afterMerge })) {
-      fileByFileImpact[fileRelativeUrl] = {
-        base,
-        afterMerge,
-        event: "added",
-      }
-      return
-    }
-
-    if (isDeleted({ base, afterMerge })) {
-      fileByFileImpact[fileRelativeUrl] = {
-        base,
-        afterMerge,
-        event: "deleted",
-      }
-      return
-    }
-
-    if (isModified({ base, afterMerge })) {
-      fileByFileImpact[fileRelativeUrl] = {
-        base,
-        afterMerge,
-        event: "modified",
-      }
-    }
-  })
-  return fileByFileImpact
-}
-
-const renderFileSizeImpactTable = (fileByFileImpact, { transformations, formatSize }) => {
+const renderFileSizeImpactTable = (groupImpact, { transformations, formatSize }) => {
   return `<table>
-  <thead>
-    ${renderFileSizeImpactTableHeader(transformations)}
-  </thead>
-  <tbody>
-    ${renderFileSizeImpactTableBody(fileByFileImpact, { transformations, formatSize })}
-  </tbody>
-  <tfoot>
-    ${renderFileSizeImpactTableFooter(fileByFileImpact, { transformations, formatSize })}
-  </tfoot>
-</table>`
+    <thead>
+      ${renderFileSizeImpactTableHeader(transformations)}
+    </thead>
+    <tbody>
+      ${renderFileSizeImpactTableBody(groupImpact, { transformations, formatSize })}
+    </tbody>
+    <tfoot>
+      ${renderFileSizeImpactTableFooter(groupImpact, { transformations, formatSize })}
+    </tfoot>
+  </table>`
 }
 
 const renderFileSizeImpactTableHeader = (transformations) => {
@@ -83,37 +42,37 @@ const renderFileSizeImpactTableHeader = (transformations) => {
   ]
 
   return `<tr>
-      ${headerCells.join(`
-      `)}
-    </tr>`
+        ${headerCells.join(`
+        `)}
+      </tr>`
 }
 
-const renderFileSizeImpactTableBody = (fileByFileImpact, { transformations, formatSize }) => {
+const renderFileSizeImpactTableBody = (groupImpact, { transformations, formatSize }) => {
   const lines = []
   const sizeNames = Object.keys(transformations)
 
   const renderDiffCell = (fileImpact, sizeName) => {
     const { size, diff } = fileImpactToSizeAndDiff(fileImpact, sizeName)
-    return `${formatSize(size)} (${formatSize(diff, { diff: true })})`
+    return `${formatSize(diff, { diff: true })} (${formatSize(size)})`
   }
 
-  Object.keys(fileByFileImpact).forEach((fileRelativePath) => {
-    const fileImpact = fileByFileImpact[fileRelativePath]
+  Object.keys(groupImpact).forEach((fileRelativePath) => {
+    const fileImpact = groupImpact[fileRelativePath]
     const cells = [
       `<td nowrap>${fileRelativePath}</td>`,
       ...sizeNames.map((sizeName) => `<td nowrap>${renderDiffCell(fileImpact, sizeName)}</td>`),
       `<td nowrap>${fileImpact.event}</td>`,
-    ].filter((cell) => cell.length > 0)
+    ]
     lines.push(`
-      ${cells.join(`
-      `)}`)
+        ${cells.join(`
+        `)}`)
   })
 
   if (lines.length === 0) return ""
   return `<tr>${lines.join(`
-    </tr>
-    <tr>`)}
-    </tr>`
+      </tr>
+      <tr>`)}
+      </tr>`
 }
 
 const renderFileSizeImpactTableFooter = (fileByFileImpact, { transformations, formatSize }) => {
@@ -129,21 +88,19 @@ const renderFileSizeImpactTableFooter = (fileByFileImpact, { transformations, fo
       },
       { size: 0, diff: 0 },
     )
-    return `${formatSize(total.size)} (${formatSize(total.diff, { diff: true })})`
+    return `${formatSize(total.diff, { diff: true })} (${formatSize(total.size)})`
   }
 
   const footerCells = [
     `<td nowrap><strong>Total</strong></td>`,
-    ...Object.keys(transformations).map(
-      (sizeName) => `<td nowrap>${formatSize(renderTotal(sizeName), { diff: true })}</td>`,
-    ),
+    ...Object.keys(transformations).map((sizeName) => `<td nowrap>${renderTotal(sizeName)}</td>`),
     `<td nowrap></td>`,
   ]
 
   return `<tr>
-      ${footerCells.join(`
-      `)}
-    </tr>`
+        ${footerCells.join(`
+        `)}
+      </tr>`
 }
 
 const fileImpactToSizeAndDiff = ({ event, base, afterMerge }, sizeName) => {

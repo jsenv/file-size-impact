@@ -162,13 +162,9 @@ const transformations = {
 
 ## cacheImpact
 
-`cacheImpact` parameter controls if cache impact will appear in the generated comment. It is used to analyse how many files and bytes users will have to redownload if the pull request is merged. This parameter is optional and disabled by default.
+`cacheImpact` parameter is a boolean controlling if cache impact will appear in the generated comment. It is used to analyse how many files and bytes users will have to redownload if the pull request is merged. This parameter is optional and disabled by default.
 
 ![screenshot of pull request comment with cache impact highlighted](./cache-impact-highlighted.png)
-
-The cache impact section can be expanded as shown in the image below.
-
-![screenshot of pull request comment with cache impact expanded](./cache-impact-expanded.png)
 
 ## runLink
 
