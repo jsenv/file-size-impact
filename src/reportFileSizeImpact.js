@@ -40,7 +40,6 @@ export const reportFileSizeImpact = async ({
 
   formatSize = jsenvFormatSize,
   cacheImpact = false,
-  detailedSizeImpact = false,
   runLink,
 }) => {
   return wrapExternalFunction(
@@ -287,7 +286,6 @@ ${renderGeneratedBy({ runLink })}`
           afterMergeSnapshot,
           formatSize,
           cacheImpact,
-          detailedSizeImpact,
         }),
       )
 

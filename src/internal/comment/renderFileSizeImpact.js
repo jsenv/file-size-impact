@@ -92,31 +92,9 @@ const renderFileSizeImpactTableBody = (fileByFileImpact, { transformations, form
   const lines = []
   const sizeNames = Object.keys(transformations)
 
-  const renderDiffCell = ({ event, base, afterMerge }, sizeName) => {
-    if (event === "deleted") {
-      const baseSizeMap = base.sizeMap
-      if (sizeName in baseSizeMap) {
-        return formatSize(-baseSizeMap[sizeName], { diff: true })
-      }
-      return `---`
-    }
-
-    if (event === "added") {
-      const afterMergeSizeMap = afterMerge.sizeMap
-      if (sizeName in afterMergeSizeMap) {
-        return formatSize(afterMergeSizeMap[sizeName], { diff: true })
-      }
-      return `---`
-    }
-
-    const baseSizeMap = base.sizeMap
-    const afterMergeSizeMap = afterMerge.sizeMap
-    if (sizeName in baseSizeMap && sizeName in afterMergeSizeMap) {
-      return formatSize(afterMergeSizeMap[sizeName] - baseSizeMap[sizeName], {
-        diff: true,
-      })
-    }
-    return `---`
+  const renderDiffCell = (fileImpact, sizeName) => {
+    const { size, diff } = fileImpactToSizeAndDiff(fileImpact, sizeName)
+    return `${formatSize(size)} (${formatSize(diff, { diff: true })})`
   }
 
   Object.keys(fileByFileImpact).forEach((fileRelativePath) => {
@@ -126,48 +104,32 @@ const renderFileSizeImpactTableBody = (fileByFileImpact, { transformations, form
       ...sizeNames.map((sizeName) => `<td nowrap>${renderDiffCell(fileImpact, sizeName)}</td>`),
       `<td nowrap>${fileImpact.event}</td>`,
     ].filter((cell) => cell.length > 0)
-    lines.push(
-      `
-        ${cells.join(`
-        `)}`,
-    )
+    lines.push(`
+      ${cells.join(`
+      `)}`)
   })
 
   if (lines.length === 0) return ""
   return `<tr>${lines.join(`
-      </tr>
-      <tr>`)}
-      </tr>`
+    </tr>
+    <tr>`)}
+    </tr>`
 }
 
 const renderFileSizeImpactTableFooter = (fileByFileImpact, { transformations, formatSize }) => {
   const renderTotal = (sizeName) => {
-    return Object.keys(fileByFileImpact).reduce((previous, fileRelativePath) => {
-      const fileImpact = fileByFileImpact[fileRelativePath]
-      const { event, base, afterMerge } = fileImpact
+    const total = Object.keys(fileByFileImpact).reduce(
+      (previous, fileRelativePath) => {
+        const previousSize = previous.size
+        const previousDiff = previous.diff
 
-      if (event === "added") {
-        const afterMergeSizeMap = afterMerge.sizeMap
-        if (sizeName in afterMergeSizeMap) {
-          return previous + afterMergeSizeMap[sizeName]
-        }
-        return previous
-      }
-      if (event === "deleted") {
-        const baseSizeMap = base.sizeMap
-        if (sizeName in baseSizeMap) {
-          return previous - baseSizeMap[sizeName]
-        }
-        return previous
-      }
-
-      const baseSizeMap = base.sizeMap
-      const afterMergeSizeMap = afterMerge.sizeMap
-      if (sizeName in baseSizeMap && sizeName in afterMergeSizeMap) {
-        return previous + (afterMergeSizeMap[sizeName] - baseSizeMap[sizeName])
-      }
-      return previous
-    }, 0)
+        const fileImpact = fileByFileImpact[fileRelativePath]
+        const { size, diff } = fileImpactToSizeAndDiff(fileImpact, sizeName)
+        return { size: previousSize + size, diff: previousDiff + diff }
+      },
+      { size: 0, diff: 0 },
+    )
+    return `${formatSize(total.size)} (${formatSize(total.diff, { diff: true })})`
   }
 
   const footerCells = [
@@ -182,4 +144,39 @@ const renderFileSizeImpactTableFooter = (fileByFileImpact, { transformations, fo
       ${footerCells.join(`
       `)}
     </tr>`
+}
+
+const fileImpactToSizeAndDiff = ({ event, base, afterMerge }, sizeName) => {
+  if (event === "deleted") {
+    const baseSizeMap = base.sizeMap
+    if (sizeName in baseSizeMap) {
+      return {
+        size: 0,
+        diff: -baseSizeMap[sizeName],
+      }
+    }
+  }
+
+  if (event === "added") {
+    const afterMergeSizeMap = afterMerge.sizeMap
+    if (sizeName in afterMergeSizeMap) {
+      return {
+        size: afterMergeSizeMap[sizeName],
+        diff: afterMergeSizeMap[sizeName],
+      }
+    }
+  }
+
+  if (event === "modified") {
+    const baseSizeMap = base.sizeMap
+    const afterMergeSizeMap = afterMerge.sizeMap
+    if (sizeName in baseSizeMap && sizeName in afterMergeSizeMap) {
+      return {
+        size: afterMergeSizeMap[sizeName],
+        diff: afterMergeSizeMap[sizeName] - baseSizeMap[sizeName],
+      }
+    }
+  }
+
+  return { size: 0, diff: 0 }
 }
