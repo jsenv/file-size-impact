@@ -20,11 +20,15 @@ Add files size impact into pull requests.
 
 `@jsenv/file-size-impact` analyses a pull request impact on specific files size. This analysis is posted in a comment of the pull request.
 
-![screenshot of pull request comment](./docs/comment-screenshot.png)
+![screenshot of pull request comment](./docs/comment-collapsed.png)
+
+The comment can be expanded to see details
+
+![screenshot of pull request comment expanded](./docs/comment-expanded.png)
 
 It can also be configured to track size after compression.
 
-![screenshot of pull request comment with compression](./docs/comment-compression-screenshot.png)
+![screenshot of pull request comment with compression](./docs/comment-compression.png)
 
 # How it works
 
