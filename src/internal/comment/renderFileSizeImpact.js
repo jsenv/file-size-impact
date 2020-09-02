@@ -23,7 +23,7 @@ const renderGroup = (groupComparison, { groupName, transformations, formatSize }
 <p>No impact on files in ${groupName} group.</p>`
   }
 
-  return `<h5>${groupName}</h5>
+  return `<h5 id=${groupName}>${groupName}</h5>
 ${renderFileSizeImpactTable(fileByFileImpact, { transformations, formatSize })}`
 }
 
