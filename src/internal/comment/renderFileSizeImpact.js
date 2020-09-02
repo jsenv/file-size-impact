@@ -53,7 +53,7 @@ const renderFileSizeImpactTableBody = (groupImpact, { transformations, formatSiz
 
   const renderDiffCell = (fileImpact, sizeName) => {
     const { size, diff } = fileImpactToSizeAndDiff(fileImpact, sizeName)
-    return `${formatSize(size)} (${formatSize(diff, { diff: true })})`
+    return `${formatSize(diff, { diff: true })} (${formatSize(size)})`
   }
 
   Object.keys(groupImpact).forEach((fileRelativePath) => {
@@ -88,7 +88,7 @@ const renderFileSizeImpactTableFooter = (fileByFileImpact, { transformations, fo
       },
       { size: 0, diff: 0 },
     )
-    return `${formatSize(total.size)} (${formatSize(total.diff, { diff: true })})`
+    return `${formatSize(total.diff, { diff: true })} (${formatSize(total.size)})`
   }
 
   const footerCells = [

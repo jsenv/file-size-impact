@@ -17,19 +17,19 @@
     <tbody>
       <tr>
         <td nowrap>dist/bar.js</td>
-        <td nowrap>110 (+10)</td>
+        <td nowrap>+10 (110)</td>
         <td nowrap>modified</td>
       </tr>
       <tr>
         <td nowrap>dist/foo.js</td>
-        <td nowrap>115 (+15)</td>
+        <td nowrap>+15 (115)</td>
         <td nowrap>modified</td>
       </tr>
     </tbody>
     <tfoot>
       <tr>
         <td nowrap><strong>Total</strong></td>
-        <td nowrap>225 (+25)</td>
+        <td nowrap>+25 (225)</td>
         <td nowrap></td>
       </tr>
     </tfoot>
@@ -57,25 +57,25 @@
     <tbody>
       <tr>
         <td nowrap>dist/bar.js</td>
-        <td nowrap>110 (+10)</td>
-        <td nowrap>22 (+2)</td>
-        <td nowrap>19 (+1)</td>
+        <td nowrap>+10 (110)</td>
+        <td nowrap>+2 (22)</td>
+        <td nowrap>+1 (19)</td>
         <td nowrap>modified</td>
       </tr>
       <tr>
         <td nowrap>dist/foo.js</td>
-        <td nowrap>115 (+15)</td>
-        <td nowrap>24 (+4)</td>
-        <td nowrap>21 (+3)</td>
+        <td nowrap>+15 (115)</td>
+        <td nowrap>+4 (24)</td>
+        <td nowrap>+3 (21)</td>
         <td nowrap>modified</td>
       </tr>
     </tbody>
     <tfoot>
       <tr>
         <td nowrap><strong>Total</strong></td>
-        <td nowrap>225 (+25)</td>
-        <td nowrap>46 (+6)</td>
-        <td nowrap>40 (+4)</td>
+        <td nowrap>+25 (225)</td>
+        <td nowrap>+6 (46)</td>
+        <td nowrap>+4 (40)</td>
         <td nowrap></td>
       </tr>
     </tfoot>
@@ -128,19 +128,19 @@
     <tbody>
       <tr>
         <td nowrap>dist/file-a.js</td>
-        <td nowrap>15 (+5)</td>
+        <td nowrap>+5 (15)</td>
         <td nowrap>modified</td>
       </tr>
       <tr>
         <td nowrap>dist/file-b.js</td>
-        <td nowrap>10 (-5)</td>
+        <td nowrap>-5 (10)</td>
         <td nowrap>modified</td>
       </tr>
     </tbody>
     <tfoot>
       <tr>
         <td nowrap><strong>Total</strong></td>
-        <td nowrap>25 (0)</td>
+        <td nowrap>0 (25)</td>
         <td nowrap></td>
       </tr>
     </tfoot>
@@ -168,32 +168,32 @@
     <tbody>
       <tr>
         <td nowrap>dist/commonjs/bar.js</td>
-        <td nowrap>0 (-100)</td>
-        <td nowrap>0 (-10)</td>
-        <td nowrap>0 (-9)</td>
+        <td nowrap>-100 (0)</td>
+        <td nowrap>-10 (0)</td>
+        <td nowrap>-9 (0)</td>
         <td nowrap>deleted</td>
       </tr>
       <tr>
         <td nowrap>dist/commonjs/foo.js</td>
-        <td nowrap>120 (+120)</td>
-        <td nowrap>12 (+12)</td>
-        <td nowrap>11 (+11)</td>
+        <td nowrap>+120 (120)</td>
+        <td nowrap>+12 (12)</td>
+        <td nowrap>+11 (11)</td>
         <td nowrap>added</td>
       </tr>
       <tr>
         <td nowrap>dist/commonjs/hello.js</td>
-        <td nowrap>187,000 (+20,000)</td>
-        <td nowrap>1,800 (+200)</td>
-        <td nowrap>1,700 (+200)</td>
+        <td nowrap>+20,000 (187,000)</td>
+        <td nowrap>+200 (1,800)</td>
+        <td nowrap>+200 (1,700)</td>
         <td nowrap>modified</td>
       </tr>
     </tbody>
     <tfoot>
       <tr>
         <td nowrap><strong>Total</strong></td>
-        <td nowrap>187,120 (+20,020)</td>
-        <td nowrap>1,812 (+202)</td>
-        <td nowrap>1,711 (+202)</td>
+        <td nowrap>+20,020 (187,120)</td>
+        <td nowrap>+202 (1,812)</td>
+        <td nowrap>+202 (1,711)</td>
         <td nowrap></td>
       </tr>
     </tfoot>
@@ -216,32 +216,32 @@
     <tbody>
       <tr>
         <td nowrap>dist/systemjs/bar.js</td>
-        <td nowrap>0 (-100)</td>
-        <td nowrap>0 (-10)</td>
-        <td nowrap>0 (-9)</td>
+        <td nowrap>-100 (0)</td>
+        <td nowrap>-10 (0)</td>
+        <td nowrap>-9 (0)</td>
         <td nowrap>deleted</td>
       </tr>
       <tr>
         <td nowrap>dist/systemjs/foo.js</td>
-        <td nowrap>120 (+120)</td>
-        <td nowrap>12 (+12)</td>
-        <td nowrap>11 (+11)</td>
+        <td nowrap>+120 (120)</td>
+        <td nowrap>+12 (12)</td>
+        <td nowrap>+11 (11)</td>
         <td nowrap>added</td>
       </tr>
       <tr>
         <td nowrap>dist/systemjs/hello.js</td>
-        <td nowrap>187,000 (+20,000)</td>
-        <td nowrap>1,800 (+200)</td>
-        <td nowrap>1,700 (+200)</td>
+        <td nowrap>+20,000 (187,000)</td>
+        <td nowrap>+200 (1,800)</td>
+        <td nowrap>+200 (1,700)</td>
         <td nowrap>modified</td>
       </tr>
     </tbody>
     <tfoot>
       <tr>
         <td nowrap><strong>Total</strong></td>
-        <td nowrap>187,120 (+20,020)</td>
-        <td nowrap>1,812 (+202)</td>
-        <td nowrap>1,711 (+202)</td>
+        <td nowrap>+20,020 (187,120)</td>
+        <td nowrap>+202 (1,812)</td>
+        <td nowrap>+202 (1,711)</td>
         <td nowrap></td>
       </tr>
     </tfoot>
@@ -267,19 +267,19 @@
     <tbody>
       <tr>
         <td nowrap>dist/bar.js</td>
-        <td nowrap>110 (+10)</td>
+        <td nowrap>+10 (110)</td>
         <td nowrap>modified</td>
       </tr>
       <tr>
         <td nowrap>dist/foo.js</td>
-        <td nowrap>0 (-100)</td>
+        <td nowrap>-100 (0)</td>
         <td nowrap>deleted</td>
       </tr>
     </tbody>
     <tfoot>
       <tr>
         <td nowrap><strong>Total</strong></td>
-        <td nowrap>110 (-90)</td>
+        <td nowrap>-90 (110)</td>
         <td nowrap></td>
       </tr>
     </tfoot>
@@ -329,14 +329,14 @@
     <tbody>
       <tr>
         <td nowrap>dist/bar.js</td>
-        <td nowrap>0 (-100)</td>
+        <td nowrap>-100 (0)</td>
         <td nowrap>deleted</td>
       </tr>
     </tbody>
     <tfoot>
       <tr>
         <td nowrap><strong>Total</strong></td>
-        <td nowrap>0 (-100)</td>
+        <td nowrap>-100 (0)</td>
         <td nowrap></td>
       </tr>
     </tfoot>
@@ -363,24 +363,24 @@
     <tbody>
       <tr>
         <td nowrap>dist/bar.js</td>
-        <td nowrap>110 (+10)</td>
+        <td nowrap>+10 (110)</td>
         <td nowrap>modified</td>
       </tr>
       <tr>
         <td nowrap>dist/foo.js</td>
-        <td nowrap>100 (+100)</td>
+        <td nowrap>+100 (100)</td>
         <td nowrap>added</td>
       </tr>
       <tr>
         <td nowrap>dist/hello.js</td>
-        <td nowrap>110 (+10)</td>
+        <td nowrap>+10 (110)</td>
         <td nowrap>modified</td>
       </tr>
     </tbody>
     <tfoot>
       <tr>
         <td nowrap><strong>Total</strong></td>
-        <td nowrap>320 (+120)</td>
+        <td nowrap>+120 (320)</td>
         <td nowrap></td>
       </tr>
     </tfoot>
