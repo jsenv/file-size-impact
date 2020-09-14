@@ -5,7 +5,7 @@
 /dist/**/manifest.json
 /node_modules/
 /test/**/temp/
-/importMap.json
+/import-map.importmap
 /jsconfig.json
 /package-lock.json
 /secrets.json
