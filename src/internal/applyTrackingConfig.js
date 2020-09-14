@@ -29,7 +29,7 @@ export const applyTrackingConfig = async (
   return result
 }
 
-const applyTracking = async (tracking, { logger, projectDirectoryUrl, manifestConfig }) => {
+const applyTracking = async (tracking, { projectDirectoryUrl, manifestConfig }) => {
   const specifierMetaMap = metaMapToSpecifierMetaMap({
     track: tracking,
     ...(manifestConfig ? { manifest: manifestConfig } : {}),
