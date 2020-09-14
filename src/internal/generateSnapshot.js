@@ -1,14 +1,7 @@
 import { createLogger } from "@jsenv/logger"
-import {
-  assertAndNormalizeDirectoryUrl,
-  bufferToEtag,
-  resolveUrl,
-  urlToFileSystemPath,
-  readFile,
-  metaMapToSpecifierMetaMap,
-  collectFiles,
-} from "@jsenv/util"
+import { assertAndNormalizeDirectoryUrl, bufferToEtag, resolveUrl, readFile } from "@jsenv/util"
 import { createCancellationToken } from "@jsenv/cancellation"
+import { applyTrackingConfig } from "./applyTrackingConfig.js"
 
 export const generateSnapshot = async ({
   cancellationToken = createCancellationToken(),
@@ -27,84 +20,62 @@ export const generateSnapshot = async ({
     logger.warn(`trackingConfig is empty`)
   }
 
-  const snapshot = {}
-
-  // ensure snapshot keys order is the same as trackingConfig (despite Promise.all below)
-  trackingNames.forEach((trackingName) => {
-    snapshot[trackingName] = null
+  const groupTrackingResults = await applyTrackingConfig(trackingConfig, {
+    cancellationToken,
+    projectDirectoryUrl,
+    manifestConfig,
   })
+  const snapshot = {}
   await Promise.all(
-    trackingNames.map(async (trackingName) => {
-      const tracking = trackingConfig[trackingName]
-
-      const trackingResult = await applyTracking(tracking, {
+    Object.keys(groupTrackingResults).map(async (trackingGroupName) => {
+      const groupTrackingResult = groupTrackingResults[trackingGroupName]
+      const groupSnapshot = await groupTrackingResultToGroupSnapshot(groupTrackingResult, {
         logger,
         projectDirectoryUrl,
-        manifestConfig,
         transformations,
       })
-      snapshot[trackingName] = trackingResult
-      cancellationToken.throwIfRequested()
+      snapshot[trackingGroupName] = groupSnapshot
     }),
   )
-
   const snapshotFileContent = JSON.stringify(snapshot, null, "  ")
   logger.debug(snapshotFileContent)
   return snapshot
 }
 
-const applyTracking = async (
-  tracking,
-  { logger, projectDirectoryUrl, manifestConfig, transformations },
+const groupTrackingResultToGroupSnapshot = async (
+  groupTrackingResult,
+  { logger, projectDirectoryUrl, transformations },
 ) => {
-  const specifierMetaMap = metaMapToSpecifierMetaMap({
-    track: tracking,
-    ...(manifestConfig ? { manifest: manifestConfig } : {}),
-  })
-
   const manifestMap = {}
+  const { manifestRelativeUrls } = groupTrackingResult
+  await Promise.all(
+    manifestRelativeUrls.map(async (manifestRelativeUrl) => {
+      const manifestFileUrl = resolveUrl(manifestRelativeUrl, projectDirectoryUrl)
+      manifestMap[manifestRelativeUrl] = await readManifest(manifestFileUrl)
+    }),
+  )
+
   const fileMap = {}
-  let files
-
-  try {
-    files = await collectFiles({
-      directoryUrl: projectDirectoryUrl,
-      specifierMetaMap,
-      predicate: (meta) => meta.track === true || meta.manifest === true,
-    })
-  } catch (e) {
-    const directoryPath = urlToFileSystemPath(projectDirectoryUrl)
-    if (e.code === "ENOENT" && e.path === directoryPath) {
-      logger.warn(`${directoryPath} does not exists`)
-      return { fileMap, manifestMap }
-    }
-    throw e
-  }
-
-  // we use reduce and not Promise.all(files.map) because transformation can be expensive (gzip, brotli)
+  const { matchingRelativeUrls } = groupTrackingResult
+  // we use reduce and not Promise.all() because transformation can be expensive (gzip, brotli)
   // so we won't benefit from concurrency (it might even make things worse)
-  await files.reduce(async (previous, { relativeUrl, meta }) => {
+  await matchingRelativeUrls.reduce(async (previous, fileRelativeUrl) => {
     await previous
-
-    const fileUrl = resolveUrl(relativeUrl, projectDirectoryUrl)
-
-    if (meta.manifest) {
-      manifestMap[relativeUrl] = await readManifest(fileUrl)
-      return
-    }
-
+    const fileUrl = resolveUrl(fileRelativeUrl, projectDirectoryUrl)
     const fileContent = await readFile(fileUrl)
     const fileBuffer = Buffer.from(fileContent)
     const sizeMap = await getFileSizeMap(fileBuffer, { transformations, logger, fileUrl })
     const hash = bufferToEtag(fileBuffer)
-
-    fileMap[relativeUrl] = {
+    fileMap[fileRelativeUrl] = {
       sizeMap,
       hash,
     }
   }, Promise.resolve())
 
-  return { manifestMap, fileMap }
+  return {
+    manifestMap,
+    fileMap,
+  }
 }
 
 const getFileSizeMap = async (fileBuffer, { transformations, logger, fileUrl }) => {
