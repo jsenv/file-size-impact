@@ -12,6 +12,7 @@
   - [runLink](#runLink)
   - [formatSize](#formatSize)
 - [readGithubWorkflowEnv](#readGithubWorkflowEnv)
+- [Exclude specific impacts](#Exclude-specific-impacts)
 
 # reportFileSizeImpact
 
@@ -205,3 +206,99 @@ const {
 ```
 
 — source code at [src/readGithubWorkflowEnv.js](../src/readGithubWorkflowEnv.js).
+
+# Exclude specific impacts
+
+Size impact analysis occurs only if the file was deleted, added or modified between the base branch and after merging. To detect if the file is modified we compare file content on base branch and after merging. It means its possible to have a file size impact of zero shown in the comment. You can expand the details below to see an example of it.
+
+<details>
+  <summary>dist (2)</summary>
+  <p>Merging head into base will impact 2 files in dist group.</p>
+  <table>
+    <thead>
+      <tr>
+        <th nowrap>File</th>
+        <th nowrap>raw</th>
+        <th nowrap>Event</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td nowrap>dist/bar.js</td>
+        <td nowrap>+10 (110)</td>
+        <td nowrap>modified</td>
+      </tr>
+      <tr>
+        <td nowrap>dist/foo.js</td>
+        <td nowrap>0 (120)</td>
+        <td nowrap>modified</td>
+      </tr>
+    </tbody>
+    <tfoot>
+      <tr>
+        <td nowrap><strong>Total</strong></td>
+        <td nowrap>+10 (230)</td>
+        <td nowrap></td>
+      </tr>
+    </tfoot>
+  </table>
+</details>
+
+A size impact of `0` remains important because it tells you the file content was modified.
+In some cases you know in advance a given file will change. Certainly because you are injecting a unique data into that file at build time like a timestamp or a version number. In that case you can control if the file ends up displayed in the github comment by passing a specific value in [trackingConfig](#trackingConfig).
+
+```js
+import { reportFileSizeImpact, raw } from "@jsenv/file-size-impact"
+
+await reportFileSizeImpact({
+  transformations: { raw },
+  trackingConfig: {
+    dist: {
+      "**/*.html": {
+        showFileSizeImpact: ({ sizeImpactMap }) => Math.abs(sizeImpactMap.raw) > 0,
+      },
+    },
+  },
+})
+```
+
+The `showFileSizeImpact` function is expected to return a boolean and is called with the following signature:
+
+```js
+showFileSizeImpact({
+  fileRelativeUrl: "dist/file.js",
+  event: "modified",
+  sizeImpactMap: {
+    raw: 100,
+    gzip: -5,
+  },
+  sizeMapOnBase: {
+    raw: 200,
+    gzip: 20,
+  },
+  sizeMapAfterMerge: {
+    raw: 300,
+    gzip: 15,
+  },
+})
+```
+
+## fileRelativeUrl
+
+A string representing the file url relative to [projectDirectoryUrl](#projectDirectoryUrl).
+
+## event
+
+A string that can be either `added`, `removed`, `modified`.
+
+## sizeImpactMap
+
+An object mapping all transformations to a number representing impact on that file size.
+
+## sizeMapOnBase
+
+An object mapping all transformations to a number corresponding to file size on base branch. This parameter is `null` when event is `added` because the file did not exists on base branch.
+
+## sizeMapAfterMerge
+
+An object mapping all transformations to a number corresponding to file size after merging pr in base branch. This parameter is `null` when event is `deleted` because the file is gone.

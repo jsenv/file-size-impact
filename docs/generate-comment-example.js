@@ -42,16 +42,32 @@ const examples = {
     baseSnapshot: {
       dist: {
         fileMap: {
-          "dist/bar.js": { hash: "a", sizeMap: { raw: 100 } },
-          "dist/foo.js": { hash: "a", sizeMap: { raw: 100 } },
+          "dist/bar.js": {
+            hash: "a",
+            sizeMap: { raw: 100 },
+            meta: true,
+          },
+          "dist/foo.js": {
+            hash: "a",
+            sizeMap: { raw: 100 },
+            meta: true,
+          },
         },
       },
     },
     afterMergeSnapshot: {
       dist: {
         fileMap: {
-          "dist/bar.js": { hash: "b", sizeMap: { raw: 110 } },
-          "dist/foo.js": { hash: "b", sizeMap: { raw: 115 } },
+          "dist/bar.js": {
+            hash: "b",
+            sizeMap: { raw: 110 },
+            meta: true,
+          },
+          "dist/foo.js": {
+            hash: "b",
+            sizeMap: { raw: 115 },
+            meta: true,
+          },
         },
       },
     },
@@ -63,10 +79,12 @@ const examples = {
           "dist/bar.js": {
             hash: "a",
             sizeMap: { raw: 100, gzip: 20, brotli: 18 },
+            meta: true,
           },
           "dist/foo.js": {
             hash: "a",
             sizeMap: { raw: 100, gzip: 20, brotli: 18 },
+            meta: true,
           },
         },
       },
@@ -77,10 +95,12 @@ const examples = {
           "dist/bar.js": {
             hash: "b",
             sizeMap: { raw: 110, gzip: 22, brotli: 19 },
+            meta: true,
           },
           "dist/foo.js": {
             hash: "b",
             sizeMap: { raw: 115, gzip: 24, brotli: 21 },
+            meta: true,
           },
         },
       },
@@ -90,14 +110,22 @@ const examples = {
     baseSnapshot: {
       dist: {
         fileMap: {
-          "dist/bar.js": { hash: "a", sizeMap: { raw: 110 } },
+          "dist/bar.js": {
+            hash: "a",
+            sizeMap: { raw: 110 },
+            meta: true,
+          },
         },
       },
     },
     afterMergeSnapshot: {
       dist: {
         fileMap: {
-          "dist/bar.js": { hash: "a", sizeMap: { raw: 110 } },
+          "dist/bar.js": {
+            hash: "a",
+            sizeMap: { raw: 110 },
+            meta: true,
+          },
         },
       },
     },
@@ -126,10 +154,12 @@ const examples = {
           "dist/file-a.js": {
             hash: "hash1",
             sizeMap: { raw: 10 },
+            meta: true,
           },
           "dist/file-b.js": {
             hash: "hash3",
             sizeMap: { raw: 15 },
+            meta: true,
           },
         },
       },
@@ -140,10 +170,12 @@ const examples = {
           "dist/file-a.js": {
             hash: "hash2",
             sizeMap: { raw: 15 },
+            meta: true,
           },
           "dist/file-b.js": {
             hash: "hash4",
             sizeMap: { raw: 10 },
+            meta: true,
           },
         },
       },
@@ -160,6 +192,7 @@ const examples = {
               gzip: 10,
               brotli: 9,
             },
+            meta: true,
           },
           "dist/commonjs/hello.js": {
             hash: "a",
@@ -168,6 +201,7 @@ const examples = {
               gzip: 1600,
               brotli: 1500,
             },
+            meta: true,
           },
         },
       },
@@ -180,6 +214,7 @@ const examples = {
               gzip: 10,
               brotli: 9,
             },
+            meta: true,
           },
           "dist/systemjs/hello.js": {
             hash: "a",
@@ -188,6 +223,7 @@ const examples = {
               gzip: 1600,
               brotli: 1500,
             },
+            meta: true,
           },
         },
       },
@@ -202,6 +238,7 @@ const examples = {
               gzip: 12,
               brotli: 11,
             },
+            meta: true,
           },
           "dist/commonjs/hello.js": {
             hash: "b",
@@ -210,6 +247,7 @@ const examples = {
               gzip: 1800,
               brotli: 1700,
             },
+            meta: true,
           },
         },
       },
@@ -222,6 +260,7 @@ const examples = {
               gzip: 12,
               brotli: 11,
             },
+            meta: true,
           },
           "dist/systemjs/hello.js": {
             hash: "b",
@@ -230,6 +269,7 @@ const examples = {
               gzip: 1800,
               brotli: 1700,
             },
+            meta: true,
           },
         },
       },
@@ -240,15 +280,27 @@ const examples = {
     baseSnapshot: {
       dist: {
         fileMap: {
-          "dist/foo.js": { hash: "a", sizeMap: { raw: 100 } },
-          "dist/bar.js": { hash: "a", sizeMap: { raw: 100 } },
+          "dist/foo.js": {
+            hash: "a",
+            sizeMap: { raw: 100 },
+            meta: true,
+          },
+          "dist/bar.js": {
+            hash: "a",
+            sizeMap: { raw: 100 },
+            meta: true,
+          },
         },
       },
     },
     afterMergeSnapshot: {
       dist: {
         fileMap: {
-          "dist/bar.js": { hash: "b", sizeMap: { raw: 110 } },
+          "dist/bar.js": {
+            hash: "b",
+            sizeMap: { raw: 110 },
+            meta: true,
+          },
         },
       },
     },
@@ -258,7 +310,11 @@ const examples = {
     baseSnapshot: {
       dist: {
         fileMap: {
-          "dist/bar.js": { hash: "a", sizeMap: { raw: 100 } },
+          "dist/bar.js": {
+            hash: "a",
+            sizeMap: { raw: 100 },
+            meta: true,
+          },
         },
       },
     },
@@ -273,17 +329,99 @@ const examples = {
     baseSnapshot: {
       dist: {
         fileMap: {
-          "dist/bar.js": { hash: "a", sizeMap: { raw: 100 } },
-          "dist/hello.js": { hash: "a", sizeMap: { raw: 100 } },
+          "dist/bar.js": {
+            hash: "a",
+            sizeMap: { raw: 100 },
+            meta: true,
+          },
+          "dist/hello.js": {
+            hash: "a",
+            sizeMap: { raw: 100 },
+            meta: true,
+          },
         },
       },
     },
     afterMergeSnapshot: {
       dist: {
         fileMap: {
-          "dist/foo.js": { hash: "a", sizeMap: { raw: 100 } },
-          "dist/bar.js": { hash: "b", sizeMap: { raw: 110 } },
-          "dist/hello.js": { hash: "b", sizeMap: { raw: 110 } },
+          "dist/foo.js": {
+            hash: "a",
+            sizeMap: { raw: 100 },
+            meta: true,
+          },
+          "dist/bar.js": {
+            hash: "b",
+            sizeMap: { raw: 110 },
+            meta: true,
+          },
+          "dist/hello.js": {
+            hash: "b",
+            sizeMap: { raw: 110 },
+            meta: true,
+          },
+        },
+      },
+    },
+  }),
+  "exclude 1 size impact over 2": generateComment({
+    baseSnapshot: {
+      dist: {
+        fileMap: {
+          "dist/bar.js": {
+            hash: "a",
+            sizeMap: { raw: 100 },
+            meta: true,
+          },
+          "dist/foo.js": {
+            hash: "a",
+            sizeMap: { raw: 100 },
+            meta: true,
+          },
+        },
+      },
+    },
+    afterMergeSnapshot: {
+      dist: {
+        fileMap: {
+          "dist/bar.js": {
+            hash: "b",
+            sizeMap: { raw: 100 },
+            meta: {
+              showFileSizeImpact: ({ sizeImpactMap }) => Math.abs(sizeImpactMap.raw) > 0,
+            },
+          },
+          "dist/foo.js": {
+            hash: "b",
+            sizeMap: { raw: 115 },
+            meta: true,
+          },
+        },
+      },
+    },
+  }),
+  "exclude all impacts": generateComment({
+    baseSnapshot: {
+      dist: {
+        fileMap: {
+          "dist/bar.js": {
+            hash: "a",
+            sizeMap: { raw: 100 },
+            meta: true,
+          },
+        },
+      },
+    },
+    afterMergeSnapshot: {
+      dist: {
+        fileMap: {
+          "dist/bar.js": {
+            hash: "b",
+            sizeMap: { raw: 100 },
+            meta: {
+              showFileSizeImpact: ({ sizeImpactMap }) => Math.abs(sizeImpactMap.raw) > 0,
+            },
+          },
         },
       },
     },

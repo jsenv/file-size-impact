@@ -98,10 +98,10 @@ const renderEachGroup = (renderGroup, { snapshotComparison, trackingConfig }) =>
     if (emptyGroup) {
       return renderEmptyGroup(groupName, trackingConfig[groupName])
     }
-    const impactOnGroup = groupComparisonToFileByFileImpact(groupComparison)
-    const impactCount = Object.keys(impactOnGroup).length
-    const noImpact = impactCount === 0
-    if (noImpact) {
+    const { impactTracked, impactExcluded } = groupComparisonToFileByFileImpact(groupComparison)
+    const impactTrackedCount = Object.keys(impactTracked).length
+    const impactExcludedCount = Object.keys(impactExcluded).length
+    if (impactTrackedCount === 0 && impactExcludedCount === 0) {
       return `<details>
   <summary>${groupName} (0)</summary>
   <p>No impact on files in ${groupName} group.</p>
@@ -109,8 +109,8 @@ const renderEachGroup = (renderGroup, { snapshotComparison, trackingConfig }) =>
     }
 
     return `<details>
-  <summary>${groupName} (${impactCount})</summary>
-  ${renderGroup(impactOnGroup, groupName)}
+  <summary>${groupName} (${impactTrackedCount})</summary>
+  ${renderGroup({ impactTracked, impactExcluded }, groupName)}
 </details>`
   })
 
@@ -132,37 +132,112 @@ ${JSON.stringify(groupConfig, null, "  ")}
 }
 
 const groupComparisonToFileByFileImpact = (groupComparison) => {
-  const fileByFileImpact = {}
+  const impactTracked = {}
+  const impactExcluded = {}
+
+  const addFileSizeImpact = (fileRelativeUrl, { event, sizeImpactMap, base, afterMerge }) => {
+    const meta = event === "deleted" ? base.meta : afterMerge.meta
+    if (
+      metaEnableFileSizeImpact(meta, { fileRelativeUrl, event, sizeImpactMap, base, afterMerge })
+    ) {
+      impactTracked[fileRelativeUrl] = { event, sizeImpactMap, base, afterMerge }
+    } else {
+      impactExcluded[fileRelativeUrl] = { event, sizeImpactMap, base, afterMerge }
+    }
+  }
+
   Object.keys(groupComparison).forEach((fileRelativeUrl) => {
     const { base, afterMerge } = groupComparison[fileRelativeUrl]
 
     if (isAdded({ base, afterMerge })) {
-      fileByFileImpact[fileRelativeUrl] = {
+      const event = "added"
+      const sizeImpactMap = {}
+      const sizeMapAfterMerge = afterMerge.sizeMap
+      Object.keys(sizeMapAfterMerge).forEach((sizeName) => {
+        sizeImpactMap[sizeName] = sizeMapAfterMerge[sizeName]
+      })
+      addFileSizeImpact(fileRelativeUrl, {
+        event,
+        sizeImpactMap,
         base,
         afterMerge,
-        event: "added",
-      }
+      })
       return
     }
 
     if (isDeleted({ base, afterMerge })) {
-      fileByFileImpact[fileRelativeUrl] = {
+      const event = "deleted"
+      const sizeImpactMap = {}
+      const sizeMapOnBase = base.sizeMap
+      Object.keys(sizeMapOnBase).forEach((sizeName) => {
+        sizeImpactMap[sizeName] = -sizeMapOnBase[sizeName]
+      })
+      addFileSizeImpact(fileRelativeUrl, {
+        event,
+        sizeImpactMap,
         base,
         afterMerge,
-        event: "deleted",
-      }
+      })
       return
     }
 
     if (isModified({ base, afterMerge })) {
-      fileByFileImpact[fileRelativeUrl] = {
+      const event = "modified"
+      const sizeImpactMap = {}
+      const sizeMapOnBase = base.sizeMap
+      const sizeMapAfterMerge = afterMerge.sizeMap
+      Object.keys(sizeMapAfterMerge).forEach((sizeName) => {
+        sizeImpactMap[sizeName] = sizeMapAfterMerge[sizeName] - sizeMapOnBase[sizeName]
+      })
+      addFileSizeImpact(fileRelativeUrl, {
+        event,
+        sizeImpactMap,
         base,
         afterMerge,
-        event: "modified",
-      }
+      })
     }
   })
-  return fileByFileImpact
+
+  return { impactTracked, impactExcluded }
+}
+
+const metaEnableFileSizeImpact = (
+  meta,
+  { fileRelativeUrl, event, sizeImpactMap, base, afterMerge },
+) => {
+  if (typeof meta === "boolean") {
+    return meta
+  }
+
+  if (typeof meta === "object") {
+    const { showFileSizeImpact } = meta
+    if (typeof showFileSizeImpact === "boolean") {
+      return showFileSizeImpact
+    }
+
+    if (typeof showFileSizeImpact === "function") {
+      return meta.showFileSizeImpact({
+        fileRelativeUrl,
+        event,
+        sizeImpactMap,
+        sizeMapOnBase: base.sizeMap,
+        sizeMapAfterMerge: afterMerge.sizeMap,
+      })
+    }
+
+    console.warn(
+      `showFileSizeImpact must be a boolean or a function, received ${showFileSizeImpact}`,
+    )
+    return true
+  }
+
+  // it happens only for unit test and I am lazy to rewrite them to explicitely pass
+  if (typeof meta === undefined) {
+    return true
+  }
+
+  console.warn(`meta must be a boolean or a function, received ${meta}`)
+  return Boolean(meta)
 }
 
 const renderGroup = (
