@@ -46,7 +46,6 @@ const tempDirectoryUrl = resolveUrl("./temp/", import.meta.url)
   const manifestUrl = resolveUrl("dist/manifest.json", tempDirectoryUrl)
   await writeFile(fileUrl, `console.log("hello")`)
   await writeFile(manifestUrl, `{ "file.js": "file.hash.js" }`)
-  // const showFileSizeImpact = () => true
 
   const actual = await generateSnapshot({
     logLevel: "warn",
@@ -54,7 +53,7 @@ const tempDirectoryUrl = resolveUrl("./temp/", import.meta.url)
     trackingConfig: {
       dist: {
         "./dist/**/*": {
-          showFileSizeImact: () => true,
+          showFileSizeImpact: () => true,
         },
       },
     },
@@ -75,7 +74,7 @@ const tempDirectoryUrl = resolveUrl("./temp/", import.meta.url)
           sizeMap: { raw: 20 },
           hash: '"14-qK8urhYN/nZoik6niqmvkolkCK0"',
           meta: {
-            showFileSizeImact: () => true,
+            showFileSizeImpact: () => true,
           },
         },
       },
