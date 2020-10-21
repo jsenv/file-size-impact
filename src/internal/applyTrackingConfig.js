@@ -41,7 +41,8 @@ const applyTracking = async (tracking, { projectDirectoryUrl, manifestConfig }) 
     directoryMatchReport = await collectDirectoryMatchReport({
       directoryUrl: projectDirectoryUrl,
       specifierMetaMap,
-      predicate: (meta) => meta.track === true || meta.manifest === true,
+      predicate: (meta) =>
+        meta.track === true || typeof meta.track === "function" || meta.manifest === true,
     })
   } catch (e) {
     const directoryPath = urlToFileSystemPath(projectDirectoryUrl)
@@ -53,20 +54,24 @@ const applyTracking = async (tracking, { projectDirectoryUrl, manifestConfig }) 
   }
 
   const { matchingArray, ignoredArray } = directoryMatchReport
-  const manifestRelativeUrls = []
-  const matchingRelativeUrls = []
-  const ignoredRelativeUrls = ignoredArray.map(({ relativeUrl }) => relativeUrl)
+
+  const trackedMetaMap = {}
+  const ignoredMetaMap = {}
+  const manifestMetaMap = {}
+  ignoredArray.forEach(({ relativeUrl, meta }) => {
+    ignoredMetaMap[meta] = relativeUrl
+  })
   matchingArray.forEach(({ relativeUrl, meta }) => {
     if (meta.manifest) {
-      manifestRelativeUrls.push(relativeUrl)
+      ignoredMetaMap[relativeUrl] = meta
     } else {
-      matchingRelativeUrls.push(relativeUrl)
+      trackedMetaMap[relativeUrl] = meta
     }
   })
 
   return {
-    manifestRelativeUrls,
-    matchingRelativeUrls,
-    ignoredRelativeUrls,
+    trackedMetaMap,
+    ignoredMetaMap,
+    manifestMetaMap,
   }
 }
