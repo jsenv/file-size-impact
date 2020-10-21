@@ -25,16 +25,21 @@ export const generateSnapshot = async ({
     projectDirectoryUrl,
     manifestConfig,
   })
+  const groupNames = Object.keys(groupTrackingResults)
   const snapshot = {}
+  // ensure keys order is the same as trackingConfig (despite Promise.all below)
+  groupNames.forEach((groupName) => {
+    snapshot[groupName] = null
+  })
   await Promise.all(
-    Object.keys(groupTrackingResults).map(async (trackingGroupName) => {
-      const groupTrackingResult = groupTrackingResults[trackingGroupName]
+    groupNames.map(async (groupName) => {
+      const groupTrackingResult = groupTrackingResults[groupName]
       const groupSnapshot = await groupTrackingResultToGroupSnapshot(groupTrackingResult, {
         logger,
         projectDirectoryUrl,
         transformations,
       })
-      snapshot[trackingGroupName] = groupSnapshot
+      snapshot[groupName] = groupSnapshot
     }),
   )
   const snapshotFileContent = JSON.stringify(snapshot, null, "  ")
@@ -47,7 +52,8 @@ const groupTrackingResultToGroupSnapshot = async (
   { logger, projectDirectoryUrl, transformations },
 ) => {
   const manifestMap = {}
-  const { manifestRelativeUrls } = groupTrackingResult
+  const { manifestMetaMap } = groupTrackingResult
+  const manifestRelativeUrls = Object.keys(manifestMetaMap)
   await Promise.all(
     manifestRelativeUrls.map(async (manifestRelativeUrl) => {
       const manifestFileUrl = resolveUrl(manifestRelativeUrl, projectDirectoryUrl)
@@ -56,10 +62,11 @@ const groupTrackingResultToGroupSnapshot = async (
   )
 
   const fileMap = {}
-  const { matchingRelativeUrls } = groupTrackingResult
+  const { trackedMetaMap } = groupTrackingResult
+  const trackedRelativeUrls = Object.keys(trackedMetaMap)
   // we use reduce and not Promise.all() because transformation can be expensive (gzip, brotli)
   // so we won't benefit from concurrency (it might even make things worse)
-  await matchingRelativeUrls.reduce(async (previous, fileRelativeUrl) => {
+  await trackedRelativeUrls.reduce(async (previous, fileRelativeUrl) => {
     await previous
     const fileUrl = resolveUrl(fileRelativeUrl, projectDirectoryUrl)
     const fileContent = await readFile(fileUrl)
@@ -69,6 +76,7 @@ const groupTrackingResultToGroupSnapshot = async (
     fileMap[fileRelativeUrl] = {
       sizeMap,
       hash,
+      meta: trackedMetaMap[fileRelativeUrl],
     }
   }, Promise.resolve())
 

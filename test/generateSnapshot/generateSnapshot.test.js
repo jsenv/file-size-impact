@@ -31,6 +31,7 @@ const tempDirectoryUrl = resolveUrl("./temp/", import.meta.url)
         "dist/file.js": {
           sizeMap: { raw: 20 },
           hash: '"14-qK8urhYN/nZoik6niqmvkolkCK0"',
+          meta: true,
         },
       },
     },
@@ -51,7 +52,9 @@ const tempDirectoryUrl = resolveUrl("./temp/", import.meta.url)
     projectDirectoryUrl: tempDirectoryUrl,
     trackingConfig: {
       dist: {
-        "./dist/**/*": true,
+        "./dist/**/*": {
+          showFileSizeImpact: () => true,
+        },
       },
     },
     transformations,
@@ -70,6 +73,9 @@ const tempDirectoryUrl = resolveUrl("./temp/", import.meta.url)
         "dist/file.hash.js": {
           sizeMap: { raw: 20 },
           hash: '"14-qK8urhYN/nZoik6niqmvkolkCK0"',
+          meta: {
+            showFileSizeImpact: () => true,
+          },
         },
       },
     },

@@ -1,7 +1,10 @@
 import { isModified } from "./helper.js"
 
-export const renderCacheImpact = (groupImpact, { transformations, formatSize, groupName }) => {
-  const groupCacheImpact = groupImpactToGroupCacheImpact(groupImpact)
+export const renderCacheImpact = (
+  { impactTracked },
+  { transformations, formatSize, groupName },
+) => {
+  const groupCacheImpact = groupImpactToGroupCacheImpact(impactTracked)
   const cacheImpactCount = Object.keys(groupCacheImpact).length
   const parts = [
     renderCacheImpactDescription(groupCacheImpact, { groupName }),

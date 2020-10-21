@@ -40,6 +40,7 @@ export const reportFileSizeImpact = async ({
 
   formatSize = jsenvFormatSize,
   cacheImpact = false,
+  catchError = false,
   runLink,
 }) => {
   return wrapExternalFunction(
@@ -234,8 +235,10 @@ ${renderGeneratedBy({ runLink })}`
 <pre>${error.stack}</pre>
 
 ---`)
-
-        return { error, comment }
+        if (catchError) {
+          return { error, comment }
+        }
+        throw error
       }
 
       let afterMergeSnapshot
@@ -272,8 +275,10 @@ ${renderGeneratedBy({ runLink })}`
 <pre>${error.stack}</pre>
 
 ---`)
-
-        return { error, comment }
+        if (catchError) {
+          return { error, comment }
+        }
+        throw error
       }
 
       const comment = await patchOrPostComment(
