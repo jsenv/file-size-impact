@@ -381,9 +381,9 @@ const examples = {
         fileMap: {
           "dist/bar.js": {
             hash: "b",
-            sizeMap: { raw: 100 },
+            sizeMap: { raw: 101 },
             meta: {
-              showFileSizeImpact: ({ sizeImpactMap }) => Math.abs(sizeImpactMap.raw) > 0,
+              showFileSizeImpact: ({ sizeImpactMap }) => Math.abs(sizeImpactMap.raw) > 10,
             },
           },
         },
@@ -401,7 +401,7 @@ const examples = {
           },
           "dist/foo.js": {
             hash: "a",
-            sizeMap: { raw: 100 },
+            sizeMap: { raw: 101 },
             meta: true,
           },
         },
@@ -412,9 +412,9 @@ const examples = {
         fileMap: {
           "dist/bar.js": {
             hash: "b",
-            sizeMap: { raw: 100 },
+            sizeMap: { raw: 101 },
             meta: {
-              showFileSizeImpact: ({ sizeImpactMap }) => Math.abs(sizeImpactMap.raw) > 0,
+              showFileSizeImpact: ({ sizeImpactMap }) => Math.abs(sizeImpactMap.raw) > 10,
             },
           },
           "dist/foo.js": {
@@ -505,9 +505,9 @@ const examples = {
         fileMap: {
           "dist/bar.js": {
             hash: "b",
-            sizeMap: { raw: 100 },
+            sizeMap: { raw: 101 },
             meta: {
-              showFileSizeImpact: ({ sizeImpactMap }) => Math.abs(sizeImpactMap.raw) > 0,
+              showFileSizeImpact: ({ sizeImpactMap }) => Math.abs(sizeImpactMap.raw) > 10,
               showCacheImpact: true,
             },
           },

@@ -381,7 +381,7 @@
       </tr>
     </tfoot>
   </table>
-  <p>2 files  in returning users cache will be invalidated</p>
+  <p>2 files in returning users cache will be invalidated</p>
   <table>
     <thead>
       <tr>
@@ -430,14 +430,14 @@
     <tbody>
       <tr>
         <td nowrap>dist/bar.js</td>
-        <td nowrap>0 (100)</td>
+        <td nowrap>+1 (101)</td>
         <td nowrap>modified</td>
       </tr>
     </tbody>
     <tfoot>
       <tr>
         <td nowrap><strong>Total</strong></td>
-        <td nowrap>0 (100)</td>
+        <td nowrap>+1 (101)</td>
         <td nowrap></td>
       </tr>
     </tfoot>
@@ -464,14 +464,14 @@
     <tbody>
       <tr>
         <td nowrap>dist/foo.js</td>
-        <td nowrap>+15 (115)</td>
+        <td nowrap>+14 (115)</td>
         <td nowrap>modified</td>
       </tr>
     </tbody>
     <tfoot>
       <tr>
         <td nowrap><strong>Total</strong></td>
-        <td nowrap>+15 (115)</td>
+        <td nowrap>+14 (115)</td>
         <td nowrap></td>
       </tr>
     </tfoot>
@@ -490,14 +490,14 @@
     <tbody>
       <tr>
         <td nowrap>dist/bar.js</td>
-        <td nowrap>0 (100)</td>
+        <td nowrap>+1 (101)</td>
         <td nowrap>modified</td>
       </tr>
     </tbody>
     <tfoot>
       <tr>
         <td nowrap><strong>Total</strong></td>
-        <td nowrap>0 (100)</td>
+        <td nowrap>+1 (101)</td>
         <td nowrap></td>
       </tr>
     </tfoot>
@@ -662,13 +662,13 @@
     <tbody>
       <tr>
         <td nowrap>dist/bar.js</td>
-        <td nowrap>100</td>
+        <td nowrap>101</td>
       </tr>
     </tbody>
     <tfoot>
       <tr>
         <td nowrap><strong>Total</strong></td>
-        <td nowrap>100</td>
+        <td nowrap>101</td>
       </tr>
     </tfoot>
   </table>
@@ -686,14 +686,14 @@
     <tbody>
       <tr>
         <td nowrap>dist/bar.js</td>
-        <td nowrap>0 (100)</td>
+        <td nowrap>+1 (101)</td>
         <td nowrap>modified</td>
       </tr>
     </tbody>
     <tfoot>
       <tr>
         <td nowrap><strong>Total</strong></td>
-        <td nowrap>0 (100)</td>
+        <td nowrap>+1 (101)</td>
         <td nowrap></td>
       </tr>
     </tfoot>
