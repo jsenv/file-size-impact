@@ -1,39 +1,4 @@
-export const renderFileSizeImpact = (
-  { impactTracked, impactExcluded },
-  { transformations, formatSize, pullRequestHead, pullRequestBase, groupName },
-) => {
-  let message = `${renderFileSizeImpactDescription(impactTracked, {
-    pullRequestHead,
-    pullRequestBase,
-    groupName,
-  })}`
-
-  const impactTrackedCount = Object.keys(impactTracked).length
-  if (impactTrackedCount > 0) {
-    message = `${message}
-  ${renderFileSizeImpactTable(impactTracked, { transformations, formatSize })}`
-  }
-
-  const impactExcludedCount = Object.keys(impactExcluded).length
-  if (impactExcludedCount > 0) {
-    message = `${message}
-  ${renderExcludedFileSizeImpact(impactExcluded, { transformations, formatSize })}`
-  }
-
-  return message
-}
-
-const renderFileSizeImpactDescription = (
-  groupImpact,
-  { pullRequestHead, pullRequestBase, groupName },
-) => {
-  const impactCount = Object.keys(groupImpact).length
-  return `<p>Merging ${pullRequestHead} into ${pullRequestBase} will impact ${
-    impactCount === 1 ? "1 file" : `${impactCount} files`
-  } in ${groupName} group.</p>`
-}
-
-const renderFileSizeImpactTable = (groupImpact, { transformations, formatSize }) => {
+export const renderFileSizeImpactTable = (groupImpact, { transformations, formatSize }) => {
   return `<table>
     <thead>
       ${renderFileSizeImpactTableHeader(transformations)}
@@ -138,14 +103,4 @@ const renderFileSizeImpactTableFooter = (fileByFileImpact, { transformations, fo
         ${footerCells.join(`
         `)}
       </tr>`
-}
-
-const renderExcludedFileSizeImpact = (impactExcluded, { transformations, formatSize }) => {
-  const impactExcludedCount = Object.keys(impactExcluded).length
-  return `<details>
-    <summary>Show excluded ${
-      impactExcludedCount === 1 ? "impact" : "impacts"
-    } (${impactExcludedCount})</summary>
-    ${renderFileSizeImpactTable(impactExcluded, { transformations, formatSize })}
-  </details>`
 }

@@ -1,93 +1,15 @@
-import { isModified } from "./helper.js"
-
-export const renderCacheImpact = (
-  { impactTracked },
-  { transformations, formatSize, groupName },
-) => {
-  const groupCacheImpact = groupImpactToGroupCacheImpact(impactTracked)
-  const cacheImpactCount = Object.keys(groupCacheImpact).length
-  const parts = [
-    renderCacheImpactDescription(groupCacheImpact, { groupName }),
-    ...(cacheImpactCount
-      ? [renderCacheImpactTable(groupCacheImpact, { transformations, formatSize })]
-      : []),
-  ]
-  return parts.join(`
-  `)
+export const renderCacheImpactDescription = (cacheImpact) => {
+  const cacheImpactCount = Object.keys(cacheImpact).length
+  return `<p>${formulateFileQuantity(
+    cacheImpactCount,
+  )} in returning users cache will be invalidated</p>`
 }
 
-const groupImpactToGroupCacheImpact = (groupImpact) => {
-  const groupCacheImpact = {}
-  Object.keys(groupImpact).forEach((fileRelativePath) => {
-    const fileImpact = groupImpact[fileRelativePath]
-    if (fileImpact.event === "added" || fileImpact.event === "modified") {
-      groupCacheImpact[fileRelativePath] = fileImpact
-    }
-  })
-  return groupCacheImpact
+const formulateFileQuantity = (count) => {
+  return count === 1 ? `1 file` : `${count} files`
 }
 
-const renderCacheImpactDescription = (groupCacheImpact, { groupName }) => {
-  return `<p>${renderCacheImpactLeftPart(
-    groupCacheImpact,
-  )} in ${groupName} group -> ${renderCacheImpactRightPart(groupCacheImpact)}</p>`
-}
-
-const renderCacheImpactLeftPart = (groupCacheImpact) => {
-  let addedCount = 0
-  let modifiedCount = 0
-  Object.keys(groupCacheImpact).forEach((fileRelativePath) => {
-    if (groupCacheImpact[fileRelativePath].event === "modified") {
-      modifiedCount++
-    } else {
-      addedCount++
-    }
-  })
-
-  if (modifiedCount === 0 && addedCount === 0) {
-    return `No file modified or added`
-  }
-  if (addedCount === 0) {
-    return renderModifiedMessage(modifiedCount)
-  }
-  if (modifiedCount === 0) {
-    return renderAddedMessage(addedCount)
-  }
-  return `${renderAddedMessage(addedCount)} and ${renderModifiedMessage(modifiedCount)}`
-}
-
-const renderModifiedMessage = (modifiedCount) => {
-  if (modifiedCount === 1) {
-    return `1 file modified`
-  }
-  if (modifiedCount > 1) {
-    return `${modifiedCount} files modified`
-  }
-  return ""
-}
-
-const renderAddedMessage = (addedCount) => {
-  if (addedCount === 1) {
-    return `1 file added`
-  }
-  if (addedCount > 1) {
-    return `${addedCount} files added`
-  }
-  return ""
-}
-
-const renderCacheImpactRightPart = (cacheImpactOnGroup) => {
-  const cacheImpactCount = Object.keys(cacheImpactOnGroup).length
-  if (cacheImpactCount === 0) {
-    return `no impact on cache.`
-  }
-  if (cacheImpactCount === 1) {
-    return `1 file to download for a returning user.`
-  }
-  return `${cacheImpactCount} files to download for a returning user.`
-}
-
-const renderCacheImpactTable = (cacheImpactOnGroup, { transformations, formatSize }) => {
+export const renderCacheImpactTable = (cacheImpactOnGroup, { transformations, formatSize }) => {
   return `<table>
     <thead>
       ${renderCacheImpactTableHeader(transformations)}
@@ -105,7 +27,6 @@ const renderCacheImpactTableHeader = (transformations) => {
   const headerCells = [
     `<th nowrap>File</th>`,
     ...Object.keys(transformations).map((sizeName) => `<th nowrap>${sizeName}</th>`),
-    `<th nowrap>Event</th>`,
   ]
 
   return `<tr>
@@ -131,7 +52,6 @@ const renderCacheImpactTableBody = (cacheImpactOnGroup, { transformations, forma
     const cells = [
       `<td nowrap>${fileRelativePath}</td>`,
       ...sizeNames.map((sizeName) => `<td nowrap>${renderSize(file, sizeName)}</td>`),
-      `<td nowrap>${isModified(file) ? "modified" : "added"}</td>`,
     ]
     lines.push(`
         ${cells.join(`
@@ -162,7 +82,6 @@ const renderCacheImpactTableFooter = (cacheImpactOnGroup, { transformations, for
     ...Object.keys(transformations).map(
       (sizeName) => `<td nowrap>${formatSize(renderTotal(sizeName))}</td>`,
     ),
-    `<td nowrap></td>`,
   ]
 
   return `<tr>

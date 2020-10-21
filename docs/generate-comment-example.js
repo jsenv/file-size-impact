@@ -364,16 +364,11 @@ const examples = {
       },
     },
   }),
-  "exclude 1 size impact over 2": generateComment({
+  "size impact 0/1": generateComment({
     baseSnapshot: {
       dist: {
         fileMap: {
           "dist/bar.js": {
-            hash: "a",
-            sizeMap: { raw: 100 },
-            meta: true,
-          },
-          "dist/foo.js": {
             hash: "a",
             sizeMap: { raw: 100 },
             meta: true,
@@ -386,9 +381,40 @@ const examples = {
         fileMap: {
           "dist/bar.js": {
             hash: "b",
-            sizeMap: { raw: 100 },
+            sizeMap: { raw: 101 },
             meta: {
-              showFileSizeImpact: ({ sizeImpactMap }) => Math.abs(sizeImpactMap.raw) > 0,
+              showFileSizeImpact: ({ sizeImpactMap }) => Math.abs(sizeImpactMap.raw) > 10,
+            },
+          },
+        },
+      },
+    },
+  }),
+  "size impact 1/2": generateComment({
+    baseSnapshot: {
+      dist: {
+        fileMap: {
+          "dist/bar.js": {
+            hash: "a",
+            sizeMap: { raw: 100 },
+            meta: true,
+          },
+          "dist/foo.js": {
+            hash: "a",
+            sizeMap: { raw: 101 },
+            meta: true,
+          },
+        },
+      },
+    },
+    afterMergeSnapshot: {
+      dist: {
+        fileMap: {
+          "dist/bar.js": {
+            hash: "b",
+            sizeMap: { raw: 101 },
+            meta: {
+              showFileSizeImpact: ({ sizeImpactMap }) => Math.abs(sizeImpactMap.raw) > 10,
             },
           },
           "dist/foo.js": {
@@ -400,11 +426,73 @@ const examples = {
       },
     },
   }),
-  "exclude all impacts": generateComment({
+  "size impact 0/1, cache impact 1/1": generateComment({
+    cacheImpact: true,
+    baseSnapshot: {
+      dist: {
+        fileMap: {
+          "dist/foo.js": {
+            hash: "a",
+            sizeMap: { raw: 100 },
+            meta: true,
+          },
+        },
+      },
+    },
+    afterMergeSnapshot: {
+      dist: {
+        fileMap: {
+          "dist/foo.js": {
+            hash: "b",
+            sizeMap: { raw: 115 },
+            meta: {
+              showFileSizeImpact: false,
+              showCacheImpact: true,
+            },
+          },
+        },
+      },
+    },
+  }),
+  "size impact 1/1, cache impact 0/1": generateComment({
+    cacheImpact: true,
+    baseSnapshot: {
+      dist: {
+        fileMap: {
+          "dist/foo.js": {
+            hash: "a",
+            sizeMap: { raw: 100 },
+            meta: true,
+          },
+        },
+      },
+    },
+    afterMergeSnapshot: {
+      dist: {
+        fileMap: {
+          "dist/foo.js": {
+            hash: "b",
+            sizeMap: { raw: 115 },
+            meta: {
+              showFileSizeImpact: true,
+              showCacheImpact: false,
+            },
+          },
+        },
+      },
+    },
+  }),
+  "size impact 1/2, cache impact 1/2": generateComment({
+    cacheImpact: true,
     baseSnapshot: {
       dist: {
         fileMap: {
           "dist/bar.js": {
+            hash: "a",
+            sizeMap: { raw: 100 },
+            meta: true,
+          },
+          "dist/foo.js": {
             hash: "a",
             sizeMap: { raw: 100 },
             meta: true,
@@ -417,9 +505,18 @@ const examples = {
         fileMap: {
           "dist/bar.js": {
             hash: "b",
-            sizeMap: { raw: 100 },
+            sizeMap: { raw: 101 },
             meta: {
-              showFileSizeImpact: ({ sizeImpactMap }) => Math.abs(sizeImpactMap.raw) > 0,
+              showFileSizeImpact: ({ sizeImpactMap }) => Math.abs(sizeImpactMap.raw) > 10,
+              showCacheImpact: true,
+            },
+          },
+          "dist/foo.js": {
+            hash: "b",
+            sizeMap: { raw: 115 },
+            meta: {
+              showFileSizeImpact: true,
+              showCacheImpact: false,
             },
           },
         },
