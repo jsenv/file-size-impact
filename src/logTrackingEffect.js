@@ -21,18 +21,18 @@ export const logTrackingEffect = async ({
   })
 }
 
-const logGroupTrackingEffect = (groupTrackingResult, groupTrackingName) => {
+const logGroupTrackingEffect = (groupTrackingResult, groupTrackingName, { maxFileDisplayed }) => {
   console.log(`
 ${groupTrackingName}
 ---------------------
 [tracked]
-${formatTrackedLog(groupTrackingResult.trackedMetaMap)}
+${formatTrackedLog(groupTrackingResult.trackedMetaMap, { maxFileDisplayed })}
 
 [ignored]
-${formatIgnoredLog(groupTrackingResult.ignoredMetaMap)}
+${formatIgnoredLog(groupTrackingResult.ignoredMetaMap, { maxFileDisplayed })}
 
 [manifest]
-${formatManifestLog(groupTrackingResult.manifestMetaMap)}`)
+${formatManifestLog(groupTrackingResult.manifestMetaMap, { maxFileDisplayed })}`)
 }
 
 const formatTrackedLog = (trackedMetaMap, { maxFileDisplayed }) => {

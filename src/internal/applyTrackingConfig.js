@@ -57,14 +57,14 @@ const applyTracking = async (tracking, { projectDirectoryUrl, manifestConfig }) 
   const trackedMetaMap = {}
   const ignoredMetaMap = {}
   const manifestMetaMap = {}
-  ignoredArray.forEach(({ relativeUrl, meta }) => {
-    ignoredMetaMap[meta] = relativeUrl
+  ignoredArray.forEach(({ relativeUrl }) => {
+    ignoredMetaMap[relativeUrl] = null
   })
   matchingArray.forEach(({ relativeUrl, meta }) => {
     if (meta.manifest) {
-      manifestMetaMap[relativeUrl] = meta
+      manifestMetaMap[relativeUrl] = meta.manifest
     } else {
-      trackedMetaMap[relativeUrl] = meta
+      trackedMetaMap[relativeUrl] = meta.track
     }
   })
 

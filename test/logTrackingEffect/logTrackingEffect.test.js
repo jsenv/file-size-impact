@@ -15,4 +15,5 @@ logTrackingEffect({
       "./dist-2/**/*.js": true,
     },
   },
+  // maxFileDisplayed: 2,
 })
