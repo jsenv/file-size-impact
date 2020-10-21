@@ -5,6 +5,7 @@ export const logTrackingEffect = async ({
   projectDirectoryUrl,
   trackingConfig,
   manifestConfig,
+  maxFileDisplayed = 30,
 }) => {
   projectDirectoryUrl = assertAndNormalizeDirectoryUrl(projectDirectoryUrl)
 
@@ -14,7 +15,9 @@ export const logTrackingEffect = async ({
   })
 
   Object.keys(groupTrackingResults).forEach((groupTrackingName) => {
-    logGroupTrackingEffect(groupTrackingResults[groupTrackingName], groupTrackingName)
+    logGroupTrackingEffect(groupTrackingResults[groupTrackingName], groupTrackingName, {
+      maxFileDisplayed,
+    })
   })
 }
 
@@ -22,33 +25,35 @@ const logGroupTrackingEffect = (groupTrackingResult, groupTrackingName) => {
   console.log(`
 ${groupTrackingName}
 ---------------------
-[matching]
-${formatMatchingLog(groupTrackingResult.matchingRelativeUrls)}
+[tracked]
+${formatTrackedLog(groupTrackingResult.trackedMetaMap)}
 
 [ignored]
-${formatIgnoredLog(groupTrackingResult.ignoredRelativeUrls)}
+${formatIgnoredLog(groupTrackingResult.ignoredMetaMap)}
 
 [manifest]
-${formatManifestLog(groupTrackingResult.manifestRelativeUrls)}`)
+${formatManifestLog(groupTrackingResult.manifestMetaMap)}`)
 }
 
-const MAX_FILE_DISPLAYED = 15
+const formatTrackedLog = (trackedMetaMap, { maxFileDisplayed }) => {
+  const trackedRelativeUrls = Object.keys(trackedMetaMap)
 
-const formatMatchingLog = (matchingRelativeUrls) => {
-  if (matchingRelativeUrls.length > MAX_FILE_DISPLAYED) {
-    const remaining = matchingRelativeUrls.length - MAX_FILE_DISPLAYED
-    return `${matchingRelativeUrls.slice(0, MAX_FILE_DISPLAYED).join(`
+  if (trackedRelativeUrls.length > maxFileDisplayed) {
+    const remaining = trackedRelativeUrls.length - maxFileDisplayed
+    return `${trackedRelativeUrls.slice(0, maxFileDisplayed).join(`
 `)}
 ... ${remaining} more ...`
   }
-  return matchingRelativeUrls.join(`
+  return trackedRelativeUrls.join(`
 `)
 }
 
-const formatIgnoredLog = (ignoredRelativeUrls) => {
-  if (ignoredRelativeUrls.length > MAX_FILE_DISPLAYED) {
-    const remaining = ignoredRelativeUrls.length - MAX_FILE_DISPLAYED
-    return `${ignoredRelativeUrls.slice(0, MAX_FILE_DISPLAYED).join(`
+const formatIgnoredLog = (ignoredMetaMap, { maxFileDisplayed }) => {
+  const ignoredRelativeUrls = Object.keys(ignoredMetaMap)
+
+  if (ignoredRelativeUrls.length > maxFileDisplayed) {
+    const remaining = ignoredRelativeUrls.length - maxFileDisplayed
+    return `${ignoredRelativeUrls.slice(0, maxFileDisplayed).join(`
 `)}
 ... ${remaining} more ...`
   }
@@ -56,10 +61,12 @@ const formatIgnoredLog = (ignoredRelativeUrls) => {
 `)
 }
 
-const formatManifestLog = (manifestRelativeUrls) => {
-  if (manifestRelativeUrls.length > MAX_FILE_DISPLAYED) {
-    const remaining = manifestRelativeUrls.length - MAX_FILE_DISPLAYED
-    return `${manifestRelativeUrls.slice(0, MAX_FILE_DISPLAYED).join(`
+const formatManifestLog = (manifestMetaMap, { maxFileDisplayed }) => {
+  const manifestRelativeUrls = Object.keys(manifestMetaMap)
+
+  if (manifestRelativeUrls.length > maxFileDisplayed) {
+    const remaining = manifestRelativeUrls.length - maxFileDisplayed
+    return `${manifestRelativeUrls.slice(0, maxFileDisplayed).join(`
 `)}
 ... ${remaining} more ...`
   }
