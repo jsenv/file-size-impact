@@ -25,16 +25,21 @@ export const generateSnapshot = async ({
     projectDirectoryUrl,
     manifestConfig,
   })
+  const groupNames = Object.keys(groupTrackingResults)
   const snapshot = {}
+  // ensure keys order is the same as trackingConfig (despite Promise.all below)
+  groupNames.forEach((groupName) => {
+    snapshot[groupName] = null
+  })
   await Promise.all(
-    Object.keys(groupTrackingResults).map(async (trackingGroupName) => {
-      const groupTrackingResult = groupTrackingResults[trackingGroupName]
+    groupNames.map(async (groupName) => {
+      const groupTrackingResult = groupTrackingResults[groupName]
       const groupSnapshot = await groupTrackingResultToGroupSnapshot(groupTrackingResult, {
         logger,
         projectDirectoryUrl,
         transformations,
       })
-      snapshot[trackingGroupName] = groupSnapshot
+      snapshot[groupName] = groupSnapshot
     }),
   )
   const snapshotFileContent = JSON.stringify(snapshot, null, "  ")
