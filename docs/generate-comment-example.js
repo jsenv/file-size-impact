@@ -282,7 +282,7 @@ const examples = {
         fileMap: {
           "dist/foo.js": {
             hash: "a",
-            sizeMap: { raw: 100 },
+            sizeMap: { raw: 300 },
             meta: true,
           },
           "dist/bar.js": {
@@ -298,7 +298,7 @@ const examples = {
         fileMap: {
           "dist/bar.js": {
             hash: "b",
-            sizeMap: { raw: 110 },
+            sizeMap: { raw: 100 },
             meta: true,
           },
         },
@@ -383,7 +383,7 @@ const examples = {
             hash: "b",
             sizeMap: { raw: 101 },
             meta: {
-              showFileSizeImpact: ({ sizeImpactMap }) => Math.abs(sizeImpactMap.raw) > 10,
+              showSizeImpact: ({ sizeImpactMap }) => Math.abs(sizeImpactMap.raw) > 10,
             },
           },
         },
@@ -414,7 +414,7 @@ const examples = {
             hash: "b",
             sizeMap: { raw: 101 },
             meta: {
-              showFileSizeImpact: ({ sizeImpactMap }) => Math.abs(sizeImpactMap.raw) > 10,
+              showSizeImpact: ({ sizeImpactMap }) => Math.abs(sizeImpactMap.raw) > 10,
             },
           },
           "dist/foo.js": {
@@ -446,7 +446,7 @@ const examples = {
             hash: "b",
             sizeMap: { raw: 115 },
             meta: {
-              showFileSizeImpact: false,
+              showSizeImpact: false,
               showCacheImpact: true,
             },
           },
@@ -474,7 +474,7 @@ const examples = {
             hash: "b",
             sizeMap: { raw: 115 },
             meta: {
-              showFileSizeImpact: true,
+              showSizeImpact: true,
               showCacheImpact: false,
             },
           },
@@ -507,7 +507,7 @@ const examples = {
             hash: "b",
             sizeMap: { raw: 101 },
             meta: {
-              showFileSizeImpact: ({ sizeImpactMap }) => Math.abs(sizeImpactMap.raw) > 10,
+              showSizeImpact: ({ sizeImpactMap }) => Math.abs(sizeImpactMap.raw) > 10,
               showCacheImpact: true,
             },
           },
@@ -515,7 +515,7 @@ const examples = {
             hash: "b",
             sizeMap: { raw: 115 },
             meta: {
-              showFileSizeImpact: true,
+              showSizeImpact: true,
               showCacheImpact: false,
             },
           },

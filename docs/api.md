@@ -13,9 +13,7 @@
   - [formatSize](#formatSize)
 - [readGithubWorkflowEnv](#readGithubWorkflowEnv)
 - [Exclude specific size impacts](#Exclude-specific-size-impacts)
-  - [showFileSizeImpact](#showFileSizeImpact)
-- [Exclude specific cache impacts](#Exclude-specific-cache-impacts)
-  - [showCacheImpact](#showCacheImpact)
+  - [showSizeImpact](#showSizeImpact)
 
 # reportFileSizeImpact
 
@@ -170,6 +168,12 @@ const transformations = {
 
 ![screenshot of pull request comment with cache impact highlighted](./cache-impact-highlighted.png)
 
+When you enable this parameter it's possible to see a file reported with a file size impact of 0.
+
+![screenshot of pull request comment with a size impact of 0](./cache-impact-zero-size.png)
+
+This is because even if the file size is not impacted, a returning user still have to download a modified file.
+
 ## runLink
 
 `runLink` parameter allow to put a link in the generated comment body. It is used to indicates where file size impact was runned.
@@ -212,11 +216,23 @@ const {
 
 # Exclude specific size impacts
 
-Size impact analysis occurs only if the file was deleted, added or modified between the base branch and after merging. To detect if the file is modified we compare file content on base branch and after merging. By default every file size impact is shown. You can control if the file ends up displayed in the github comment using `showFileSizeImpact` documented below.
+Size impact analysis occurs only if the file was deleted, added or modified between the base branch and after merging. To detect if the file is modified we compare file content on base branch and after merging. By default every file size impact is shown. You can control if the file ends up displayed in the github comment using [showSizeImpact](#showSizeImpact).
 
-## showFileSizeImpact
+When excluded, an impact is not taken into account.
 
-`showFileSizeImpact` is a function that can appear in your `trackingConfig` as shown in the code below.
+![screenshot of pull request comment with collapsed groups](./hidden-details-nested.png)
+
+But when a group contains excluded impacts it has a details with excluded impacts inside.
+
+![screenshot of pull request comment with collapsed hidden impacts](./hidden-details-collapsed.png)
+
+Opening the hidden details shows impacts that where excluded in this group.
+
+![screenshot of pull request comment with expanded hidden impacts](./hidden-details-expanded.png)
+
+## showSizeImpact
+
+`showSizeImpact` is a function that can appear in your `trackingConfig` as shown in the code below.
 
 ```js
 import { reportFileSizeImpact, raw } from "@jsenv/file-size-impact"
@@ -226,17 +242,17 @@ await reportFileSizeImpact({
   trackingConfig: {
     dist: {
       "**/*.html": {
-        showFileSizeImpact: ({ sizeImpactMap }) => Math.abs(sizeImpactMap.raw) > 10,
+        showSizeImpact: ({ sizeImpactMap }) => Math.abs(sizeImpactMap.raw) > 10,
       },
     },
   },
 })
 ```
 
-`showFileSizeImpact` receives named parameters and should return a boolean. To illustrates the named parameter you will receive check the code below. It shows an example of how it could be called.
+`showSizeImpact` receives named parameters and should return a boolean. To illustrates the named parameter you will receive check the code below. It shows an example of how it could be called.
 
 ```js
-showFileSizeImpact({
+showSizeImpact({
   fileRelativeUrl: "dist/file.js",
   event: "modified",
   sizeImpactMap: {
@@ -273,27 +289,3 @@ An object mapping all transformations to a number corresponding to file size on 
 ### sizeMapAfterMerge
 
 An object mapping all transformations to a number corresponding to file size after merging pr in base branch. This parameter is `null` when event is `deleted` because the file is gone.
-
-# Exclude specific cache impacts
-
-If you enable [cacheImpact](#cacheImpact) parameter you can also exclude selectively some cache impacts. It can be useful when you know in advance a given file will change. Certainly because you are injecting a unique data into that file at build time like a timestamp or a version number. In that case you can use `showCacheImpact` documented below.
-
-## showCacheImpact
-
-Reuses same api than [showFileSizeImpact](#showFileSizeImpact). It can appear in `trackingConfig` and can be combined with `showFileSizeImpact`.
-
-```js
-import { reportFileSizeImpact, raw } from "@jsenv/file-size-impact"
-
-await reportFileSizeImpact({
-  transformations: { raw },
-  trackingConfig: {
-    dist: {
-      "**/*.html": {
-        showFileSizeImpact: ({ sizeImpactMap }) => Math.abs(sizeImpactMap.raw) > 10,
-        showCacheImpact: false,
-      },
-    },
-  },
-})
-```

@@ -53,7 +53,7 @@ const tempDirectoryUrl = resolveUrl("./temp/", import.meta.url)
     trackingConfig: {
       dist: {
         "./dist/**/*": {
-          showFileSizeImpact: () => true,
+          showSizeImpact: () => true,
         },
       },
     },
@@ -74,7 +74,7 @@ const tempDirectoryUrl = resolveUrl("./temp/", import.meta.url)
           sizeMap: { raw: 20 },
           hash: '"14-qK8urhYN/nZoik6niqmvkolkCK0"',
           meta: {
-            showFileSizeImpact: () => true,
+            showSizeImpact: () => true,
           },
         },
       },

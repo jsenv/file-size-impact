@@ -32,6 +32,7 @@ export const reportFileSizeImpact = async ({
   installCommand = "npm install",
   buildCommand = "npm run-script build",
 
+  cacheImpact = false,
   trackingConfig = jsenvTrackingConfig,
   manifestConfig = {
     "./dist/**/manifest.json": true,
@@ -39,7 +40,7 @@ export const reportFileSizeImpact = async ({
   transformations = { raw: rawTransform },
 
   formatSize = jsenvFormatSize,
-  cacheImpact = false,
+  maxLinesPerTable = 500,
   catchError = false,
   runLink,
 }) => {
@@ -285,12 +286,13 @@ ${renderGeneratedBy({ runLink })}`
         formatComment({
           pullRequestBase,
           pullRequestHead,
+          cacheImpact,
           trackingConfig,
           transformations,
           baseSnapshot,
           afterMergeSnapshot,
           formatSize,
-          cacheImpact,
+          maxLinesPerTable,
         }),
       )
 
