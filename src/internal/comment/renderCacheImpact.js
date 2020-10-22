@@ -9,13 +9,20 @@ const formulateFileQuantity = (count) => {
   return count === 1 ? `1 file` : `${count} files`
 }
 
-export const renderCacheImpactTable = (cacheImpactOnGroup, { transformations, formatSize }) => {
+export const renderCacheImpactTable = (
+  cacheImpactOnGroup,
+  { transformations, formatSize, maxLinePerTable },
+) => {
   return `<table>
     <thead>
       ${renderCacheImpactTableHeader(transformations)}
     </thead>
     <tbody>
-      ${renderCacheImpactTableBody(cacheImpactOnGroup, { transformations, formatSize })}
+      ${renderCacheImpactTableBody(cacheImpactOnGroup, {
+        transformations,
+        formatSize,
+        maxLinePerTable,
+      })}
     </tbody>
     <tfoot>
       ${renderCacheImpactTableFooter(cacheImpactOnGroup, { transformations, formatSize })}
@@ -35,7 +42,10 @@ const renderCacheImpactTableHeader = (transformations) => {
       </tr>`
 }
 
-const renderCacheImpactTableBody = (cacheImpactOnGroup, { transformations, formatSize }) => {
+const renderCacheImpactTableBody = (
+  cacheImpactOnGroup,
+  { transformations, formatSize, maxLinePerTable },
+) => {
   const lines = []
   const sizeNames = Object.keys(transformations)
 
