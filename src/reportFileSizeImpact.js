@@ -19,7 +19,7 @@ import { generateSnapshot } from "./internal/generateSnapshot.js"
 import { jsenvTrackingConfig } from "./jsenvTrackingConfig.js"
 import { transform as rawTransform } from "./rawTransformation.js"
 
-export const reportPullRequestImpactOnFiles = async ({
+export const reportFileSizeImpact = async ({
   cancellationToken = createCancellationTokenForProcess(),
   logLevel,
   commandLogs = false,
@@ -32,7 +32,6 @@ export const reportPullRequestImpactOnFiles = async ({
   installCommand = "npm install",
   buildCommand = "npm run-script build",
 
-  sizeImpact = true,
   cacheImpact = false,
   trackingConfig = jsenvTrackingConfig,
   manifestConfig = {
@@ -287,7 +286,6 @@ ${renderGeneratedBy({ runLink })}`
         formatComment({
           pullRequestBase,
           pullRequestHead,
-          sizeImpact,
           cacheImpact,
           trackingConfig,
           transformations,
