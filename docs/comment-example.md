@@ -273,14 +273,14 @@
       </tr>
       <tr>
         <td nowrap>dist/foo.js</td>
-        <td nowrap>-100 (0)</td>
+        <td nowrap>-300 (0)</td>
         <td nowrap>deleted</td>
       </tr>
     </tbody>
     <tfoot>
       <tr>
         <td nowrap><strong>Total size impact</strong></td>
-        <td nowrap>-100 (100)</td>
+        <td nowrap>-300 (100)</td>
         <td nowrap></td>
       </tr>
       <tr>
