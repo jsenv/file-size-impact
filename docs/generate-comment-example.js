@@ -282,7 +282,7 @@ const examples = {
         fileMap: {
           "dist/foo.js": {
             hash: "a",
-            sizeMap: { raw: 100 },
+            sizeMap: { raw: 300 },
             meta: true,
           },
           "dist/bar.js": {
@@ -298,7 +298,7 @@ const examples = {
         fileMap: {
           "dist/bar.js": {
             hash: "b",
-            sizeMap: { raw: 110 },
+            sizeMap: { raw: 100 },
             meta: true,
           },
         },

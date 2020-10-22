@@ -268,7 +268,7 @@
     <tbody>
       <tr>
         <td nowrap>dist/bar.js<sup>*</sup></td>
-        <td nowrap>+10 (110)</td>
+        <td nowrap>0 (100)</td>
         <td nowrap>modified</td>
       </tr>
       <tr>
@@ -280,12 +280,12 @@
     <tfoot>
       <tr>
         <td nowrap><strong>Total size impact</strong></td>
-        <td nowrap>-90 (110)</td>
+        <td nowrap>-100 (100)</td>
         <td nowrap></td>
       </tr>
       <tr>
         <td nowrap><strong>Total cache impact<sup>*</sup></strong></td>
-        <td nowrap>110</td>
+        <td nowrap>100</td>
         <td nowrap></td>
       </tr>
     </tfoot>
