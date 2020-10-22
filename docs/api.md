@@ -168,7 +168,11 @@ const transformations = {
 
 ![screenshot of pull request comment with cache impact highlighted](./cache-impact-highlighted.png)
 
-When you enable this parameter it's possible to see a file reported with a file size impact of 0. This is because even if the file size is not impacted, a returning user still have to download a modified file.
+When you enable this parameter it's possible to see a file reported with a file size impact of 0.
+
+![screenshot of pull request comment with a size impact of 0](./cache-impact-zero-size.png)
+
+This is because even if the file size is not impacted, a returning user still have to download a modified file.
 
 ## runLink
 
