@@ -145,8 +145,8 @@ const renderTotalSizeImpact = (fileByFileImpact, sizeName, { formatSize }) => {
   return `${formatSize(totalSizeImpact, { diff: true })} (${formatSize(totalSizeAfterMerge)})`
 }
 
-const renderTotalCacheImpact = (fileByFileImpact, sizeName) => {
-  return Object.keys(fileByFileImpact).reduce((previous, fileRelativePath) => {
+const renderTotalCacheImpact = (fileByFileImpact, sizeName, { formatSize }) => {
+  const totalCacheImpact = Object.keys(fileByFileImpact).reduce((previous, fileRelativePath) => {
     const fileImpact = fileByFileImpact[fileRelativePath]
     if (!fileImpact.participatesToCacheImpact) {
       return previous
@@ -159,6 +159,7 @@ const renderTotalCacheImpact = (fileByFileImpact, sizeName) => {
 
     return previous
   }, 0)
+  return formatSize(totalCacheImpact)
 }
 
 const renderTableLines = (lines, { indentCount = 3, indentSize = 2 } = {}) => {
