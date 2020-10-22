@@ -111,7 +111,8 @@ const renderSizeImpactTableFooter = (
     const totalCacheImpactLine = [
       `<td nowrap><strong>Total cache impact<sup>*</sup></strong></td>`,
       ...Object.keys(transformations).map(
-        (sizeName) => `<td nowrap>${renderTotalCacheImpact(fileByFileImpact, sizeName)}</td>`,
+        (sizeName) =>
+          `<td nowrap>${renderTotalCacheImpact(fileByFileImpact, sizeName, { formatSize })}</td>`,
       ),
       `<td nowrap></td>`,
     ]
