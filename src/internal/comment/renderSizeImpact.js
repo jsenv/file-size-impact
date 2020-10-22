@@ -1,3 +1,11 @@
+export const renderSizeImpactDescription = (sizeImpacts, groupName) => {
+  const sizeImpactCount = Object.keys(sizeImpacts).length
+  if (sizeImpactCount === 1) {
+    return `<p>1 file size impact in ${groupName} group.</p>`
+  }
+  return `<p>${sizeImpactCount} files size impact in ${groupName} group.</p>`
+}
+
 export const renderSizeImpactTable = (
   groupImpact,
   { transformations, formatSize, maxLinePerTable },
@@ -46,7 +54,15 @@ const renderSizeImpactTableBody = (
     return `${formatSize(sizeImpact, { diff: true })} (${formatSize(sizeAfterMerge)})`
   }
 
-  Object.keys(groupImpact).forEach((fileRelativePath) => {
+  const files = Object.keys(groupImpact)
+  const fileCount = files.length
+  let filesShown
+  if (fileCount > maxLinesPerTable) {
+    filesShown = files.slice(0, maxLinesPerTable)
+  } else {
+    filesShown = files
+  }
+  filesShown.forEach((fileRelativePath) => {
     const fileImpact = groupImpact[fileRelativePath]
     const cells = [
       `<td nowrap>${fileRelativePath}</td>`,
@@ -57,6 +73,12 @@ const renderSizeImpactTableBody = (
         ${cells.join(`
         `)}`)
   })
+  if (filesShown !== files) {
+    lines.push(`
+        <tr>
+          <td colspan="3" align="center">... ${fileCount - maxLinesPerTable} more ...</td>
+        </tr>`)
+  }
 
   if (lines.length === 0) return ""
   return `<tr>${lines.join(`
@@ -104,7 +126,7 @@ const renderSizeImpactTableFooter = (fileByFileImpact, { transformations, format
   }
 
   const footerCells = [
-    `<td nowrap><strong>Total</strong></td>`,
+    `<td nowrap><strong>Total size impact</strong></td>`,
     ...Object.keys(transformations).map((sizeName) => `<td nowrap>${renderTotal(sizeName)}</td>`),
     `<td nowrap></td>`,
   ]

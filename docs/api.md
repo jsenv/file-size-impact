@@ -13,7 +13,7 @@
   - [formatSize](#formatSize)
 - [readGithubWorkflowEnv](#readGithubWorkflowEnv)
 - [Exclude specific size impacts](#Exclude-specific-size-impacts)
-  - [showFileSizeImpact](#showFileSizeImpact)
+  - [showSizeImpact](#showSizeImpact)
 - [Exclude specific cache impacts](#Exclude-specific-cache-impacts)
   - [showCacheImpact](#showCacheImpact)
 
@@ -212,11 +212,11 @@ const {
 
 # Exclude specific size impacts
 
-Size impact analysis occurs only if the file was deleted, added or modified between the base branch and after merging. To detect if the file is modified we compare file content on base branch and after merging. By default every file size impact is shown. You can control if the file ends up displayed in the github comment using `showFileSizeImpact` documented below.
+Size impact analysis occurs only if the file was deleted, added or modified between the base branch and after merging. To detect if the file is modified we compare file content on base branch and after merging. By default every file size impact is shown. You can control if the file ends up displayed in the github comment using `showSizeImpact` documented below.
 
-## showFileSizeImpact
+## showSizeImpact
 
-`showFileSizeImpact` is a function that can appear in your `trackingConfig` as shown in the code below.
+`showSizeImpact` is a function that can appear in your `trackingConfig` as shown in the code below.
 
 ```js
 import { reportFileSizeImpact, raw } from "@jsenv/file-size-impact"
@@ -226,17 +226,17 @@ await reportFileSizeImpact({
   trackingConfig: {
     dist: {
       "**/*.html": {
-        showFileSizeImpact: ({ sizeImpactMap }) => Math.abs(sizeImpactMap.raw) > 10,
+        showSizeImpact: ({ sizeImpactMap }) => Math.abs(sizeImpactMap.raw) > 10,
       },
     },
   },
 })
 ```
 
-`showFileSizeImpact` receives named parameters and should return a boolean. To illustrates the named parameter you will receive check the code below. It shows an example of how it could be called.
+`showSizeImpact` receives named parameters and should return a boolean. To illustrates the named parameter you will receive check the code below. It shows an example of how it could be called.
 
 ```js
-showFileSizeImpact({
+showSizeImpact({
   fileRelativeUrl: "dist/file.js",
   event: "modified",
   sizeImpactMap: {
@@ -280,7 +280,7 @@ If you enable [cacheImpact](#cacheImpact) parameter you can also exclude selecti
 
 ## showCacheImpact
 
-Reuses same api than [showFileSizeImpact](#showFileSizeImpact). It can appear in `trackingConfig` and can be combined with `showFileSizeImpact`.
+Reuses same api than [showSizeImpact](#showSizeImpact). It can appear in `trackingConfig` and can be combined with `showSizeImpact`.
 
 ```js
 import { reportFileSizeImpact, raw } from "@jsenv/file-size-impact"
@@ -290,7 +290,7 @@ await reportFileSizeImpact({
   trackingConfig: {
     dist: {
       "**/*.html": {
-        showFileSizeImpact: ({ sizeImpactMap }) => Math.abs(sizeImpactMap.raw) > 10,
+        showSizeImpact: ({ sizeImpactMap }) => Math.abs(sizeImpactMap.raw) > 10,
         showCacheImpact: false,
       },
     },
