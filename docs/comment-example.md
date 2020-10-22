@@ -285,7 +285,7 @@
       </tr>
       <tr>
         <td nowrap><strong>Total cache impact<sup>*</sup></strong></td>
-        <td nowrap>0</td>
+        <td nowrap>110</td>
         <td nowrap></td>
       </tr>
     </tfoot>
@@ -381,7 +381,7 @@
       </tr>
       <tr>
         <td nowrap><strong>Total cache impact<sup>*</sup></strong></td>
-        <td nowrap>0</td>
+        <td nowrap>320</td>
         <td nowrap></td>
       </tr>
     </tfoot>
@@ -521,7 +521,7 @@
       </tr>
       <tr>
         <td nowrap><strong>Total cache impact<sup>*</sup></strong></td>
-        <td nowrap>0</td>
+        <td nowrap>115</td>
         <td nowrap></td>
       </tr>
     </tfoot>
@@ -565,7 +565,7 @@
       </tr>
       <tr>
         <td nowrap><strong>Total cache impact<sup>*</sup></strong></td>
-        <td nowrap>0</td>
+        <td nowrap>115</td>
         <td nowrap></td>
       </tr>
     </tfoot>
@@ -608,7 +608,7 @@
       </tr>
       <tr>
         <td nowrap><strong>Total cache impact<sup>*</sup></strong></td>
-        <td nowrap>0</td>
+        <td nowrap>115</td>
         <td nowrap></td>
       </tr>
     </tfoot>
@@ -638,7 +638,7 @@
       </tr>
       <tr>
         <td nowrap><strong>Total cache impact<sup>*</sup></strong></td>
-        <td nowrap>0</td>
+        <td nowrap>101</td>
         <td nowrap></td>
       </tr>
     </tfoot>

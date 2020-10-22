@@ -236,7 +236,12 @@ const renderCommentBody = ({
 </details>`
   })
 
-  return `${formulateMergeImpact({ pullRequestHead, pullRequestBase, fileImpacts })}
+  const mergeImpact = formulateMergeImpact({ pullRequestHead, pullRequestBase, fileImpacts })
+  if (groupMessages.length === 0) {
+    return mergeImpact
+  }
+
+  return `${mergeImpact}
 ${groupMessages.join(`
 
 `)}`
