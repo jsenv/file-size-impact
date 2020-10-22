@@ -216,7 +216,19 @@ const {
 
 # Exclude specific size impacts
 
-Size impact analysis occurs only if the file was deleted, added or modified between the base branch and after merging. To detect if the file is modified we compare file content on base branch and after merging. By default every file size impact is shown. You can control if the file ends up displayed in the github comment using `showSizeImpact` documented below.
+Size impact analysis occurs only if the file was deleted, added or modified between the base branch and after merging. To detect if the file is modified we compare file content on base branch and after merging. By default every file size impact is shown. You can control if the file ends up displayed in the github comment using [showSizeImpact](#showSizeImpact).
+
+When excluded, an impact is not taken into account.
+
+![screenshot of pull request comment with collapsed groups](./hidden-details-nested.png)
+
+But when a group contains excluded impacts it has a details with excluded impacts inside.
+
+![screenshot of pull request comment with collapsed hidden impacts](./hidden-details-collapsed.png)
+
+Opening the hidden details shows impacts that where excluded in this group.
+
+![screenshot of pull request comment with expanded hidden impacts](./hidden-details-expanded.png)
 
 ## showSizeImpact
 
