@@ -99,17 +99,12 @@ const renderCommentBody = ({
   snapshotComparison,
   maxLinesPerTable,
 }) => {
-  const fileImpacts = {}
-  const markFileImpact = (relativeUrl, groupName) => {
-    if (!fileImpacts.hasOwnProperty(relativeUrl)) {
-      fileImpacts[relativeUrl] = groupName
-    }
-  }
+  const overallImpactInfo = {}
 
   const groupMessages = Object.keys(snapshotComparison).map((groupName) => {
     const groupComparison = snapshotComparison[groupName]
-    const emptyGroup = Object.keys(groupComparison).length === 0
-    if (emptyGroup) {
+    const groupLength = Object.keys(groupComparison).length
+    if (groupLength === 0) {
       return renderEmptyGroup(groupName, trackingConfig[groupName])
     }
 
@@ -135,7 +130,9 @@ const renderCommentBody = ({
       }
 
       if (metaEnables(meta, "showSizeImpact", hookParameters)) {
-        markFileImpact(fileRelativeUrl, groupName)
+        if (!overallImpactInfo.hasOwnProperty(fileRelativeUrl)) {
+          overallImpactInfo[fileRelativeUrl] = groupName
+        }
         fileByFileImpact[fileRelativeUrl] = impact
       } else {
         fileByFileImpactHidden[fileRelativeUrl] = impact
@@ -198,7 +195,7 @@ const renderCommentBody = ({
     const impactHiddenCount = Object.keys(fileByFileImpactHidden).length
     if (impactCount === 0 && impactHiddenCount === 0) {
       return `<details>
-  <summary>${groupName} (0)</summary>
+  <summary>${groupName} (0/${groupLength})</summary>
   <p>No impact on files in ${groupName} group.</p>
 </details>`
     }
@@ -230,13 +227,13 @@ const renderCommentBody = ({
     ]
 
     return `<details>
-  <summary>${groupName} (${impactCount})</summary>
+  <summary>${groupName} (${impactCount}/${groupLength})</summary>
   ${elements.join(`
   `)}
 </details>`
   })
 
-  const mergeImpact = formulateMergeImpact({ pullRequestHead, pullRequestBase, fileImpacts })
+  const mergeImpact = formulateMergeImpact({ pullRequestHead, pullRequestBase, overallImpactInfo })
   if (groupMessages.length === 0) {
     return mergeImpact
   }
@@ -247,21 +244,23 @@ ${groupMessages.join(`
 `)}`
 }
 
-const formulateMergeImpact = ({ pullRequestBase, pullRequestHead, fileImpacts }) => {
-  const overallImpact = formulateOverallImpact(fileImpacts)
+const formulateMergeImpact = ({ pullRequestBase, pullRequestHead, overallImpactInfo }) => {
+  const overallImpact = formulateOverallImpact(overallImpactInfo)
   return `<p>Merging ${pullRequestHead} into ${pullRequestBase} will ${overallImpact}.</p>`
 }
 
-const formulateOverallImpact = (fileImpacts) => {
+const formulateOverallImpact = (overallImpactInfo) => {
   let impactedFileCount = 0
   let impactedGroupCount = 0
   const impactedGroups = []
-  Object.keys(fileImpacts).forEach((relativeUrl) => {
-    impactedFileCount++
-    const groupName = fileImpacts[relativeUrl]
-    if (!impactedGroups.includes(groupName)) {
-      impactedGroups.push(groupName)
-      impactedGroupCount++
+  Object.keys(overallImpactInfo).forEach((relativeUrl) => {
+    const groupName = overallImpactInfo[relativeUrl]
+    if (groupName) {
+      impactedFileCount++
+      if (!impactedGroups.includes(groupName)) {
+        impactedGroups.push(groupName)
+        impactedGroupCount++
+      }
     }
   })
 
@@ -287,7 +286,7 @@ const hasSizeImpact = (sizeImpactMap) => {
 
 const renderEmptyGroup = (groupName, groupConfig) => {
   return `<details>
-  <summary>${groupName} (0)</summary>
+  <summary>${groupName} (0/0)</summary>
   <p>No file in ${groupName} group (see config below).</p>
 
 \`\`\`json
