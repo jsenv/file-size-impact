@@ -165,11 +165,11 @@ const transformations = {
 
 `cacheImpact` parameter is a boolean controlling if size impact of 0 will appear in the table. This parameter is optional and disabled by default.
 
-By showing size impact of 0 you can better understand the impact on the pull request on returning user cache.
+With `cacheImpact` disabled a modified file having a size impact of zero is not shown.
 
-TODO: screenshot without cache impact
-and screenshot with it
-Explain what to look at and how it corresponds to what returning users have to download
+With `cacheImpact` enabled these modifications appears in the table.
+
+This is useful to have the whole picture of the pull request impact on a returning user cache. Because from a cache perspective, the file is modified and must be redownloaded.
 
 ## runLink
 
