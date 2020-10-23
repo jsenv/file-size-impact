@@ -1,14 +1,15 @@
 import { writeFile, resolveUrl } from "@jsenv/util"
-import { jsenvFormatSize } from "../src/internal/comment/jsenvFormatSize.js"
-import { formatComment } from "../src/internal/comment/formatComment.js"
+import { jsenvCommentParameters } from "@jsenv/file-size-impact/src/jsenvCommentParameters.js"
+import { formatComment } from "@jsenv/file-size-impact/src/internal/comment/formatComment.js"
 
 const generateComment = (data) => {
   const transformations = deduceTransformations(data)
   return formatComment({
     pullRequestBase: "base",
     pullRequestHead: "head",
-    formatSize: jsenvFormatSize,
+    cacheImpact: false,
     transformations,
+    ...jsenvCommentParameters,
     ...data,
   })
 }
@@ -275,19 +276,18 @@ const examples = {
       },
     },
   }),
-  "cache impact + 1 cache impact": generateComment({
-    cacheImpact: true,
+  "zero size impact": generateComment({
     baseSnapshot: {
       dist: {
         fileMap: {
-          "dist/foo.js": {
+          "dist/bar.js": {
             hash: "a",
             sizeMap: { raw: 300 },
             meta: true,
           },
-          "dist/bar.js": {
+          "dist/foo.js": {
             hash: "a",
-            sizeMap: { raw: 100 },
+            sizeMap: { raw: 2500 },
             meta: true,
           },
         },
@@ -298,21 +298,31 @@ const examples = {
         fileMap: {
           "dist/bar.js": {
             hash: "b",
-            sizeMap: { raw: 100 },
+            sizeMap: { raw: 315 },
+            meta: true,
+          },
+          "dist/foo.js": {
+            hash: "b",
+            sizeMap: { raw: 2500 },
             meta: true,
           },
         },
       },
     },
   }),
-  "cache impact + no cache impact": generateComment({
+  "zero size impact and cacheImpact enabled": generateComment({
     cacheImpact: true,
     baseSnapshot: {
       dist: {
         fileMap: {
           "dist/bar.js": {
             hash: "a",
-            sizeMap: { raw: 100 },
+            sizeMap: { raw: 300 },
+            meta: true,
+          },
+          "dist/foo.js": {
+            hash: "a",
+            sizeMap: { raw: 2500 },
             meta: true,
           },
         },
@@ -320,7 +330,18 @@ const examples = {
     },
     afterMergeSnapshot: {
       dist: {
-        fileMap: {},
+        fileMap: {
+          "dist/bar.js": {
+            hash: "b",
+            sizeMap: { raw: 315 },
+            meta: true,
+          },
+          "dist/foo.js": {
+            hash: "b",
+            sizeMap: { raw: 2500 },
+            meta: true,
+          },
+        },
       },
     },
   }),
@@ -426,97 +447,26 @@ const examples = {
       },
     },
   }),
-  "size impact 0/1, cache impact 1/1": generateComment({
-    cacheImpact: true,
+  "formating file relative url": generateComment({
     baseSnapshot: {
       dist: {
         fileMap: {
           "dist/foo.js": {
             hash: "a",
-            sizeMap: { raw: 100 },
-            meta: true,
-          },
-        },
-      },
-    },
-    afterMergeSnapshot: {
-      dist: {
-        fileMap: {
-          "dist/foo.js": {
-            hash: "b",
-            sizeMap: { raw: 115 },
-            meta: {
-              showSizeImpact: false,
-              showCacheImpact: true,
-            },
-          },
-        },
-      },
-    },
-  }),
-  "size impact 1/1, cache impact 0/1": generateComment({
-    cacheImpact: true,
-    baseSnapshot: {
-      dist: {
-        fileMap: {
-          "dist/foo.js": {
-            hash: "a",
-            sizeMap: { raw: 100 },
-            meta: true,
-          },
-        },
-      },
-    },
-    afterMergeSnapshot: {
-      dist: {
-        fileMap: {
-          "dist/foo.js": {
-            hash: "b",
-            sizeMap: { raw: 115 },
-            meta: {
-              showSizeImpact: true,
-              showCacheImpact: false,
-            },
-          },
-        },
-      },
-    },
-  }),
-  "size impact 1/2, cache impact 1/2": generateComment({
-    cacheImpact: true,
-    baseSnapshot: {
-      dist: {
-        fileMap: {
-          "dist/bar.js": {
-            hash: "a",
-            sizeMap: { raw: 100 },
-            meta: true,
-          },
-          "dist/foo.js": {
-            hash: "a",
-            sizeMap: { raw: 100 },
-            meta: true,
-          },
-        },
-      },
-    },
-    afterMergeSnapshot: {
-      dist: {
-        fileMap: {
-          "dist/bar.js": {
-            hash: "b",
             sizeMap: { raw: 101 },
-            meta: {
-              showSizeImpact: ({ sizeImpactMap }) => Math.abs(sizeImpactMap.raw) > 10,
-              showCacheImpact: true,
-            },
+            meta: true,
           },
+        },
+      },
+    },
+    afterMergeSnapshot: {
+      dist: {
+        fileMap: {
           "dist/foo.js": {
             hash: "b",
             sizeMap: { raw: 115 },
             meta: {
-              showSizeImpact: true,
-              showCacheImpact: false,
+              formatFileRelativeUrl: (relativeUrl) => relativeUrl.slice("dist/".length),
             },
           },
         },

@@ -1,6 +1,6 @@
 {
   "name": "@jsenv/file-size-impact",
-  "version": "5.7.0",
+  "version": "6.0.0",
   "description": "Add files size impact into pull requests.",
   "license": "MIT",
   "repository": {
@@ -18,7 +18,8 @@
     ".": {
       "import": "./index.js",
       "require": "./dist/commonjs/main.cjs"
-    }
+    },
+    "./": "./"
   },
   "main": "dist/commonjs/main.cjs",
   "files": [
