@@ -163,7 +163,7 @@ const transformations = {
 
 ## cacheImpact
 
-`cacheImpact` parameter is a boolean controlling if size impact of 0 will appear in the table. This parameter is optional and disabled by default. Read explanation below to understand why it exists.
+`cacheImpact` parameter is a boolean controlling if size impact of 0 will appear in the table. This parameter is optional and enabled by default. Read explanation below to understand why it exists.
 
 `file-size-impact` can be used to monitor impact on a returning user cache. You can do that by reading specific parts of the table:
 
@@ -172,7 +172,7 @@ const transformations = {
 The number of files impacted tells you how many files a returning user must download.
 The total size tells you how many bytes a returning user must download.
 
-If you want to use file-size-impact also to monitor impact on returning user cache you should enable `cacheImpact` parameter because the size impact table will contain every modification, even thoose with a size impact of `0`.
+If you don't want to use file-size-impact to monitor impact on returning user cache you can disable `cacheImpact` parameter.
 
 For example the following table was generated with `cacheImpact` disabled.
 

@@ -7,6 +7,7 @@ const generateComment = (data) => {
   return formatComment({
     pullRequestBase: "base",
     pullRequestHead: "head",
+    cacheImpact: false,
     transformations,
     ...jsenvCommentParameters,
     ...data,
