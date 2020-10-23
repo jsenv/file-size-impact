@@ -1,14 +1,14 @@
 import { writeFile, resolveUrl } from "@jsenv/util"
-import { jsenvFormatSize } from "../src/internal/comment/jsenvFormatSize.js"
-import { formatComment } from "../src/internal/comment/formatComment.js"
+import { jsenvCommentParameters } from "@jsenv/file-size-impact/src/jsenvCommentParameters.js"
+import { formatComment } from "@jsenv/file-size-impact/src/internal/comment/formatComment.js"
 
 const generateComment = (data) => {
   const transformations = deduceTransformations(data)
   return formatComment({
     pullRequestBase: "base",
     pullRequestHead: "head",
-    formatSize: jsenvFormatSize,
     transformations,
+    ...jsenvCommentParameters,
     ...data,
   })
 }
@@ -447,7 +447,6 @@ const examples = {
             sizeMap: { raw: 115 },
             meta: {
               showSizeImpact: false,
-              showCacheImpact: true,
             },
           },
         },
@@ -475,7 +474,6 @@ const examples = {
             sizeMap: { raw: 115 },
             meta: {
               showSizeImpact: true,
-              showCacheImpact: false,
             },
           },
         },
@@ -508,7 +506,6 @@ const examples = {
             sizeMap: { raw: 101 },
             meta: {
               showSizeImpact: ({ sizeImpactMap }) => Math.abs(sizeImpactMap.raw) > 10,
-              showCacheImpact: true,
             },
           },
           "dist/foo.js": {
@@ -516,7 +513,6 @@ const examples = {
             sizeMap: { raw: 115 },
             meta: {
               showSizeImpact: true,
-              showCacheImpact: false,
             },
           },
         },

@@ -10,7 +10,6 @@
   - [transformations](#transformations)
   - [cacheImpact](#cacheImpact)
   - [runLink](#runLink)
-  - [formatSize](#formatSize)
 - [readGithubWorkflowEnv](#readGithubWorkflowEnv)
 - [Exclude specific size impacts](#Exclude-specific-size-impacts)
   - [showSizeImpact](#showSizeImpact)
@@ -164,15 +163,13 @@ const transformations = {
 
 ## cacheImpact
 
-`cacheImpact` parameter is a boolean controlling if cache impact will appear in the generated comment. It is used to analyse how many files and bytes users will have to redownload if the pull request is merged. This parameter is optional and disabled by default.
+`cacheImpact` parameter is a boolean controlling if size impact of 0 will appear in the table. This parameter is optional and disabled by default.
 
-![screenshot of pull request comment with cache impact highlighted](./cache-impact-highlighted.png)
+By showing size impact of 0 you can better understand the impact on the pull request on returning user cache.
 
-When you enable this parameter it's possible to see a file reported with a file size impact of 0.
-
-![screenshot of pull request comment with a size impact of 0](./cache-impact-zero-size.png)
-
-This is because even if the file size is not impacted, a returning user still have to download a modified file.
+TODO: screenshot without cache impact
+and screenshot with it
+Explain what to look at and how it corresponds to what returning users have to download
 
 ## runLink
 
@@ -190,10 +187,6 @@ const runLink = {
   text: `${process.env.JOB_NAME}#${process.env.BUILD_ID}`,
 }
 ```
-
-## formatSize
-
-`formatSize` parameter controls the display of file size. This parameter is optionnal, the default value doing an english formatting of a number. Check source code if you want to pass a custom function.
 
 # readGithubWorkflowEnv
 

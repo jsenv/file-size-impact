@@ -10,20 +10,17 @@
     <thead>
       <tr>
         <th nowrap>File</th>
-        <th nowrap>raw</th>
-        <th nowrap>Event</th>
+        <th nowrap>raw bytes</th>
       </tr>
     </thead>
     <tbody>
       <tr>
         <td nowrap>dist/bar.js</td>
         <td nowrap>+10 (110)</td>
-        <td nowrap>modified</td>
       </tr>
       <tr>
         <td nowrap>dist/foo.js</td>
         <td nowrap>+15 (115)</td>
-        <td nowrap>modified</td>
       </tr>
     </tbody>
     <tfoot>
@@ -48,10 +45,9 @@
     <thead>
       <tr>
         <th nowrap>File</th>
-        <th nowrap>raw</th>
-        <th nowrap>gzip</th>
-        <th nowrap>brotli</th>
-        <th nowrap>Event</th>
+        <th nowrap>raw bytes</th>
+        <th nowrap>gzip bytes</th>
+        <th nowrap>brotli bytes</th>
       </tr>
     </thead>
     <tbody>
@@ -60,14 +56,12 @@
         <td nowrap>+10 (110)</td>
         <td nowrap>+2 (22)</td>
         <td nowrap>+1 (19)</td>
-        <td nowrap>modified</td>
       </tr>
       <tr>
         <td nowrap>dist/foo.js</td>
         <td nowrap>+15 (115)</td>
         <td nowrap>+4 (24)</td>
         <td nowrap>+3 (21)</td>
-        <td nowrap>modified</td>
       </tr>
     </tbody>
     <tfoot>
@@ -123,20 +117,17 @@
     <thead>
       <tr>
         <th nowrap>File</th>
-        <th nowrap>raw</th>
-        <th nowrap>Event</th>
+        <th nowrap>raw bytes</th>
       </tr>
     </thead>
     <tbody>
       <tr>
         <td nowrap>dist/file-a.js</td>
         <td nowrap>+5 (15)</td>
-        <td nowrap>modified</td>
       </tr>
       <tr>
         <td nowrap>dist/file-b.js</td>
         <td nowrap>-5 (10)</td>
-        <td nowrap>modified</td>
       </tr>
     </tbody>
     <tfoot>
@@ -161,33 +152,29 @@
     <thead>
       <tr>
         <th nowrap>File</th>
-        <th nowrap>raw</th>
-        <th nowrap>gzip</th>
-        <th nowrap>brotli</th>
-        <th nowrap>Event</th>
+        <th nowrap>raw bytes</th>
+        <th nowrap>gzip bytes</th>
+        <th nowrap>brotli bytes</th>
       </tr>
     </thead>
     <tbody>
       <tr>
-        <td nowrap>dist/commonjs/bar.js</td>
+        <td nowrap><del>dist/commonjs/bar.js</del></td>
         <td nowrap>-100 (0)</td>
         <td nowrap>-10 (0)</td>
         <td nowrap>-9 (0)</td>
-        <td nowrap>deleted</td>
       </tr>
       <tr>
-        <td nowrap>dist/commonjs/foo.js</td>
+        <td nowrap>dist/commonjs/foo.js[new]</td>
         <td nowrap>+120 (120)</td>
         <td nowrap>+12 (12)</td>
         <td nowrap>+11 (11)</td>
-        <td nowrap>added</td>
       </tr>
       <tr>
         <td nowrap>dist/commonjs/hello.js</td>
         <td nowrap>+20,000 (187,000)</td>
         <td nowrap>+200 (1,800)</td>
         <td nowrap>+200 (1,700)</td>
-        <td nowrap>modified</td>
       </tr>
     </tbody>
     <tfoot>
@@ -208,33 +195,29 @@
     <thead>
       <tr>
         <th nowrap>File</th>
-        <th nowrap>raw</th>
-        <th nowrap>gzip</th>
-        <th nowrap>brotli</th>
-        <th nowrap>Event</th>
+        <th nowrap>raw bytes</th>
+        <th nowrap>gzip bytes</th>
+        <th nowrap>brotli bytes</th>
       </tr>
     </thead>
     <tbody>
       <tr>
-        <td nowrap>dist/systemjs/bar.js</td>
+        <td nowrap><del>dist/systemjs/bar.js</del></td>
         <td nowrap>-100 (0)</td>
         <td nowrap>-10 (0)</td>
         <td nowrap>-9 (0)</td>
-        <td nowrap>deleted</td>
       </tr>
       <tr>
-        <td nowrap>dist/systemjs/foo.js</td>
+        <td nowrap>dist/systemjs/foo.js[new]</td>
         <td nowrap>+120 (120)</td>
         <td nowrap>+12 (12)</td>
         <td nowrap>+11 (11)</td>
-        <td nowrap>added</td>
       </tr>
       <tr>
         <td nowrap>dist/systemjs/hello.js</td>
         <td nowrap>+20,000 (187,000)</td>
         <td nowrap>+200 (1,800)</td>
         <td nowrap>+200 (1,700)</td>
-        <td nowrap>modified</td>
       </tr>
     </tbody>
     <tfoot>
@@ -261,20 +244,17 @@
     <thead>
       <tr>
         <th nowrap>File</th>
-        <th nowrap>raw</th>
-        <th nowrap>Event</th>
+        <th nowrap>raw bytes</th>
       </tr>
     </thead>
     <tbody>
       <tr>
-        <td nowrap>dist/bar.js<sup>*</sup></td>
+        <td nowrap>dist/bar.js</td>
         <td nowrap>0 (100)</td>
-        <td nowrap>modified</td>
       </tr>
       <tr>
-        <td nowrap>dist/foo.js</td>
+        <td nowrap><del>dist/foo.js</del></td>
         <td nowrap>-300 (0)</td>
-        <td nowrap>deleted</td>
       </tr>
     </tbody>
     <tfoot>
@@ -283,18 +263,8 @@
         <td nowrap>-300 (100)</td>
         <td nowrap></td>
       </tr>
-      <tr>
-        <td nowrap><strong>Total cache impact<sup>*</sup></strong></td>
-        <td nowrap>100</td>
-        <td nowrap></td>
-      </tr>
     </tfoot>
   </table>
-  <sub>
-    <sup>*</sup> Each file marked with an asterisk participates into the total cache impact. These
-    files must be downloaded by a returning user either because it's a new file or because it has
-    been modified.
-  </sub>
 </details>
 
 # cache impact + no cache impact
@@ -309,15 +279,13 @@
     <thead>
       <tr>
         <th nowrap>File</th>
-        <th nowrap>raw</th>
-        <th nowrap>Event</th>
+        <th nowrap>raw bytes</th>
       </tr>
     </thead>
     <tbody>
       <tr>
-        <td nowrap>dist/bar.js</td>
+        <td nowrap><del>dist/bar.js</del></td>
         <td nowrap>-100 (0)</td>
-        <td nowrap>deleted</td>
       </tr>
     </tbody>
     <tfoot>
@@ -326,18 +294,8 @@
         <td nowrap>-100 (0)</td>
         <td nowrap></td>
       </tr>
-      <tr>
-        <td nowrap><strong>Total cache impact<sup>*</sup></strong></td>
-        <td nowrap>0</td>
-        <td nowrap></td>
-      </tr>
     </tfoot>
   </table>
-  <sub>
-    <sup>*</sup> Each file marked with an asterisk participates into the total cache impact. These
-    files must be downloaded by a returning user either because it's a new file or because it has
-    been modified.
-  </sub>
 </details>
 
 # cache impact + several cache impact
@@ -352,25 +310,21 @@
     <thead>
       <tr>
         <th nowrap>File</th>
-        <th nowrap>raw</th>
-        <th nowrap>Event</th>
+        <th nowrap>raw bytes</th>
       </tr>
     </thead>
     <tbody>
       <tr>
-        <td nowrap>dist/bar.js<sup>*</sup></td>
+        <td nowrap>dist/bar.js</td>
         <td nowrap>+10 (110)</td>
-        <td nowrap>modified</td>
       </tr>
       <tr>
-        <td nowrap>dist/foo.js<sup>*</sup></td>
+        <td nowrap>dist/foo.js[new]</td>
         <td nowrap>+100 (100)</td>
-        <td nowrap>added</td>
       </tr>
       <tr>
-        <td nowrap>dist/hello.js<sup>*</sup></td>
+        <td nowrap>dist/hello.js</td>
         <td nowrap>+10 (110)</td>
-        <td nowrap>modified</td>
       </tr>
     </tbody>
     <tfoot>
@@ -379,18 +333,8 @@
         <td nowrap>+120 (320)</td>
         <td nowrap></td>
       </tr>
-      <tr>
-        <td nowrap><strong>Total cache impact<sup>*</sup></strong></td>
-        <td nowrap>320</td>
-        <td nowrap></td>
-      </tr>
     </tfoot>
   </table>
-  <sub>
-    <sup>*</sup> Each file marked with an asterisk participates into the total cache impact. These
-    files must be downloaded by a returning user either because it's a new file or because it has
-    been modified.
-  </sub>
 </details>
 
 # size impact 0/1
@@ -407,15 +351,13 @@
     <thead>
       <tr>
         <th nowrap>File</th>
-        <th nowrap>raw</th>
-        <th nowrap>Event</th>
+        <th nowrap>raw bytes</th>
       </tr>
     </thead>
     <tbody>
       <tr>
         <td nowrap>dist/bar.js</td>
         <td nowrap>+1 (101)</td>
-        <td nowrap>modified</td>
       </tr>
     </tbody>
     <tfoot>
@@ -441,15 +383,13 @@
     <thead>
       <tr>
         <th nowrap>File</th>
-        <th nowrap>raw</th>
-        <th nowrap>Event</th>
+        <th nowrap>raw bytes</th>
       </tr>
     </thead>
     <tbody>
       <tr>
         <td nowrap>dist/foo.js</td>
         <td nowrap>+14 (115)</td>
-        <td nowrap>modified</td>
       </tr>
     </tbody>
     <tfoot>
@@ -466,15 +406,13 @@
     <thead>
       <tr>
         <th nowrap>File</th>
-        <th nowrap>raw</th>
-        <th nowrap>Event</th>
+        <th nowrap>raw bytes</th>
       </tr>
     </thead>
     <tbody>
       <tr>
         <td nowrap>dist/bar.js</td>
         <td nowrap>+1 (101)</td>
-        <td nowrap>modified</td>
       </tr>
     </tbody>
     <tfoot>
@@ -502,15 +440,13 @@
     <thead>
       <tr>
         <th nowrap>File</th>
-        <th nowrap>raw</th>
-        <th nowrap>Event</th>
+        <th nowrap>raw bytes</th>
       </tr>
     </thead>
     <tbody>
       <tr>
-        <td nowrap>dist/foo.js<sup>*</sup></td>
+        <td nowrap>dist/foo.js</td>
         <td nowrap>+15 (115)</td>
-        <td nowrap>modified</td>
       </tr>
     </tbody>
     <tfoot>
@@ -519,19 +455,9 @@
         <td nowrap>+15 (115)</td>
         <td nowrap></td>
       </tr>
-      <tr>
-        <td nowrap><strong>Total cache impact<sup>*</sup></strong></td>
-        <td nowrap>115</td>
-        <td nowrap></td>
-      </tr>
     </tfoot>
   </table>
   </details>
-  <sub>
-    <sup>*</sup> Each file marked with an asterisk participates into the total cache impact. These
-    files must be downloaded by a returning user either because it's a new file or because it has
-    been modified.
-  </sub>
 </details>
 
 # size impact 1/1, cache impact 0/1
@@ -546,15 +472,13 @@
     <thead>
       <tr>
         <th nowrap>File</th>
-        <th nowrap>raw</th>
-        <th nowrap>Event</th>
+        <th nowrap>raw bytes</th>
       </tr>
     </thead>
     <tbody>
       <tr>
-        <td nowrap>dist/foo.js<sup>*</sup></td>
+        <td nowrap>dist/foo.js</td>
         <td nowrap>+15 (115)</td>
-        <td nowrap>modified</td>
       </tr>
     </tbody>
     <tfoot>
@@ -563,18 +487,8 @@
         <td nowrap>+15 (115)</td>
         <td nowrap></td>
       </tr>
-      <tr>
-        <td nowrap><strong>Total cache impact<sup>*</sup></strong></td>
-        <td nowrap>115</td>
-        <td nowrap></td>
-      </tr>
     </tfoot>
   </table>
-  <sub>
-    <sup>*</sup> Each file marked with an asterisk participates into the total cache impact. These
-    files must be downloaded by a returning user either because it's a new file or because it has
-    been modified.
-  </sub>
 </details>
 
 # size impact 1/2, cache impact 1/2
@@ -589,26 +503,19 @@
     <thead>
       <tr>
         <th nowrap>File</th>
-        <th nowrap>raw</th>
-        <th nowrap>Event</th>
+        <th nowrap>raw bytes</th>
       </tr>
     </thead>
     <tbody>
       <tr>
-        <td nowrap>dist/foo.js<sup>*</sup></td>
+        <td nowrap>dist/foo.js</td>
         <td nowrap>+15 (115)</td>
-        <td nowrap>modified</td>
       </tr>
     </tbody>
     <tfoot>
       <tr>
         <td nowrap><strong>Total size impact</strong></td>
         <td nowrap>+15 (115)</td>
-        <td nowrap></td>
-      </tr>
-      <tr>
-        <td nowrap><strong>Total cache impact<sup>*</sup></strong></td>
-        <td nowrap>115</td>
         <td nowrap></td>
       </tr>
     </tfoot>
@@ -619,15 +526,13 @@
     <thead>
       <tr>
         <th nowrap>File</th>
-        <th nowrap>raw</th>
-        <th nowrap>Event</th>
+        <th nowrap>raw bytes</th>
       </tr>
     </thead>
     <tbody>
       <tr>
-        <td nowrap>dist/bar.js<sup>*</sup></td>
+        <td nowrap>dist/bar.js</td>
         <td nowrap>+1 (101)</td>
-        <td nowrap>modified</td>
       </tr>
     </tbody>
     <tfoot>
@@ -636,19 +541,9 @@
         <td nowrap>+1 (101)</td>
         <td nowrap></td>
       </tr>
-      <tr>
-        <td nowrap><strong>Total cache impact<sup>*</sup></strong></td>
-        <td nowrap>101</td>
-        <td nowrap></td>
-      </tr>
     </tfoot>
   </table>
   </details>
-  <sub>
-    <sup>*</sup> Each file marked with an asterisk participates into the total cache impact. These
-    files must be downloaded by a returning user either because it's a new file or because it has
-    been modified.
-  </sub>
 </details>
 
 # empty warning

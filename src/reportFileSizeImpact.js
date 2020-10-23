@@ -14,7 +14,7 @@ import {
 } from "./internal/github/pull-requests.js"
 import { exec } from "./internal/exec.js"
 import { HEADER, formatComment } from "./internal/comment/formatComment.js"
-import { jsenvFormatSize } from "./internal/comment/jsenvFormatSize.js"
+import { jsenvCommentParameters } from "./jsenvCommentParameters.js"
 import { generateSnapshot } from "./internal/generateSnapshot.js"
 import { jsenvTrackingConfig } from "./jsenvTrackingConfig.js"
 import { transform as rawTransform } from "./rawTransformation.js"
@@ -39,8 +39,17 @@ export const reportFileSizeImpact = async ({
   },
   transformations = { raw: rawTransform },
 
-  formatSize = jsenvFormatSize,
-  maxLinesPerTable = 500,
+  // doing this explicitely helps autocompletion in vscode for
+  // people using the function
+  formatGroupSummary = jsenvCommentParameters.formatGroupSummary,
+  formatHiddenImpactSummary = jsenvCommentParameters.formatHiddenImpactSummary,
+  formatFileRelativeUrl = jsenvCommentParameters.formatFileRelativeUrl,
+  maxRowsPerTable = jsenvCommentParameters.maxRowsPerTable,
+  fileRelativeUrlMaxLength = jsenvCommentParameters.fileRelativeUrlMaxLength,
+  formatFileCell = jsenvCommentParameters.formatFileCell,
+  formatFileSizeImpactCell = jsenvCommentParameters.formatFileSizeImpactCell,
+  formatSize = jsenvCommentParameters.formatSize,
+
   catchError = false,
   runLink,
 }) => {
@@ -291,8 +300,15 @@ ${renderGeneratedBy({ runLink })}`
           transformations,
           baseSnapshot,
           afterMergeSnapshot,
+
+          formatGroupSummary,
+          formatHiddenImpactSummary,
+          formatFileRelativeUrl,
+          maxRowsPerTable,
+          fileRelativeUrlMaxLength,
+          formatFileCell,
+          formatFileSizeImpactCell,
           formatSize,
-          maxLinesPerTable,
         }),
       )
 

@@ -1,6 +1,13 @@
-export const renderSizeImpactTable = (
+export const renderImpactTable = (
   fileByFileImpact,
-  { cacheImpact, transformations, formatSize, maxLinePerTable },
+  {
+    transformations,
+    fileRelativeUrlMaxLength,
+    maxRowsPerTable,
+    formatFileRelativeUrl,
+    formatFileCell,
+    formatFileSizeImpactCell,
+  },
 ) => {
   const table = `<table>
     <thead>
@@ -8,17 +15,18 @@ export const renderSizeImpactTable = (
     </thead>
     <tbody>
       ${renderSizeImpactTableBody(fileByFileImpact, {
-        cacheImpact,
         transformations,
-        formatSize,
-        maxLinePerTable,
+        maxRowsPerTable,
+        fileRelativeUrlMaxLength,
+        formatFileRelativeUrl,
+        formatFileCell,
+        formatFileSizeImpactCell,
       })}
     </tbody>
     <tfoot>
       ${renderSizeImpactTableFooter(fileByFileImpact, {
-        cacheImpact,
         transformations,
-        formatSize,
+        formatFileSizeImpactCell,
       })}
     </tfoot>
   </table>`
@@ -30,8 +38,7 @@ const renderSizeImpactTableHeader = (transformations) => {
   const lines = []
   const headerLine = [
     `<th nowrap>File</th>`,
-    ...Object.keys(transformations).map((sizeName) => `<th nowrap>${sizeName}</th>`),
-    `<th nowrap>Event</th>`,
+  ...Object.keys(transformations).map((sizeName) => `<th nowrap>${sizeName} bytes</th>`),
   ]
   lines.push(headerLine)
 
@@ -40,42 +47,83 @@ const renderSizeImpactTableHeader = (transformations) => {
 
 const renderSizeImpactTableBody = (
   fileByFileImpact,
-  { transformations, formatSize, maxLinesPerTable },
+  {
+    transformations,
+    maxRowsPerTable,
+    fileRelativeUrlMaxLength,
+    formatFileRelativeUrl,
+    formatFileCell,
+    formatFileSizeImpactCell,
+  },
 ) => {
   const lines = []
   const sizeNames = Object.keys(transformations)
 
   const renderDiffCell = (fileImpact, sizeName) => {
-    const sizeImpact = getNamedSizeImpact(fileImpact, sizeName)
-    const sizeAfterMerge = getNamedSizeAfterMerge(fileImpact, sizeName)
+    const fileSizeImpact = getNamedSizeImpact(fileImpact, sizeName)
+    const fileSizeAfterMerge = getNamedSizeAfterMerge(fileImpact, sizeName)
 
-    return `${formatSize(sizeImpact, { diff: true })} (${formatSize(sizeAfterMerge)})`
+    const fileSizeImpactCellFormatted = formatFileSizeImpactCell({
+      ...fileImpact,
+      sizeName,
+      fileSizeImpact,
+      fileSizeAfterMerge,
+    })
+
+    return fileSizeImpactCellFormatted
   }
 
   const files = Object.keys(fileByFileImpact)
   const fileCount = files.length
   let filesShown
-  if (fileCount > maxLinesPerTable) {
-    filesShown = files.slice(0, maxLinesPerTable)
+  if (fileCount > maxRowsPerTable) {
+    filesShown = files.slice(0, maxRowsPerTable)
   } else {
     filesShown = files
   }
-  filesShown.forEach((fileRelativePath) => {
-    const fileImpact = fileByFileImpact[fileRelativePath]
+  filesShown.forEach((fileRelativeUrl) => {
+    const fileImpact = fileByFileImpact[fileRelativeUrl]
+    const fileRelativeUrlFormatted = truncateFileRelativeUrl(
+      formatFileRelativeUrl(fileRelativeUrl),
+      fileRelativeUrlMaxLength,
+    )
+    const fileCellFormatted = formatFileCell({
+      fileRelativeUrl,
+      fileRelativeUrlFormatted,
+      ...fileImpact,
+    })
     const line = [
-      `<td nowrap>${fileRelativePath}${
-        fileImpact.participatesToCacheImpact ? `<sup>*</sup>` : ""
-      }</td>`,
+      `<td nowrap>${fileCellFormatted}</td>`,
       ...sizeNames.map((sizeName) => `<td nowrap>${renderDiffCell(fileImpact, sizeName)}</td>`),
-      `<td nowrap>${fileImpact.event}</td>`,
     ]
     lines.push(line)
   })
   if (filesShown !== files) {
-    lines.push([`<td colspan="3" align="center">... ${fileCount - maxLinesPerTable} more ...</td>`])
+    lines.push([`<td colspan="3" align="center">... ${fileCount - maxRowsPerTable} more ...</td>`])
   }
 
   return renderTableLines(lines)
+}
+
+const renderSizeImpactTableFooter = (
+  fileByFileImpact,
+  { transformations, formatFileSizeImpactCell },
+) => {
+  const footerLines = []
+
+  const totalSizeImpactLine = [
+    `<td nowrap><strong>Total size impact</strong></td>`,
+    ...Object.keys(transformations).map(
+      (sizeName) =>
+        `<td nowrap>${renderTotalSizeImpact(fileByFileImpact, sizeName, {
+          formatFileSizeImpactCell,
+        })}</td>`,
+    ),
+    `<td nowrap></td>`,
+  ]
+  footerLines.push(totalSizeImpactLine)
+
+  return renderTableLines(footerLines)
 }
 
 const getNamedSizeImpact = (fileImpact, sizeName) => {
@@ -91,38 +139,7 @@ const getNamedSizeAfterMerge = (fileImpact, sizeName) => {
   return sizeAfterMerge
 }
 
-const renderSizeImpactTableFooter = (
-  fileByFileImpact,
-  { cacheImpact, transformations, formatSize },
-) => {
-  const footerLines = []
-
-  const totalSizeImpactLine = [
-    `<td nowrap><strong>Total size impact</strong></td>`,
-    ...Object.keys(transformations).map(
-      (sizeName) =>
-        `<td nowrap>${renderTotalSizeImpact(fileByFileImpact, sizeName, { formatSize })}</td>`,
-    ),
-    `<td nowrap></td>`,
-  ]
-  footerLines.push(totalSizeImpactLine)
-
-  if (cacheImpact) {
-    const totalCacheImpactLine = [
-      `<td nowrap><strong>Total cache impact<sup>*</sup></strong></td>`,
-      ...Object.keys(transformations).map(
-        (sizeName) =>
-          `<td nowrap>${renderTotalCacheImpact(fileByFileImpact, sizeName, { formatSize })}</td>`,
-      ),
-      `<td nowrap></td>`,
-    ]
-    footerLines.push(totalCacheImpactLine)
-  }
-
-  return renderTableLines(footerLines)
-}
-
-const renderTotalSizeImpact = (fileByFileImpact, sizeName, { formatSize }) => {
+const renderTotalSizeImpact = (fileByFileImpact, sizeName, { formatFileSizeImpactCell }) => {
   const total = Object.keys(fileByFileImpact).reduce(
     (previous, fileRelativePath) => {
       const fileImpact = fileByFileImpact[fileRelativePath]
@@ -143,24 +160,19 @@ const renderTotalSizeImpact = (fileByFileImpact, sizeName, { formatSize }) => {
     { totalSizeImpact: 0, totalSizeAfterMerge: 0 },
   )
   const { totalSizeImpact, totalSizeAfterMerge } = total
-  return `${formatSize(totalSizeImpact, { diff: true })} (${formatSize(totalSizeAfterMerge)})`
+  return formatFileSizeImpactCell({
+    fileSizeImpact: totalSizeImpact,
+    fileSizeAfterMerge: totalSizeAfterMerge,
+  })
 }
 
-const renderTotalCacheImpact = (fileByFileImpact, sizeName, { formatSize }) => {
-  const totalCacheImpact = Object.keys(fileByFileImpact).reduce((previous, fileRelativePath) => {
-    const fileImpact = fileByFileImpact[fileRelativePath]
-    if (!fileImpact.participatesToCacheImpact) {
-      return previous
-    }
-
-    const afterMergeSizeMap = fileImpact.afterMerge.sizeMap
-    if (sizeName in afterMergeSizeMap) {
-      return previous + afterMergeSizeMap[sizeName]
-    }
-
-    return previous
-  }, 0)
-  return formatSize(totalCacheImpact)
+const truncateFileRelativeUrl = (fileRelativeUrl, fileRelativeUrlMaxLength) => {
+  const length = fileRelativeUrl.length
+  const extraLength = length - fileRelativeUrlMaxLength
+  if (extraLength > 0) {
+    return `…${fileRelativeUrl.slice(extraLength)}`
+  }
+  return fileRelativeUrl
 }
 
 const renderTableLines = (lines, { indentCount = 3, indentSize = 2 } = {}) => {
