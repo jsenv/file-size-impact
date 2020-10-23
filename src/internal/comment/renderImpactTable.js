@@ -84,7 +84,7 @@ const renderSizeImpactTableBody = (
   filesShown.forEach((fileRelativeUrl) => {
     const fileImpact = fileByFileImpact[fileRelativeUrl]
     const fileRelativeUrlFormatted = truncateFileRelativeUrl(
-      formatFileRelativeUrl(fileRelativeUrl),
+      (fileImpact.formatFileRelativeUrl || formatFileRelativeUrl)(fileRelativeUrl),
       fileRelativeUrlMaxLength,
     )
     const fileCellFormatted = formatFileCell({

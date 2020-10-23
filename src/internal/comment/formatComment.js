@@ -146,19 +146,19 @@ const renderCommentBody = ({
           : {}),
       }
 
-      const hookParameters = { fileRelativeUrl, ...impact }
-
       if (!cacheImpact && !hasSizeImpact(sizeImpactMap)) {
         return
       }
 
-      if (metaEnables(meta, "showSizeImpact", hookParameters)) {
+      const data = metaToData(meta, fileRelativeUrl, impact)
+      if (data.showSizeImpact) {
         if (!overallImpactInfo.hasOwnProperty(fileRelativeUrl)) {
           overallImpactInfo[fileRelativeUrl] = groupName
         }
-        fileByFileImpact[fileRelativeUrl] = impact
+
+        fileByFileImpact[fileRelativeUrl] = { ...impact, ...data }
       } else {
-        fileByFileImpactHidden[fileRelativeUrl] = impact
+        fileByFileImpactHidden[fileRelativeUrl] = { ...impact, ... data }
       }
     }
 
@@ -327,35 +327,48 @@ ${JSON.stringify(groupConfig, null, "  ")}
 </details>`
 }
 
-const metaEnables = (
-  meta,
-  metaProperty,
-  { fileRelativeUrl, event, sizeImpactMap, base, afterMerge },
-) => {
+const metaToData = (meta, ...args) => {
   if (typeof meta === "boolean") {
-    return meta
+    return {
+      showSizeImpact: true,
+    }
   }
 
   if (typeof meta === "object") {
-    const metaPropertyValue = meta[metaProperty]
-    if (typeof metaPropertyValue === "boolean") {
-      return metaPropertyValue
+    const showSizeImpact = showSizeImpactGetter(meta, ...args)
+    const { formatFileRelativeUrl } = meta
+    return {
+      showSizeImpact,
+      formatFileRelativeUrl,
     }
-
-    if (typeof metaPropertyValue === "function") {
-      return metaPropertyValue({
-        fileRelativeUrl,
-        event,
-        sizeImpactMap,
-        sizeMapOnBase: base.sizeMap,
-        sizeMapAfterMerge: afterMerge.sizeMap,
-      })
-    }
-
-    console.warn(`${metaProperty} must be a boolean or a function, received ${metaPropertyValue}`)
-    return true
   }
 
   console.warn(`meta must be a boolean or a function, received ${meta}`)
-  return Boolean(meta)
+  return {
+    showSizeImpact: Boolean(meta),
+  }
+}
+
+const showSizeImpactGetter = (
+  meta,
+  fileRelativeUrl,
+  { event, sizeImpactMap, base, afterMerge },
+) => {
+  const { showSizeImpact = true } = meta
+  if (typeof showSizeImpact === "boolean") {
+    return showSizeImpact
+  }
+
+  if (typeof showSizeImpact === "function") {
+    return showSizeImpact({
+      fileRelativeUrl,
+      event,
+      sizeImpactMap,
+      sizeMapOnBase: base.sizeMap,
+      sizeMapAfterMerge: afterMerge.sizeMap,
+    })
+  }
+
+  console.warn(`${showSizeImpact} must be a boolean or a function, received ${showSizeImpact}`)
+  return true
 }

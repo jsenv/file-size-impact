@@ -447,6 +447,32 @@ const examples = {
       },
     },
   }),
+  "formating file relative url": generateComment({
+    baseSnapshot: {
+      dist: {
+        fileMap: {
+          "dist/foo.js": {
+            hash: "a",
+            sizeMap: { raw: 101 },
+            meta: true,
+          },
+        },
+      },
+    },
+    afterMergeSnapshot: {
+      dist: {
+        fileMap: {
+          "dist/foo.js": {
+            hash: "b",
+            sizeMap: { raw: 115 },
+            meta: {
+              formatFileRelativeUrl: (relativeUrl) => relativeUrl.slice("dist/".length),
+            },
+          },
+        },
+      },
+    },
+  }),
   "empty warning": generateComment({
     baseSnapshot: {},
     afterMergeSnapshot: {},
