@@ -158,7 +158,7 @@ const renderCommentBody = ({
 
         fileByFileImpact[fileRelativeUrl] = { ...impact, ...data }
       } else {
-        fileByFileImpactHidden[fileRelativeUrl] = { ...impact, ... data }
+        fileByFileImpactHidden[fileRelativeUrl] = { ...impact, ...data }
       }
     }
 
