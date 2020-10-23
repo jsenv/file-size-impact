@@ -163,13 +163,24 @@ const transformations = {
 
 ## cacheImpact
 
-`cacheImpact` parameter is a boolean controlling if size impact of 0 will appear in the table. This parameter is optional and disabled by default.
+`cacheImpact` parameter is a boolean controlling if size impact of 0 will appear in the table. This parameter is optional and disabled by default. Read explanation below to understand why it exists.
 
-With `cacheImpact` disabled a modified file having a size impact of zero is not shown.
+`file-size-impact` can be used to monitor impact on a returning user cache. You can do that by reading specific parts of the table:
 
-With `cacheImpact` enabled these modifications appears in the table.
+![screenshot illustrating how to analyse cache impact from pull request comment](./cache-impact-analysis.png)
 
-This is useful to have the whole picture of the pull request impact on a returning user cache. Because from a cache perspective, the file is modified and must be redownloaded.
+The number of files impacted tells you how many files a returning user must download.
+The total size tells you how many bytes a returning user must download.
+
+If you want to use file-size-impact also to monitor impact on returning user cache you should enable `cacheImpact` parameter because the size impact table will contain every modification, even thoose with a size impact of `0`.
+
+For example the following table was generated with `cacheImpact` disabled.
+
+![screenshot of pull request comment with cacheImpact disabled](./cache-impact-disabled.png)
+
+And generated again with `cacheImpact` enabled. As you can see there is one more line.
+
+![screenshot of pull request comment with cacheImpact enabled](./cache-impact-enabled.png)
 
 ## runLink
 
