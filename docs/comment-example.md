@@ -27,7 +27,6 @@
       <tr>
         <td nowrap><strong>Total size impact</strong></td>
         <td nowrap>+25 (225)</td>
-        <td nowrap></td>
       </tr>
     </tfoot>
   </table>
@@ -70,7 +69,6 @@
         <td nowrap>+25 (225)</td>
         <td nowrap>+6 (46)</td>
         <td nowrap>+4 (40)</td>
-        <td nowrap></td>
       </tr>
     </tfoot>
   </table>
@@ -134,7 +132,6 @@
       <tr>
         <td nowrap><strong>Total size impact</strong></td>
         <td nowrap>0 (25)</td>
-        <td nowrap></td>
       </tr>
     </tfoot>
   </table>
@@ -183,7 +180,6 @@
         <td nowrap>+20,020 (187,120)</td>
         <td nowrap>+202 (1,812)</td>
         <td nowrap>+202 (1,711)</td>
-        <td nowrap></td>
       </tr>
     </tfoot>
   </table>
@@ -226,7 +222,6 @@
         <td nowrap>+20,020 (187,120)</td>
         <td nowrap>+202 (1,812)</td>
         <td nowrap>+202 (1,711)</td>
-        <td nowrap></td>
       </tr>
     </tfoot>
   </table>
@@ -261,7 +256,6 @@
       <tr>
         <td nowrap><strong>Total size impact</strong></td>
         <td nowrap>-300 (100)</td>
-        <td nowrap></td>
       </tr>
     </tfoot>
   </table>
@@ -292,7 +286,6 @@
       <tr>
         <td nowrap><strong>Total size impact</strong></td>
         <td nowrap>-100 (0)</td>
-        <td nowrap></td>
       </tr>
     </tfoot>
   </table>
@@ -331,7 +324,6 @@
       <tr>
         <td nowrap><strong>Total size impact</strong></td>
         <td nowrap>+120 (320)</td>
-        <td nowrap></td>
       </tr>
     </tfoot>
   </table>
@@ -364,7 +356,6 @@
       <tr>
         <td nowrap><strong>Total size impact</strong></td>
         <td nowrap>+1 (101)</td>
-        <td nowrap></td>
       </tr>
     </tfoot>
   </table>
@@ -396,7 +387,6 @@
       <tr>
         <td nowrap><strong>Total size impact</strong></td>
         <td nowrap>+14 (115)</td>
-        <td nowrap></td>
       </tr>
     </tfoot>
   </table>
@@ -419,7 +409,6 @@
       <tr>
         <td nowrap><strong>Total size impact</strong></td>
         <td nowrap>+1 (101)</td>
-        <td nowrap></td>
       </tr>
     </tfoot>
   </table>
@@ -453,7 +442,6 @@
       <tr>
         <td nowrap><strong>Total size impact</strong></td>
         <td nowrap>+15 (115)</td>
-        <td nowrap></td>
       </tr>
     </tfoot>
   </table>
@@ -485,7 +473,6 @@
       <tr>
         <td nowrap><strong>Total size impact</strong></td>
         <td nowrap>+15 (115)</td>
-        <td nowrap></td>
       </tr>
     </tfoot>
   </table>
@@ -516,7 +503,6 @@
       <tr>
         <td nowrap><strong>Total size impact</strong></td>
         <td nowrap>+15 (115)</td>
-        <td nowrap></td>
       </tr>
     </tfoot>
   </table>
@@ -539,7 +525,6 @@
       <tr>
         <td nowrap><strong>Total size impact</strong></td>
         <td nowrap>+1 (101)</td>
-        <td nowrap></td>
       </tr>
     </tfoot>
   </table>

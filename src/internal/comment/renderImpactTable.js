@@ -38,7 +38,7 @@ const renderSizeImpactTableHeader = (transformations) => {
   const lines = []
   const headerLine = [
     `<th nowrap>File</th>`,
-  ...Object.keys(transformations).map((sizeName) => `<th nowrap>${sizeName} bytes</th>`),
+    ...Object.keys(transformations).map((sizeName) => `<th nowrap>${sizeName} bytes</th>`),
   ]
   lines.push(headerLine)
 
@@ -119,7 +119,6 @@ const renderSizeImpactTableFooter = (
           formatFileSizeImpactCell,
         })}</td>`,
     ),
-    `<td nowrap></td>`,
   ]
   footerLines.push(totalSizeImpactLine)
 
