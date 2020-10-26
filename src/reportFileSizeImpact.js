@@ -256,6 +256,8 @@ ${renderGeneratedBy({ runLink })}`
         // buildCommand might generate files that could conflict when doing the merge
         // reset to avoid potential merge conflicts
         await execCommandInProjectDirectory(`git reset --hard origin/${pullRequestBase}`)
+        // Avoid "The following untracked working tree files would be overwritten by merge" error
+        await execCommandInProjectDirectory(`git clean  -d  -f .`)
         await fetchRef(headRef)
         // ensure there is user.email + user.name required to perform git merge command
         // without them git would complain that it does not know who we are
