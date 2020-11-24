@@ -488,7 +488,7 @@ ${examples[exampleName]}`
 
 `)
 
-export const promise = writeFile(
+await writeFile(
   exampleFileUrl,
   `${exampleFileContent}
 `,
