@@ -477,6 +477,26 @@ const examples = {
     baseSnapshot: {},
     afterMergeSnapshot: {},
   }),
+  "null pointer on new files": generateComment({
+    baseSnapshot: {
+      dist: {
+        fileMap: {},
+      },
+    },
+    afterMergeSnapshot: {
+      dist: {
+        fileMap: {
+          "dist/foo.js": {
+            hash: "a",
+            sizeMap: { raw: 110 },
+            meta: {
+              showSizeImpact: () => true,
+            },
+          },
+        },
+      },
+    },
+  }),
 }
 
 const exampleFileUrl = resolveUrl("./comment-example.md", import.meta.url)
