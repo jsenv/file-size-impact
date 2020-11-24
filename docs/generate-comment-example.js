@@ -477,7 +477,7 @@ const examples = {
     baseSnapshot: {},
     afterMergeSnapshot: {},
   }),
-  "null pointer on new files": generateComment({
+  "new file + showSizeImpact": generateComment({
     baseSnapshot: {
       dist: {
         fileMap: {},
@@ -494,6 +494,26 @@ const examples = {
             },
           },
         },
+      },
+    },
+  }),
+  "deleted file + showSizeImpact": generateComment({
+    baseSnapshot: {
+      dist: {
+        fileMap: {
+          "dist/foo.js": {
+            hash: "a",
+            sizeMap: { raw: 110 },
+            meta: {
+              showSizeImpact: () => true,
+            },
+          },
+        },
+      },
+    },
+    afterMergeSnapshot: {
+      dist: {
+        fileMap: {},
       },
     },
   }),
