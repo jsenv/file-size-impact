@@ -365,7 +365,7 @@ const showSizeImpactGetter = (
       event,
       sizeImpactMap,
       sizeMapOnBase: base ? base.sizeMap : null,
-      sizeMapAfterMerge: afterMerge.sizeMap,
+      sizeMapAfterMerge: afterMerge ? afterMerge.sizeMap : null,
     })
   }
 
