@@ -477,6 +477,46 @@ const examples = {
     baseSnapshot: {},
     afterMergeSnapshot: {},
   }),
+  "new file + showSizeImpact": generateComment({
+    baseSnapshot: {
+      dist: {
+        fileMap: {},
+      },
+    },
+    afterMergeSnapshot: {
+      dist: {
+        fileMap: {
+          "dist/foo.js": {
+            hash: "a",
+            sizeMap: { raw: 110 },
+            meta: {
+              showSizeImpact: () => true,
+            },
+          },
+        },
+      },
+    },
+  }),
+  "deleted file + showSizeImpact": generateComment({
+    baseSnapshot: {
+      dist: {
+        fileMap: {
+          "dist/foo.js": {
+            hash: "a",
+            sizeMap: { raw: 110 },
+            meta: {
+              showSizeImpact: () => true,
+            },
+          },
+        },
+      },
+    },
+    afterMergeSnapshot: {
+      dist: {
+        fileMap: {},
+      },
+    },
+  }),
 }
 
 const exampleFileUrl = resolveUrl("./comment-example.md", import.meta.url)
@@ -488,7 +528,7 @@ ${examples[exampleName]}`
 
 `)
 
-export const promise = writeFile(
+await writeFile(
   exampleFileUrl,
   `${exampleFileContent}
 `,

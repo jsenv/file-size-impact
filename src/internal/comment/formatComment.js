@@ -364,8 +364,8 @@ const showSizeImpactGetter = (
       fileRelativeUrl,
       event,
       sizeImpactMap,
-      sizeMapOnBase: base.sizeMap,
-      sizeMapAfterMerge: afterMerge.sizeMap,
+      sizeMapOnBase: base ? base.sizeMap : null,
+      sizeMapAfterMerge: afterMerge ? afterMerge.sizeMap : null,
     })
   }
 
