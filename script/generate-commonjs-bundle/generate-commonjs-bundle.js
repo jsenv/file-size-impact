@@ -1,8 +1,11 @@
-import { generateCommonJsBundleForNode } from "@jsenv/core"
+import { buildProject, getBabelPluginMapForNode } from "@jsenv/core"
 import * as jsenvConfig from "../../jsenv.config.js"
 
-generateCommonJsBundleForNode({
+buildProject({
   ...jsenvConfig,
-  manifestFile: true,
-  bundleDirectoryClean: true,
+  format: "commonjs",
+  entryPointMap: {
+    "./index.js": "./main.cjs",
+  },
+  babelPluginMap: getBabelPluginMapForNode(),
 })
