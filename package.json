@@ -1,6 +1,6 @@
 {
   "name": "@jsenv/file-size-impact",
-  "version": "6.0.3",
+  "version": "6.0.4",
   "description": "Add files size impact into pull requests.",
   "license": "MIT",
   "repository": {
@@ -44,10 +44,10 @@
     "postpublish": "node ./script/transform-package/restore-postinstall.js"
   },
   "dependencies": {
-    "@jsenv/cancellation": "2.0.1",
+    "@jsenv/cancellation": "2.0.2",
     "@jsenv/logger": "3.4.0",
     "@jsenv/server": "5.2.2",
-    "@jsenv/util": "4.0.0"
+    "@jsenv/util": "4.0.2"
   },
   "devDependencies": {
     "@jsenv/assert": "2.2.1",
