@@ -59,7 +59,7 @@ The list of available logLevel values can be found on [@jsenv/logger documentati
 `trackingConfig` parameter is an object used to configure group of files you want to track. This parameter is optional with a default value exported in [src/jsenvTrackingConfig.js](./src/jsenvTrackingConfig.js)
 
 `trackingConfig` keys are group names that will appear in the generated comment.
-`trackingConfig` values are `specifierMetaMap` as documented in https://github.com/jsenv/jsenv-url-meta#normalizespecifiermetamap.
+`trackingConfig` values are objects associating a pattern to a value. This object is refered as `metaValueMap` in https://github.com/jsenv/jsenv-url-meta.
 
 For every group you track there will be a corresponding line in the generated pull request comment as visible in [docs/comment-example.md](./comment-example.md)
 
@@ -105,7 +105,7 @@ const manifestConfig = {
 }
 ```
 
-This parameter reuse [trackingConfig](#trackingConfig) type and `specifierMetaMap` as documented in https://github.com/jsenv/jsenv-url-meta#normalizespecifiermetamap.
+This parameter reuses the shape of [trackingConfig](#trackingConfig) parameter (associating pattern + value).
 
 ## installCommand
 

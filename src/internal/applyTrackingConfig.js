@@ -1,8 +1,4 @@
-import {
-  urlToFileSystemPath,
-  metaMapToSpecifierMetaMap,
-  collectDirectoryMatchReport,
-} from "@jsenv/util"
+import { urlToFileSystemPath, collectDirectoryMatchReport } from "@jsenv/util"
 import { createCancellationToken } from "@jsenv/cancellation"
 
 export const applyTrackingConfig = async (
@@ -30,17 +26,17 @@ export const applyTrackingConfig = async (
 }
 
 const applyTracking = async (tracking, { projectDirectoryUrl, manifestConfig }) => {
-  const specifierMetaMap = metaMapToSpecifierMetaMap({
+  const structuredMetaMap = {
     track: tracking,
     ...(manifestConfig ? { manifest: manifestConfig } : {}),
-  })
+  }
 
   let directoryMatchReport
 
   try {
     directoryMatchReport = await collectDirectoryMatchReport({
       directoryUrl: projectDirectoryUrl,
-      specifierMetaMap,
+      structuredMetaMap,
       predicate: (meta) => Boolean(meta.track) || Boolean(meta.manifest),
     })
   } catch (e) {
