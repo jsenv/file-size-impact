@@ -1,11 +1,10 @@
 import { createLogger } from "@jsenv/logger"
-import { createOperation } from "@jsenv/cancellation"
 import {
-  assertAndNormalizeDirectoryUrl,
-  urlToFileSystemPath,
-  wrapExternalFunction,
+  createOperation,
+  executeAsyncFunction,
   createCancellationTokenForProcess,
-} from "@jsenv/util"
+} from "@jsenv/cancellation"
+import { assertAndNormalizeDirectoryUrl, urlToFileSystemPath } from "@jsenv/util"
 import {
   getPullRequest,
   getPullRequestCommentMatching,
@@ -53,7 +52,7 @@ export const reportFileSizeImpact = async ({
   catchError = false,
   runLink,
 }) => {
-  return wrapExternalFunction(
+  return executeAsyncFunction(
     async () => {
       projectDirectoryUrl = assertAndNormalizeDirectoryUrl(projectDirectoryUrl)
       if (typeof githubToken !== "string") {
@@ -316,7 +315,7 @@ ${renderGeneratedBy({ runLink })}`
 
       return { comment }
     },
-    { catchCancellation: true, unhandledRejectionStrict: true },
+    { catchCancellation: true, considerUnhandledRejectionsAsExceptions: true },
   )
 }
 
