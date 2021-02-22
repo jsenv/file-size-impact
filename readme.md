@@ -67,7 +67,7 @@ npm install --save-dev @jsenv/file-size-impact
 ## .github/workflows/report-size-impact.js
 
 ```js
-import { reportFileSizeImpact, readGithubWorkflowEnv } from "../../index.js"
+import { reportFileSizeImpact, readGithubWorkflowEnv } from "@jsenv/file-size-impact"
 
 reportFileSizeImpact({
   ...readGithubWorkflowEnv(),
