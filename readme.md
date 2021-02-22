@@ -30,6 +30,13 @@ It can also be configured to track size after compression.
 
 ![screenshot of pull request comment with compression](./docs/comment-compression.png)
 
+The main features are:
+
+- Compatible with many workflow: Github, Jenkins, Travis
+- Create group of files to track them according to your needs
+- Compact and readable output
+- Can track compressed file size
+
 # How it works
 
 In order to analyse the impact of a pull request on file size the following steps are executed:
@@ -168,7 +175,7 @@ reportFileSizeImpact({
 
 # See also
 
-- Advanced documentation around `reportFileSizeImpact`: [docs/api.md](./docs/api.md)
+- API documentation around `reportFileSizeImpact`: [docs/api.md](./docs/api.md)
 
 - An other repository from jsenv monitoring pull requests impacts but on lighthouse score: https://github.com/jsenv/jsenv-lighthouse-score-impact
 

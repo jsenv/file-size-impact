@@ -106,41 +106,39 @@ See https://docs.github.com/en/actions/reference/events-that-trigger-workflows#p
         headRef = pullRequestHead
       }
 
-      logger.debug(
-        `searching comment in pull request ${getPullRequestUrl({
-          repositoryOwner,
-          repositoryName,
-          pullRequestNumber,
-        })}`,
-      )
-      const existingComment = await createOperation({
-        cancellationToken,
-        start: () =>
-          getPullRequestCommentMatching(
-            ({ body }) => body.includes(HEADER),
-            {
-              repositoryOwner,
-              repositoryName,
-              pullRequestNumber,
-            },
-            { cancellationToken, githubToken },
-          ),
-      })
-      if (existingComment) {
-        logger.debug(`comment found at ${existingComment.html_url}.`)
-      } else {
-        logger.debug(`comment not found`)
-      }
-
       const patchOrPostComment = async (commentBody) => {
-        /*
-        I predict myself or others would assume the impact failed if a comment
-        is not labelled as edited in github ui.
-        Even if conceptually the comment was not edited because the content is the same.
+        logger.debug(
+          `searching comment in pull request ${getPullRequestUrl({
+            repositoryOwner,
+            repositoryName,
+            pullRequestNumber,
+          })}`,
+        )
+        const existingComment = await createOperation({
+          cancellationToken,
+          start: () =>
+            getPullRequestCommentMatching(
+              ({ body }) => body.includes(HEADER),
+              {
+                repositoryOwner,
+                repositoryName,
+                pullRequestNumber,
+              },
+              { cancellationToken, githubToken },
+            ),
+        })
+        if (existingComment) {
+          logger.debug(`comment found at ${existingComment.html_url}.`)
+        } else {
+          logger.debug(`comment not found`)
+        }
 
-        To ensure github ui shows comment as edited let's put
-        a comment with pull request head commit sha in the message body.
-        And let's put it all the time as it might be a valuable information
+        /*
+        Let's add a commit-sha hidden at the top of the comment body:
+        This way, even if the comment generated is exactly the same, GitHub
+        will consider the comment as edited.
+        Without this, someone could think the build did not run because the comment
+        was not updated (It happened to me several times).
         */
         commentBody = `<!-- head-commit-sha=${pullRequest.head.sha} -->
 ${commentBody}
