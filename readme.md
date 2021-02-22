@@ -175,7 +175,7 @@ reportFileSizeImpact({
 
 # See also
 
-- Advanced documentation around `reportFileSizeImpact`: [docs/api.md](./docs/api.md)
+- API documentation around `reportFileSizeImpact`: [docs/api.md](./docs/api.md)
 
 - An other repository from jsenv monitoring pull requests impacts but on lighthouse score: https://github.com/jsenv/jsenv-lighthouse-score-impact
 
