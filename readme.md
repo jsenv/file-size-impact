@@ -30,6 +30,13 @@ It can also be configured to track size after compression.
 
 ![screenshot of pull request comment with compression](./docs/comment-compression.png)
 
+The main features are:
+
+- Compatible with many workflow: Github, Jenkins, Travis
+- Create group of files to track them according to your needs
+- Compact and readable output
+- Can track compressed file size
+
 # How it works
 
 In order to analyse the impact of a pull request on file size the following steps are executed:
