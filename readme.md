@@ -22,13 +22,19 @@ Add files size impact into pull requests.
 
 ![screenshot of pull request comment](./docs/comment-collapsed.png)
 
-The comment can be expanded to see details
+<details>
+  <summary>The comment can be expanded to see details.</summary>
 
 ![screenshot of pull request comment expanded](./docs/comment-expanded.png)
 
-It can also be configured to track size after compression.
+</details>
+
+<details>
+  <summary>It can also be configured to track size after compression.</summary>
 
 ![screenshot of pull request comment with compression](./docs/comment-compression.png)
+
+</details>
 
 The main features are:
 
@@ -54,17 +60,19 @@ In order to analyse the impact of a pull request on file size the following step
 
 You need:
 
-- [@jsenv/file-size-impact in devDependencies](#Installation-with-npm)
-- [The file runned against a pull request](#githubworkflowsreport-file-size-impactjs)
-- [A workflow.yml](#githubworkflowsfile-size-impactyml)
-
-## Installation with npm
+<details>
+  <summary>@jsenv/file-size-impact in devDependencies</summary>
 
 ```console
 npm install --save-dev @jsenv/file-size-impact
 ```
 
-## .github/workflows/report-size-impact.js
+</details>
+
+<details>
+  <summary>A script file to run against a pull request</summary>
+
+`.github/workflows/report-size-impact.js`
 
 ```js
 import { reportFileSizeImpact, readGithubWorkflowEnv } from "@jsenv/file-size-impact"
@@ -81,7 +89,12 @@ reportFileSizeImpact({
 })
 ```
 
-## .github/workflows/size-impact.yml
+</details>
+
+<details>
+  <summary>A workflow.yml</summary>
+
+`.github/workflows/size-impact.yml`
 
 ```yml
 name: size-impact
@@ -110,6 +123,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 ```
+
+</details>
 
 # Usage outside github workflow
 
