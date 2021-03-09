@@ -11,8 +11,8 @@ Add files size impact into pull requests.
 
 - [Presentation](#Presentation)
 - [How it works](#How-it-works)
-- [Usage in github workflow](#Usage-in-github-workflow)
-- [Usage outside github workflow](#Usage-outside-github-workflow)
+- [Configuring a github workflow](#Configuring-a-github-workflow)
+- [Configuring other workflow](#configuring-other-workflow)
 - [Compression](#Compression)
 - [See also](#See-also)
 
@@ -22,8 +22,7 @@ Add files size impact into pull requests.
 
 ![screenshot of pull request comment](./docs/comment-collapsed.png)
 
-<details>
-  <summary>The comment can be expanded to see details.</summary>
+The comment can be expanded to see details.
 
 ![screenshot of pull request comment expanded](./docs/comment-expanded.png)
 
@@ -38,10 +37,10 @@ Add files size impact into pull requests.
 
 The main features are:
 
-- Compatible with many workflow: Github, Jenkins, Travis
-- Create group of files to track them according to your needs
+- Compatible with many workflow: GitHub, Jenkins, Travis
+- Group files to track them according to your needs
 - Compact and readable output
-- Can track compressed file size
+- Track compressed file size
 
 # How it works
 
@@ -56,12 +55,12 @@ In order to analyse the impact of a pull request on file size the following step
 7. Analyse differences between the two snapshots
 8. Post or update comment in the pull request
 
-# Usage in github workflow
+# Configuring a github workflow
 
 You need:
 
 <details>
-  <summary>@jsenv/file-size-impact in devDependencies</summary>
+  <summary>1. @jsenv/file-size-impact in devDependencies</summary>
 
 ```console
 npm install --save-dev @jsenv/file-size-impact
@@ -70,7 +69,7 @@ npm install --save-dev @jsenv/file-size-impact
 </details>
 
 <details>
-  <summary>A script file to run against a pull request</summary>
+  <summary>2. Create a script file</summary>
 
 `.github/workflows/report-size-impact.js`
 
@@ -92,7 +91,7 @@ reportFileSizeImpact({
 </details>
 
 <details>
-  <summary>A workflow.yml</summary>
+  <summary>3. Create a workflow.yml file</summary>
 
 `.github/workflows/size-impact.yml`
 
@@ -126,11 +125,25 @@ jobs:
 
 </details>
 
-# Usage outside github workflow
+# Configuring other workflow
+
+<details>
+  <summary>1. @jsenv/file-size-impact in devDependencies</summary>
+
+```console
+npm install --save-dev @jsenv/file-size-impact
+```
+
+</details>
+
+<details>
+  <summary>2. Create a script file (depends what you use)</summary>
 
 When outside a github workflow you must provide `{ projectDirectoryUrl, githubToken, repositoryOwner, repositoryName, pullRequestNumber }` "manually" to `reportFileSizeImpact`.
 
-For Travis it would be something as below.
+The code below is an example for Travis.
+
+`report-size-impact.js`
 
 ```js
 import { reportFileSizeImpact } from "@jsenv/file-size-impact"
@@ -152,9 +165,19 @@ reportFileSizeImpact({
 })
 ```
 
+</details>
+
+<details>
+  <summary>3. Create a GitHub token</summary>
+
 In order to have `process.env.GITHUB_TOKEN` you need to create a github token with `repo` scope at https://github.com/settings/tokens/new. After that you need to setup this environment variable. The exact way to do this is specific to your project and tools. Applied to travis you could add it to your environment variables as documented in https://docs.travis-ci.com/user/environment-variables/#defining-variables-in-repository-settings.
 
-Please note `reportFileSizeImpact` must be called in a state where your git repository has been cloned and you are currently on the pull request branch. Inside github workflow this is done by the following lines in `file-size-impact.yml`.
+</details>
+
+<details>
+  <summary>4. Create your workflow (depends what you use)</summary>
+
+`reportFileSizeImpact` must be called in a state where your git repository has been cloned and you are currently on the pull request branch. Inside github workflow this is done by the following lines in `file-size-impact.yml`.
 
 ```yml
 uses: actions/checkout@v2
@@ -172,7 +195,10 @@ git remote add origin $GITHUB_REPOSITORY_URL
 git fetch --no-tags --prune origin $PULL_REQUEST_HEAD_REF
 git checkout origin/$PULL_REQUEST_HEAD_REF
 npm install
+node ./report-size-impact.js
 ```
+
+</details>
 
 # Compression
 
