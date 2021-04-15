@@ -217,13 +217,13 @@ ${renderGeneratedBy({ runLink })}`
         await execCommandInProjectDirectory(`git fetch --no-tags --prune origin ${ref}`)
       }
 
-      let baseSnapshot
+      let beforeMergeSnapshot
       try {
         await fetchRef(pullRequestBase)
         await execCommandInProjectDirectory(`git reset --hard origin/${pullRequestBase}`)
         await execCommandInProjectDirectory(installCommand)
         await execCommandInProjectDirectory(buildCommand)
-        baseSnapshot = await generateSnapshot({
+        beforeMergeSnapshot = await generateSnapshot({
           cancellationToken,
           logLevel,
           projectDirectoryUrl,
@@ -297,7 +297,7 @@ ${renderGeneratedBy({ runLink })}`
           cacheImpact,
           trackingConfig,
           transformations,
-          baseSnapshot,
+          beforeMergeSnapshot,
           afterMergeSnapshot,
 
           formatGroupSummary,

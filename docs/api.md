@@ -259,17 +259,17 @@ await reportFileSizeImpact({
 showSizeImpact({
   fileRelativeUrl: "dist/file.js",
   event: "modified",
-  sizeImpactMap: {
-    raw: 100,
-    gzip: -5,
-  },
-  sizeMapOnBase: {
+  sizeMapBeforeMerge: {
     raw: 200,
     gzip: 20,
   },
   sizeMapAfterMerge: {
     raw: 300,
     gzip: 15,
+  },
+  sizeImpactMap: {
+    raw: 100,
+    gzip: -5,
   },
 })
 ```
@@ -282,14 +282,14 @@ A string representing the file url relative to [projectDirectoryUrl](#projectDir
 
 A string that can be either `added`, `removed`, `modified`.
 
-### sizeImpactMap
-
-An object mapping all transformations to a number representing impact on that file size.
-
-### sizeMapOnBase
+### sizeMapBeforeMerge
 
 An object mapping all transformations to a number corresponding to file size on base branch. This parameter is `null` when event is `added` because the file did not exists on base branch.
 
 ### sizeMapAfterMerge
 
 An object mapping all transformations to a number corresponding to file size after merging pr in base branch. This parameter is `null` when event is `deleted` because the file is gone.
+
+### sizeImpactMap
+
+An object mapping all transformations to a number representing impact on that file size.

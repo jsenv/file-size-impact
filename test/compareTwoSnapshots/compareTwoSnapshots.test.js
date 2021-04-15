@@ -43,7 +43,7 @@ import { compareTwoSnapshots } from "../../src/internal/compareTwoSnapshots.js"
   const expected = {
     dist: {
       "dir/file.js": {
-        base: {
+        beforeMerge: {
           relativeUrl: "dir/file.base.js",
           hash: "hash1",
         },
@@ -53,21 +53,21 @@ import { compareTwoSnapshots } from "../../src/internal/compareTwoSnapshots.js"
         },
       },
       "new.js": {
-        base: null,
+        beforeMerge: null,
         afterMerge: {
           relativeUrl: "new.head.js",
           hash: "hash5",
         },
       },
       "old.js": {
-        base: {
+        beforeMerge: {
           relativeUrl: "old.base.js",
           hash: "hash2",
         },
         afterMerge: null,
       },
       "whatever.js": {
-        base: {
+        beforeMerge: {
           relativeUrl: "whatever.js",
           hash: "hash3",
         },
@@ -118,7 +118,7 @@ import { compareTwoSnapshots } from "../../src/internal/compareTwoSnapshots.js"
   const expected = {
     dist: {
       "whatever.js": {
-        base: {
+        beforeMerge: {
           relativeUrl: "whatever.js",
           hash: "hash",
         },

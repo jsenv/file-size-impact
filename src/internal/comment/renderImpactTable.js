@@ -7,6 +7,7 @@ export const renderImpactTable = (
     formatFileRelativeUrl,
     formatFileCell,
     formatFileSizeImpactCell,
+    formatTotalFileSizeImpactCell,
   },
 ) => {
   const table = `<table>
@@ -26,7 +27,7 @@ export const renderImpactTable = (
     <tfoot>
       ${renderSizeImpactTableFooter(fileByFileImpact, {
         transformations,
-        formatFileSizeImpactCell,
+        formatTotalFileSizeImpactCell,
       })}
     </tfoot>
   </table>`
@@ -60,16 +61,7 @@ const renderSizeImpactTableBody = (
   const sizeNames = Object.keys(transformations)
 
   const renderDiffCell = (fileImpact, sizeName) => {
-    const fileSizeImpact = getNamedSizeImpact(fileImpact, sizeName)
-    const fileSizeAfterMerge = getNamedSizeAfterMerge(fileImpact, sizeName)
-
-    const fileSizeImpactCellFormatted = formatFileSizeImpactCell({
-      ...fileImpact,
-      sizeName,
-      fileSizeImpact,
-      fileSizeAfterMerge,
-    })
-
+    const fileSizeImpactCellFormatted = formatFileSizeImpactCell(fileImpact, sizeName)
     return fileSizeImpactCellFormatted
   }
 
@@ -107,7 +99,7 @@ const renderSizeImpactTableBody = (
 
 const renderSizeImpactTableFooter = (
   fileByFileImpact,
-  { transformations, formatFileSizeImpactCell },
+  { transformations, formatTotalFileSizeImpactCell },
 ) => {
   const footerLines = []
 
@@ -116,7 +108,7 @@ const renderSizeImpactTableFooter = (
     ...Object.keys(transformations).map(
       (sizeName) =>
         `<td nowrap>${renderTotalSizeImpact(fileByFileImpact, sizeName, {
-          formatFileSizeImpactCell,
+          formatTotalFileSizeImpactCell,
         })}</td>`,
     ),
   ]
@@ -125,10 +117,11 @@ const renderSizeImpactTableFooter = (
   return renderTableLines(footerLines)
 }
 
-const getNamedSizeImpact = (fileImpact, sizeName) => {
-  const sizeImpactMap = fileImpact.sizeImpactMap
-  const sizeImpact = sizeImpactMap[sizeName]
-  return sizeImpact
+const getNamedSizeBeforeMerge = (fileImpact, sizeName) => {
+  if (fileImpact.event === "added") return 0
+  const beforeMergeSizeMap = fileImpact.beforeMerge.sizeMap
+  const sizeBeforeMerge = beforeMergeSizeMap[sizeName]
+  return sizeBeforeMerge
 }
 
 const getNamedSizeAfterMerge = (fileImpact, sizeName) => {
@@ -138,30 +131,46 @@ const getNamedSizeAfterMerge = (fileImpact, sizeName) => {
   return sizeAfterMerge
 }
 
-const renderTotalSizeImpact = (fileByFileImpact, sizeName, { formatFileSizeImpactCell }) => {
+const getNamedSizeImpact = (fileImpact, sizeName) => {
+  const sizeImpactMap = fileImpact.sizeImpactMap
+  const sizeImpact = sizeImpactMap[sizeName]
+  return sizeImpact
+}
+
+const renderTotalSizeImpact = (fileByFileImpact, sizeName, { formatTotalFileSizeImpactCell }) => {
   const total = Object.keys(fileByFileImpact).reduce(
     (previous, fileRelativePath) => {
       const fileImpact = fileByFileImpact[fileRelativePath]
 
-      const fileSizeImpact = getNamedSizeImpact(fileImpact, sizeName)
-      const totalSizeImpactPrevious = previous.totalSizeImpact
-      const totalSizeImpact = totalSizeImpactPrevious + fileSizeImpact
+      const fileSizeBeforeMerge = getNamedSizeBeforeMerge(fileImpact, sizeName)
+      const totalSizeBeforeMergePrevious = previous.totalSizeBeforeMerge
+      const totalSizeBeforeMerge = totalSizeBeforeMergePrevious + fileSizeBeforeMerge
 
       const fileSizeAfterMerge = getNamedSizeAfterMerge(fileImpact, sizeName)
       const totalSizeAfterMergePrevious = previous.totalSizeAfterMerge
       const totalSizeAfterMerge = totalSizeAfterMergePrevious + fileSizeAfterMerge
 
+      const fileSizeImpact = getNamedSizeImpact(fileImpact, sizeName)
+      const totalSizeImpactPrevious = previous.totalSizeImpact
+      const totalSizeImpact = totalSizeImpactPrevious + fileSizeImpact
+
       return {
-        totalSizeImpact,
+        totalSizeBeforeMerge,
         totalSizeAfterMerge,
+        totalSizeImpact,
       }
     },
-    { totalSizeImpact: 0, totalSizeAfterMerge: 0 },
+    {
+      totalSizeBeforeMerge: 0,
+      totalSizeAfterMerge: 0,
+      totalSizeImpact: 0,
+    },
   )
-  const { totalSizeImpact, totalSizeAfterMerge } = total
-  return formatFileSizeImpactCell({
-    fileSizeImpact: totalSizeImpact,
-    fileSizeAfterMerge: totalSizeAfterMerge,
+  const { totalSizeBeforeMerge, totalSizeAfterMerge, totalSizeImpact } = total
+  return formatTotalFileSizeImpactCell({
+    totalSizeBeforeMerge,
+    totalSizeAfterMerge,
+    totalSizeImpact,
   })
 }
 

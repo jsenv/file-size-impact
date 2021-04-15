@@ -14,14 +14,14 @@ const generateComment = (data) => {
   })
 }
 
-const deduceTransformations = ({ baseSnapshot, afterMergeSnapshot }) => {
-  const baseKeys = Object.keys(baseSnapshot)
-  if (baseKeys.length) {
-    const baseFirstGroup = baseSnapshot[baseKeys[0]]
-    const baseFileMap = baseFirstGroup.fileMap
-    const files = Object.keys(baseFileMap)
+const deduceTransformations = ({ beforeMergeSnapshot, afterMergeSnapshot }) => {
+  const beforeMergeKeys = Object.keys(beforeMergeSnapshot)
+  if (beforeMergeKeys.length) {
+    const beforeMergeFirstGroup = beforeMergeSnapshot[beforeMergeKeys[0]]
+    const beforeMergeFileMap = beforeMergeFirstGroup.fileMap
+    const files = Object.keys(beforeMergeFileMap)
     if (files.length) {
-      return baseFileMap[files[0]].sizeMap
+      return beforeMergeFileMap[files[0]].sizeMap
     }
   }
 
@@ -40,7 +40,7 @@ const deduceTransformations = ({ baseSnapshot, afterMergeSnapshot }) => {
 
 const examples = {
   "basic example": generateComment({
-    baseSnapshot: {
+    beforeMergeSnapshot: {
       dist: {
         fileMap: {
           "dist/bar.js": {
@@ -74,7 +74,7 @@ const examples = {
     },
   }),
   "basic example + gzip + brotli": generateComment({
-    baseSnapshot: {
+    beforeMergeSnapshot: {
       dist: {
         fileMap: {
           "dist/bar.js": {
@@ -108,7 +108,7 @@ const examples = {
     },
   }),
   "no changes": generateComment({
-    baseSnapshot: {
+    beforeMergeSnapshot: {
       dist: {
         fileMap: {
           "dist/bar.js": {
@@ -137,7 +137,7 @@ const examples = {
         "*/**": false,
       },
     },
-    baseSnapshot: {
+    beforeMergeSnapshot: {
       dist: {
         fileMap: {},
       },
@@ -149,7 +149,7 @@ const examples = {
     },
   }),
   "changes cancels each other": generateComment({
-    baseSnapshot: {
+    beforeMergeSnapshot: {
       dist: {
         fileMap: {
           "dist/file-a.js": {
@@ -183,7 +183,7 @@ const examples = {
     },
   }),
   "two groups + gzip + brotli": generateComment({
-    baseSnapshot: {
+    beforeMergeSnapshot: {
       "dist/commonjs": {
         fileMap: {
           "dist/commonjs/bar.js": {
@@ -277,7 +277,7 @@ const examples = {
     },
   }),
   "zero size impact": generateComment({
-    baseSnapshot: {
+    beforeMergeSnapshot: {
       dist: {
         fileMap: {
           "dist/bar.js": {
@@ -312,7 +312,7 @@ const examples = {
   }),
   "zero size impact and cacheImpact enabled": generateComment({
     cacheImpact: true,
-    baseSnapshot: {
+    beforeMergeSnapshot: {
       dist: {
         fileMap: {
           "dist/bar.js": {
@@ -347,7 +347,7 @@ const examples = {
   }),
   "cache impact + several cache impact": generateComment({
     cacheImpact: true,
-    baseSnapshot: {
+    beforeMergeSnapshot: {
       dist: {
         fileMap: {
           "dist/bar.js": {
@@ -386,7 +386,7 @@ const examples = {
     },
   }),
   "size impact 0/1": generateComment({
-    baseSnapshot: {
+    beforeMergeSnapshot: {
       dist: {
         fileMap: {
           "dist/bar.js": {
@@ -412,7 +412,7 @@ const examples = {
     },
   }),
   "size impact 1/2": generateComment({
-    baseSnapshot: {
+    beforeMergeSnapshot: {
       dist: {
         fileMap: {
           "dist/bar.js": {
@@ -448,7 +448,7 @@ const examples = {
     },
   }),
   "formating file relative url": generateComment({
-    baseSnapshot: {
+    beforeMergeSnapshot: {
       dist: {
         fileMap: {
           "dist/foo.js": {
@@ -474,11 +474,11 @@ const examples = {
     },
   }),
   "empty warning": generateComment({
-    baseSnapshot: {},
+    beforeMergeSnapshot: {},
     afterMergeSnapshot: {},
   }),
   "new file + showSizeImpact": generateComment({
-    baseSnapshot: {
+    beforeMergeSnapshot: {
       dist: {
         fileMap: {},
       },
@@ -498,7 +498,7 @@ const examples = {
     },
   }),
   "deleted file + showSizeImpact": generateComment({
-    baseSnapshot: {
+    beforeMergeSnapshot: {
       dist: {
         fileMap: {
           "dist/foo.js": {

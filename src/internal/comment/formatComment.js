@@ -17,7 +17,7 @@ export const formatComment = ({
   transformations,
   pullRequestBase,
   pullRequestHead,
-  baseSnapshot,
+  beforeMergeSnapshot,
   afterMergeSnapshot,
 
   formatGroupSummary,
@@ -30,7 +30,7 @@ export const formatComment = ({
   formatSize,
 }) => {
   const warnings = []
-  const snapshotComparison = compareTwoSnapshots(baseSnapshot, afterMergeSnapshot)
+  const snapshotComparison = compareTwoSnapshots(beforeMergeSnapshot, afterMergeSnapshot)
   const groups = Object.keys(snapshotComparison)
   const groupCount = groups.length
 
@@ -134,12 +134,12 @@ const renderCommentBody = ({
     const fileByFileImpact = {}
     const fileByFileImpactHidden = {}
 
-    const addImpact = (fileRelativeUrl, { event, sizeImpactMap, base, afterMerge }) => {
-      const meta = event === "deleted" ? base.meta : afterMerge.meta
+    const addImpact = (fileRelativeUrl, { event, sizeImpactMap, beforeMerge, afterMerge }) => {
+      const meta = event === "deleted" ? beforeMerge.meta : afterMerge.meta
       const impact = {
         event,
         sizeImpactMap,
-        base,
+        beforeMerge,
         afterMerge,
         ...(cacheImpact
           ? { participatesToCacheImpact: event === "modified" || event === "added" }
@@ -163,9 +163,9 @@ const renderCommentBody = ({
     }
 
     Object.keys(groupComparison).forEach((fileRelativeUrl) => {
-      const { base, afterMerge } = groupComparison[fileRelativeUrl]
+      const { beforeMerge, afterMerge } = groupComparison[fileRelativeUrl]
 
-      if (isAdded({ base, afterMerge })) {
+      if (isAdded({ beforeMerge, afterMerge })) {
         const event = "added"
         const sizeImpactMap = {}
         const sizeMapAfterMerge = afterMerge.sizeMap
@@ -175,40 +175,40 @@ const renderCommentBody = ({
         addImpact(fileRelativeUrl, {
           event,
           sizeImpactMap,
-          base,
+          beforeMerge,
           afterMerge,
         })
         return
       }
 
-      if (isDeleted({ base, afterMerge })) {
+      if (isDeleted({ beforeMerge, afterMerge })) {
         const event = "deleted"
         const sizeImpactMap = {}
-        const sizeMapOnBase = base.sizeMap
-        Object.keys(sizeMapOnBase).forEach((sizeName) => {
-          sizeImpactMap[sizeName] = -sizeMapOnBase[sizeName]
+        const sizeMapBeforeMerge = beforeMerge.sizeMap
+        Object.keys(sizeMapBeforeMerge).forEach((sizeName) => {
+          sizeImpactMap[sizeName] = -sizeMapBeforeMerge[sizeName]
         })
         addImpact(fileRelativeUrl, {
           event,
           sizeImpactMap,
-          base,
+          beforeMerge,
           afterMerge,
         })
         return
       }
 
-      if (isModified({ base, afterMerge })) {
+      if (isModified({ beforeMerge, afterMerge })) {
         const event = "modified"
         const sizeImpactMap = {}
-        const sizeMapOnBase = base.sizeMap
+        const sizeMapBeforeMerge = beforeMerge.sizeMap
         const sizeMapAfterMerge = afterMerge.sizeMap
         Object.keys(sizeMapAfterMerge).forEach((sizeName) => {
-          sizeImpactMap[sizeName] = sizeMapAfterMerge[sizeName] - sizeMapOnBase[sizeName]
+          sizeImpactMap[sizeName] = sizeMapAfterMerge[sizeName] - sizeMapBeforeMerge[sizeName]
         })
         addImpact(fileRelativeUrl, {
           event,
           sizeImpactMap,
-          base,
+          beforeMerge,
           afterMerge,
         })
       }
@@ -352,7 +352,7 @@ const metaToData = (meta, ...args) => {
 const showSizeImpactGetter = (
   meta,
   fileRelativeUrl,
-  { event, sizeImpactMap, base, afterMerge },
+  { event, sizeImpactMap, beforeMerge, afterMerge },
 ) => {
   const { showSizeImpact = true } = meta
   if (typeof showSizeImpact === "boolean") {
@@ -364,7 +364,7 @@ const showSizeImpactGetter = (
       fileRelativeUrl,
       event,
       sizeImpactMap,
-      sizeMapOnBase: base ? base.sizeMap : null,
+      sizeMapBeforeMerge: beforeMerge ? beforeMerge.sizeMap : null,
       sizeMapAfterMerge: afterMerge ? afterMerge.sizeMap : null,
     })
   }
