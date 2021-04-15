@@ -1,23 +1,27 @@
+import { createRequire } from "module"
+
+const require = createRequire(import.meta.url)
+
+// https://github.com/visionmedia/bytes.js/
+const bytes = require("bytes")
+
 const enDecimalFormatter = new Intl.NumberFormat("en", { style: "decimal" })
 
 const formatSize = (sizeNumber, { diff = false, unit = false } = {}) => {
   const sizeNumberAbsolute = Math.abs(sizeNumber)
-  let sizeString = enDecimalFormatter.format(sizeNumberAbsolute)
+
+  let sizeString
+  if (unit) {
+    sizeString = bytes(sizeNumberAbsolute, { decimalPlaces: 2 })
+  } else {
+    sizeString = enDecimalFormatter.format(sizeNumberAbsolute)
+  }
 
   if (diff) {
     if (sizeNumber < 0) {
       sizeString = `-${sizeString}`
     } else if (sizeNumber > 0) {
       sizeString = `+${sizeString}`
-    }
-  }
-
-  if (unit) {
-    if (sizeNumberAbsolute === 0) {
-    } else if (sizeNumberAbsolute === 1) {
-      sizeString = `${sizeString} byte`
-    } else if (sizeNumberAbsolute > 1) {
-      sizeString = `${sizeString} bytes`
     }
   }
 
@@ -60,6 +64,9 @@ export const jsenvCommentParameters = {
       return formatSizeImpact({
         sizeBeforeMerge,
         sizeAfterMerge,
+        // +100 % of something that was not here
+        // makes no sense
+        percentage: false,
       })
     }
 
@@ -69,6 +76,8 @@ export const jsenvCommentParameters = {
       return formatSizeImpact({
         sizeBeforeMerge,
         sizeAfterMerge,
+        // -100% of the file kinda makes sense
+        percentage: true,
       })
     }
 
@@ -77,30 +86,38 @@ export const jsenvCommentParameters = {
     return formatSizeImpact({
       sizeBeforeMerge,
       sizeAfterMerge,
+      percentage: true,
     })
   },
   formatTotalFileSizeImpactCell: ({ totalSizeBeforeMerge, totalSizeAfterMerge }) => {
     return formatSizeImpact({
       sizeBeforeMerge: totalSizeBeforeMerge,
       sizeAfterMerge: totalSizeAfterMerge,
+      // If you add +2 bytes to a file of 20 bytes,
+      // total percentage will display +10%.
+      // It can be confusing.
+      percentage: true,
     })
   },
   formatSize,
 }
 
-const formatSizeImpact = ({ sizeBeforeMerge, sizeAfterMerge }) => {
+const formatSizeImpact = ({ sizeBeforeMerge, sizeAfterMerge, percentage }) => {
   const sizeAfterMergeFormatted = formatSize(sizeAfterMerge, { unit: true })
 
   const sizeDiff = sizeAfterMerge - sizeBeforeMerge
   const sizeDiffFormatted = formatSize(sizeDiff, { diff: true, unit: true })
 
+  if (!percentage) {
+    return `${sizeAfterMergeFormatted} (${sizeDiffFormatted})`
+  }
+
   const sizeDiffRatio =
-    sizeBeforeMerge === 0 ? 1 : sizeAfterMerge === 0 ? -1 : sizeBeforeMerge / sizeDiff
+    sizeBeforeMerge === 0 ? 1 : sizeAfterMerge === 0 ? -1 : sizeDiff / sizeBeforeMerge
   const sizeDiffAsPercentage = sizeDiffRatio * 100
-  const sizeDiffAsPercentageFormatted = `${sizeDiffAsPercentage < 0 ? `-` : "+"}${limitDecimals(
-    sizeDiffAsPercentage,
-    2,
-  )}`
+  const sizeDiffAsPercentageFormatted = `${sizeDiffAsPercentage < 0 ? `-` : "+"}${Math.abs(
+    limitDecimals(sizeDiffAsPercentage, 2),
+  )}%`
 
   return `${sizeAfterMergeFormatted} (${sizeDiffFormatted} / ${sizeDiffAsPercentageFormatted})`
 }

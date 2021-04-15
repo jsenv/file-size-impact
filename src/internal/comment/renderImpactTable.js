@@ -39,7 +39,7 @@ const renderSizeImpactTableHeader = (transformations) => {
   const lines = []
   const headerLine = [
     `<th nowrap>File</th>`,
-    ...Object.keys(transformations).map((sizeName) => `<th nowrap>${sizeName} bytes</th>`),
+    ...Object.keys(transformations).map((sizeName) => `<th nowrap>${sizeName} size</th>`),
   ]
   lines.push(headerLine)
 
@@ -104,7 +104,7 @@ const renderSizeImpactTableFooter = (
   const footerLines = []
 
   const totalSizeImpactLine = [
-    `<td nowrap><strong>Total size impact</strong></td>`,
+    `<td nowrap><strong>Total</strong></td>`,
     ...Object.keys(transformations).map(
       (sizeName) =>
         `<td nowrap>${renderTotalSizeImpact(fileByFileImpact, sizeName, {
@@ -153,6 +153,10 @@ const renderTotalSizeImpact = (fileByFileImpact, sizeName, { formatTotalFileSize
       const fileSizeImpact = getNamedSizeImpact(fileImpact, sizeName)
       const totalSizeImpactPrevious = previous.totalSizeImpact
       const totalSizeImpact = totalSizeImpactPrevious + fileSizeImpact
+
+      if (fileSizeImpact === 0) {
+        return previous
+      }
 
       return {
         totalSizeBeforeMerge,
