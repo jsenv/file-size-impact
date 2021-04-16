@@ -132,11 +132,10 @@ const renderCommentBody = ({
     const fileByFileImpact = {}
     const fileByFileImpactHidden = {}
 
-    const addImpact = (fileRelativeUrl, { event, sizeImpactMap, beforeMerge, afterMerge }) => {
+    const addImpact = (fileRelativeUrl, { event, beforeMerge, afterMerge }) => {
       const meta = event === "deleted" ? beforeMerge.meta : afterMerge.meta
       const impact = {
         event,
-        sizeImpactMap,
         beforeMerge,
         afterMerge,
       }
@@ -157,15 +156,8 @@ const renderCommentBody = ({
       const { beforeMerge, afterMerge } = groupComparison[fileRelativeUrl]
 
       if (isAdded({ beforeMerge, afterMerge })) {
-        const event = "added"
-        const sizeImpactMap = {}
-        const sizeMapAfterMerge = afterMerge.sizeMap
-        Object.keys(sizeMapAfterMerge).forEach((sizeName) => {
-          sizeImpactMap[sizeName] = sizeMapAfterMerge[sizeName]
-        })
         addImpact(fileRelativeUrl, {
-          event,
-          sizeImpactMap,
+          event: "added",
           beforeMerge,
           afterMerge,
         })
@@ -173,15 +165,8 @@ const renderCommentBody = ({
       }
 
       if (isDeleted({ beforeMerge, afterMerge })) {
-        const event = "deleted"
-        const sizeImpactMap = {}
-        const sizeMapBeforeMerge = beforeMerge.sizeMap
-        Object.keys(sizeMapBeforeMerge).forEach((sizeName) => {
-          sizeImpactMap[sizeName] = -sizeMapBeforeMerge[sizeName]
-        })
         addImpact(fileRelativeUrl, {
-          event,
-          sizeImpactMap,
+          event: "deleted",
           beforeMerge,
           afterMerge,
         })
@@ -189,16 +174,8 @@ const renderCommentBody = ({
       }
 
       if (isModified({ beforeMerge, afterMerge })) {
-        const event = "modified"
-        const sizeImpactMap = {}
-        const sizeMapBeforeMerge = beforeMerge.sizeMap
-        const sizeMapAfterMerge = afterMerge.sizeMap
-        Object.keys(sizeMapAfterMerge).forEach((sizeName) => {
-          sizeImpactMap[sizeName] = sizeMapAfterMerge[sizeName] - sizeMapBeforeMerge[sizeName]
-        })
         addImpact(fileRelativeUrl, {
-          event,
-          sizeImpactMap,
+          event: "modified",
           beforeMerge,
           afterMerge,
         })
@@ -344,11 +321,7 @@ const metaToData = (meta, ...args) => {
   }
 }
 
-const showSizeImpactGetter = (
-  meta,
-  fileRelativeUrl,
-  { event, sizeImpactMap, beforeMerge, afterMerge },
-) => {
+const showSizeImpactGetter = (meta, fileRelativeUrl, { event, beforeMerge, afterMerge }) => {
   const { showSizeImpact = true } = meta
   if (typeof showSizeImpact === "boolean") {
     return showSizeImpact
@@ -358,12 +331,54 @@ const showSizeImpactGetter = (
     return showSizeImpact({
       fileRelativeUrl,
       event,
-      sizeImpactMap,
-      sizeMapBeforeMerge: beforeMerge ? beforeMerge.sizeMap : null,
-      sizeMapAfterMerge: afterMerge ? afterMerge.sizeMap : null,
+      ...getSizeMaps({ beforeMerge, afterMerge }),
     })
   }
 
   console.warn(`${showSizeImpact} must be a boolean or a function, received ${showSizeImpact}`)
   return true
+}
+
+const getSizeMaps = ({ beforeMerge, afterMerge }) => {
+  // added
+  if (!beforeMerge) {
+    const sizeMapBeforeMerge = null
+    const sizeMapAfterMerge = afterMerge.sizeMap
+    const sizeImpactMap = {}
+    Object.keys(sizeMapAfterMerge).forEach((sizeName) => {
+      sizeImpactMap[sizeName] = sizeMapAfterMerge[sizeName]
+    })
+    return {
+      sizeMapBeforeMerge,
+      sizeMapAfterMerge,
+      sizeImpactMap,
+    }
+  }
+
+  // deleted
+  if (!afterMerge) {
+    const sizeMapBeforeMerge = beforeMerge.sizeMap
+    const sizeMapAfterMerge = null
+    const sizeImpactMap = {}
+    Object.keys(sizeMapBeforeMerge).forEach((sizeName) => {
+      sizeImpactMap[sizeName] = -sizeMapBeforeMerge[sizeName]
+    })
+    return {
+      sizeMapBeforeMerge,
+      sizeMapAfterMerge,
+      sizeImpactMap,
+    }
+  }
+
+  const sizeMapBeforeMerge = beforeMerge.sizeMap
+  const sizeMapAfterMerge = afterMerge.sizeMap
+  const sizeImpactMap = {}
+  Object.keys(sizeMapAfterMerge).forEach((sizeName) => {
+    sizeImpactMap[sizeName] = sizeMapAfterMerge[sizeName] - sizeMapBeforeMerge[sizeName]
+  })
+  return {
+    sizeMapBeforeMerge,
+    sizeMapAfterMerge,
+    sizeImpactMap,
+  }
 }
