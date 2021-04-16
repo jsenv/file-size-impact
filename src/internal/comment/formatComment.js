@@ -27,7 +27,7 @@ export const formatComment = ({
   fileRelativeUrlMaxLength,
   formatFileCell,
   formatFileSizeImpactCell,
-  formatTotalFileSizeImpactCell,
+  formatGroupSizeImpactCell,
   formatSize,
 }) => {
   const warnings = []
@@ -63,7 +63,7 @@ export const formatComment = ({
     formatFileRelativeUrl,
     formatFileCell,
     formatFileSizeImpactCell,
-    formatTotalFileSizeImpactCell,
+    formatGroupSizeImpactCell,
   })
 
   const bodyLength = Buffer.byteLength(body)
@@ -119,7 +119,7 @@ const renderCommentBody = ({
   formatFileRelativeUrl,
   formatFileCell,
   formatFileSizeImpactCell,
-  formatTotalFileSizeImpactCell,
+  formatGroupSizeImpactCell,
 }) => {
   const overallImpactInfo = {}
 
@@ -236,7 +236,7 @@ const renderCommentBody = ({
               formatFileRelativeUrl,
               formatFileCell,
               formatFileSizeImpactCell,
-              formatTotalFileSizeImpactCell,
+              formatGroupSizeImpactCell,
             }),
           ]
         : []),
@@ -251,7 +251,7 @@ const renderCommentBody = ({
     formatFileRelativeUrl,
     formatFileCell,
     formatFileSizeImpactCell,
-    formatTotalFileSizeImpactCell,
+    formatGroupSizeImpactCell,
   })}
   </details>`,
           ]

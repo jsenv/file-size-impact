@@ -89,7 +89,7 @@ export const jsenvCommentParameters = {
       percentage: true,
     })
   },
-  formatTotalFileSizeImpactCell: ({ totalSizeBeforeMerge, totalSizeAfterMerge }) => {
+  formatGroupSizeImpactCell: ({ totalSizeBeforeMerge, totalSizeAfterMerge }) => {
     return formatSizeImpact({
       sizeBeforeMerge: totalSizeBeforeMerge,
       sizeAfterMerge: totalSizeAfterMerge,

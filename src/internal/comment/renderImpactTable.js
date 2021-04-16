@@ -7,7 +7,7 @@ export const renderImpactTable = (
     formatFileRelativeUrl,
     formatFileCell,
     formatFileSizeImpactCell,
-    formatTotalFileSizeImpactCell,
+    formatGroupSizeImpactCell,
   },
 ) => {
   const table = `<table>
@@ -27,7 +27,7 @@ export const renderImpactTable = (
     <tfoot>
       ${renderSizeImpactTableFooter(fileByFileImpact, {
         transformations,
-        formatTotalFileSizeImpactCell,
+        formatGroupSizeImpactCell,
       })}
     </tfoot>
   </table>`
@@ -99,16 +99,16 @@ const renderSizeImpactTableBody = (
 
 const renderSizeImpactTableFooter = (
   fileByFileImpact,
-  { transformations, formatTotalFileSizeImpactCell },
+  { transformations, formatGroupSizeImpactCell },
 ) => {
   const footerLines = []
 
   const totalSizeImpactLine = [
-    `<td nowrap><strong>Total</strong></td>`,
+    `<td nowrap><strong>Total group size</strong></td>`,
     ...Object.keys(transformations).map(
       (sizeName) =>
-        `<td nowrap>${renderTotalSizeImpact(fileByFileImpact, sizeName, {
-          formatTotalFileSizeImpactCell,
+        `<td nowrap>${renderGroupSizeImpact(fileByFileImpact, sizeName, {
+          formatGroupSizeImpactCell,
         })}</td>`,
     ),
   ]
@@ -137,7 +137,7 @@ const getNamedSizeImpact = (fileImpact, sizeName) => {
   return sizeImpact
 }
 
-const renderTotalSizeImpact = (fileByFileImpact, sizeName, { formatTotalFileSizeImpactCell }) => {
+const renderGroupSizeImpact = (fileByFileImpact, sizeName, { formatGroupSizeImpactCell }) => {
   const total = Object.keys(fileByFileImpact).reduce(
     (previous, fileRelativePath) => {
       const fileImpact = fileByFileImpact[fileRelativePath]
@@ -171,7 +171,7 @@ const renderTotalSizeImpact = (fileByFileImpact, sizeName, { formatTotalFileSize
     },
   )
   const { totalSizeBeforeMerge, totalSizeAfterMerge, totalSizeImpact } = total
-  return formatTotalFileSizeImpactCell({
+  return formatGroupSizeImpactCell({
     totalSizeBeforeMerge,
     totalSizeAfterMerge,
     totalSizeImpact,
