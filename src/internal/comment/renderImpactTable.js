@@ -45,7 +45,9 @@ const renderSizeImpactTableHeader = (transformations) => {
   const lines = []
   const headerLine = [
     `<th nowrap>File</th>`,
-    ...Object.keys(transformations).map((sizeName) => `<th nowrap>${sizeName} size</th>`),
+    ...Object.keys(transformations).map(
+      (sizeName) => `<th nowrap>${sizeName === "raw" ? `new size` : `new ${sizeName} size`}</th>`,
+    ),
   ]
   lines.push(headerLine)
 
@@ -116,9 +118,9 @@ const renderSizeImpactTableFooter = (
   const footerLines = []
 
   const groupSizeImpactLine = [
-    `<td nowrap><strong>Total group size</strong></td>`,
+    `<td nowrap><strong>Whole group</strong></td>`,
     ...Object.keys(transformations).map(
-      (sizeName) => `<td nowrap>${formatGroupSizeImpactCell(groupComparison, sizeName)})}</td>`,
+      (sizeName) => `<td nowrap>${formatGroupSizeImpactCell(groupComparison, sizeName)}</td>`,
     ),
   ]
   footerLines.push(groupSizeImpactLine)
@@ -127,7 +129,7 @@ const renderSizeImpactTableFooter = (
     const cacheImpactLine = [
       `<td nowrap><strong>Cache impact</strong></td>`,
       ...Object.keys(transformations).map(
-        (sizeName) => `<td nowrap>${formatCacheImpactCell(fileByFileImpact, sizeName)})}</td>`,
+        (sizeName) => `<td nowrap>${formatCacheImpactCell(fileByFileImpact, sizeName)}</td>`,
       ),
     ]
     footerLines.push(cacheImpactLine)

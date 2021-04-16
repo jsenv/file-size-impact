@@ -110,7 +110,8 @@ const formatSize = (sizeNumber, { diff = false, unit = false } = {}) => {
 
 const computeGroupImpact = (groupComparison, sizeName) => {
   const groupImpact = Object.keys(groupComparison).reduce(
-    (previous, fileImpact) => {
+    (previous, fileRelativeUrl) => {
+      const fileImpact = groupComparison[fileRelativeUrl]
       const { beforeMerge, afterMerge } = fileImpact
       // added
       if (!beforeMerge) {
@@ -148,7 +149,8 @@ const computeGroupImpact = (groupComparison, sizeName) => {
 
 const computeCacheImpact = (fileByFileImpact, sizeName) => {
   // bytes to download is added file or modified file bytes
-  const totalBytesToDownload = Object.keys(fileByFileImpact).reduce((previous, fileImpact) => {
+  const totalBytesToDownload = Object.keys(fileByFileImpact).reduce((previous, fileRelativeUrl) => {
+    const fileImpact = fileByFileImpact[fileRelativeUrl]
     const { afterMerge } = fileImpact
     // removed
     if (!afterMerge) {
