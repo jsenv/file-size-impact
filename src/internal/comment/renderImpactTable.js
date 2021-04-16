@@ -1,6 +1,7 @@
 export const renderImpactTable = (
   fileByFileImpact,
   {
+    groupComparison,
     transformations,
     fileRelativeUrlMaxLength,
     maxRowsPerTable,
@@ -26,6 +27,7 @@ export const renderImpactTable = (
     </tbody>
     <tfoot>
       ${renderSizeImpactTableFooter(fileByFileImpact, {
+        groupComparison,
         transformations,
         formatGroupSizeImpactCell,
       })}
@@ -99,83 +101,19 @@ const renderSizeImpactTableBody = (
 
 const renderSizeImpactTableFooter = (
   fileByFileImpact,
-  { transformations, formatGroupSizeImpactCell },
+  { groupComparison, transformations, formatGroupSizeImpactCell },
 ) => {
   const footerLines = []
 
   const totalSizeImpactLine = [
     `<td nowrap><strong>Total group size</strong></td>`,
     ...Object.keys(transformations).map(
-      (sizeName) =>
-        `<td nowrap>${renderGroupSizeImpact(fileByFileImpact, sizeName, {
-          formatGroupSizeImpactCell,
-        })}</td>`,
+      (sizeName) => `<td nowrap>${formatGroupSizeImpactCell(groupComparison, sizeName)})}</td>`,
     ),
   ]
   footerLines.push(totalSizeImpactLine)
 
   return renderTableLines(footerLines)
-}
-
-const getNamedSizeBeforeMerge = (fileImpact, sizeName) => {
-  if (fileImpact.event === "added") return 0
-  const beforeMergeSizeMap = fileImpact.beforeMerge.sizeMap
-  const sizeBeforeMerge = beforeMergeSizeMap[sizeName]
-  return sizeBeforeMerge
-}
-
-const getNamedSizeAfterMerge = (fileImpact, sizeName) => {
-  if (fileImpact.event === "deleted") return 0
-  const afterMergeSizeMap = fileImpact.afterMerge.sizeMap
-  const sizeAfterMerge = afterMergeSizeMap[sizeName]
-  return sizeAfterMerge
-}
-
-const getNamedSizeImpact = (fileImpact, sizeName) => {
-  const sizeImpactMap = fileImpact.sizeImpactMap
-  const sizeImpact = sizeImpactMap[sizeName]
-  return sizeImpact
-}
-
-const renderGroupSizeImpact = (fileByFileImpact, sizeName, { formatGroupSizeImpactCell }) => {
-  const total = Object.keys(fileByFileImpact).reduce(
-    (previous, fileRelativePath) => {
-      const fileImpact = fileByFileImpact[fileRelativePath]
-
-      const fileSizeBeforeMerge = getNamedSizeBeforeMerge(fileImpact, sizeName)
-      const totalSizeBeforeMergePrevious = previous.totalSizeBeforeMerge
-      const totalSizeBeforeMerge = totalSizeBeforeMergePrevious + fileSizeBeforeMerge
-
-      const fileSizeAfterMerge = getNamedSizeAfterMerge(fileImpact, sizeName)
-      const totalSizeAfterMergePrevious = previous.totalSizeAfterMerge
-      const totalSizeAfterMerge = totalSizeAfterMergePrevious + fileSizeAfterMerge
-
-      const fileSizeImpact = getNamedSizeImpact(fileImpact, sizeName)
-      const totalSizeImpactPrevious = previous.totalSizeImpact
-      const totalSizeImpact = totalSizeImpactPrevious + fileSizeImpact
-
-      if (fileSizeImpact === 0) {
-        return previous
-      }
-
-      return {
-        totalSizeBeforeMerge,
-        totalSizeAfterMerge,
-        totalSizeImpact,
-      }
-    },
-    {
-      totalSizeBeforeMerge: 0,
-      totalSizeAfterMerge: 0,
-      totalSizeImpact: 0,
-    },
-  )
-  const { totalSizeBeforeMerge, totalSizeAfterMerge, totalSizeImpact } = total
-  return formatGroupSizeImpactCell({
-    totalSizeBeforeMerge,
-    totalSizeAfterMerge,
-    totalSizeImpact,
-  })
 }
 
 const truncateFileRelativeUrl = (fileRelativeUrl, fileRelativeUrlMaxLength) => {

@@ -89,17 +89,56 @@ export const jsenvCommentParameters = {
       percentage: true,
     })
   },
-  formatGroupSizeImpactCell: ({ totalSizeBeforeMerge, totalSizeAfterMerge }) => {
+  formatGroupSizeImpactCell: (groupComparison, sizeName) => {
+    const { groupSizeBeforeMerge, groupSizeAfterMerge } = computeGroupImpact(
+      groupComparison,
+      sizeName,
+    )
     return formatSizeImpact({
-      sizeBeforeMerge: totalSizeBeforeMerge,
-      sizeAfterMerge: totalSizeAfterMerge,
-      // If you add +2 bytes to a file of 20 bytes,
-      // total percentage will display +10%.
-      // It can be confusing.
+      sizeBeforeMerge: groupSizeBeforeMerge,
+      sizeAfterMerge: groupSizeAfterMerge,
       percentage: true,
     })
   },
   formatSize,
+}
+
+const computeGroupImpact = (groupComparison, sizeName) => {
+  const groupImpact = Object.keys(groupComparison).reduce(
+    (previous, fileImpact) => {
+      const { beforeMerge, afterMerge } = fileImpact
+      // added
+      if (!beforeMerge) {
+        const sizeAfterMerge = afterMerge.sizeMap[sizeName]
+        return {
+          groupSizeBeforeMerge: previous.groupSizeBeforeMerge,
+          groupSizeAfterMerge: previous.groupSizeAfterMerge + sizeAfterMerge,
+        }
+      }
+
+      // removed
+      if (!afterMerge) {
+        const sizeBeforeMerge = beforeMerge.sizeMap[sizeName]
+        return {
+          groupSizeBeforeMerge: previous.groupSizeBeforeMerge + sizeBeforeMerge,
+          groupSizeAfterMerge: previous.groupSizeAfterMerge,
+        }
+      }
+
+      // modified or not, does not matter
+      const sizeBeforeMerge = beforeMerge.sizeMap[sizeName]
+      const sizeAfterMerge = afterMerge.sizeMap[sizeName]
+      return {
+        groupSizeBeforeMerge: previous.groupSizeBeforeMerge + sizeBeforeMerge,
+        groupSizeAfterMerge: previous.groupSizeAfterMerge + sizeAfterMerge,
+      }
+    },
+    {
+      groupSizeBeforeMerge: 0,
+      groupSizeAfterMerge: 0,
+    },
+  )
+  return groupImpact
 }
 
 const formatSizeImpact = ({ sizeBeforeMerge, sizeAfterMerge, percentage }) => {

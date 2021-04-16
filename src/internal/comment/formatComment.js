@@ -230,6 +230,7 @@ const renderCommentBody = ({
       ...(groupImpactCount > 0
         ? [
             renderImpactTable(fileByFileImpact, {
+              groupComparison,
               transformations,
               fileRelativeUrlMaxLength,
               maxRowsPerTable,
@@ -245,6 +246,7 @@ const renderCommentBody = ({
             `<details>
   <summary>${formatHiddenImpactSummary({ groupName, groupHiddenImpactCount })}</summary>
   ${renderImpactTable(fileByFileImpactHidden, {
+    groupComparison,
     transformations,
     fileRelativeUrlMaxLength,
     maxRowsPerTable,
