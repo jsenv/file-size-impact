@@ -10,10 +10,10 @@ Add files size impact into pull requests.
 # Table of contents
 
 - [Presentation](#Presentation)
-- [How it works](#How-it-works)
 - [Configuring a github workflow](#Configuring-a-github-workflow)
-- [Configuring other workflow](#configuring-other-workflow)
-- [Compression](#Compression)
+- [Configuring a workflow](#configuring-a-workflow)
+- [API](#API)
+- [How it works](#How-it-works)
 - [See also](#See-also)
 
 # Presentation
@@ -28,34 +28,19 @@ The comment can be expanded to see details.
 
 </details>
 
-<details>
-  <summary>It can also be configured to track size after compression.</summary>
+- Compatible with any workflow like GitHub or Jenkins
+- Can track compressed file size
+- Configurable to create group of files according to your project. For exemple you can create one group with critical files and a second one for less important files.
 
-![screenshot of pull request comment with compression](./docs/comment-compression.png)
+# Size impact comment legend
 
-</details>
+this section would show a screenshot of the comment
+where all parts have a legend + a name
+then for each name we would describe what it means
 
-The main features are:
+and eventually a link to the doc that would be moved here
 
-- Compatible with many workflow: GitHub, Jenkins, Travis
-- Group files to track them according to your needs
-- Compact and readable output
-- Track compressed file size
-
-# How it works
-
-In order to analyse the impact of a pull request on file size the following steps are executed:
-
-1. Checkout pull request base branch
-2. Execute command to generate files (`npm build` by default)
-3. Take a snapshot of generated files
-4. Merge pull request into its base
-5. Execute command to generate files again
-6. Take a second snapshot of generated files
-7. Analyse differences between the two snapshots
-8. Post or update comment in the pull request
-
-# Configuring a github workflow
+# Configuring a GitHub workflow
 
 You need:
 
@@ -125,7 +110,7 @@ jobs:
 
 </details>
 
-# Configuring other workflow
+# Configuring a workflow
 
 <details>
   <summary>1. @jsenv/file-size-impact in devDependencies</summary>
@@ -213,6 +198,19 @@ reportFileSizeImpact({
   transformations: { raw, gzip },
 })
 ```
+
+# How it works
+
+In order to analyse the impact of a pull request on file size the following steps are executed:
+
+1. Checkout pull request base branch
+2. Execute command to generate files (`npm build` by default)
+3. Take a snapshot of generated files
+4. Merge pull request into its base
+5. Execute command to generate files again
+6. Take a second snapshot of generated files
+7. Analyse differences between the two snapshots
+8. Post or update comment in the pull request
 
 # See also
 
