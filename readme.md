@@ -12,6 +12,7 @@ Add files size impact into pull requests.
 - [Presentation](#Presentation)
 - [Configuring a github workflow](#Configuring-a-github-workflow)
 - [Configuring a workflow](#configuring-a-workflow)
+- [Size impact legend](#Size-impact-legend)
 - [API](#API)
 - [How it works](#How-it-works)
 - [See also](#See-also)
@@ -32,13 +33,27 @@ The comment can be expanded to see details.
 - Can track compressed file size
 - Configurable to create group of files according to your project. For exemple you can create one group with critical files and a second one for less important files.
 
-# Size impact comment legend
+# Size impact legend
 
-this section would show a screenshot of the comment
-where all parts have a legend + a name
-then for each name we would describe what it means
+There is two parts composing the size impact comment that are presented in this section: `group summary` and `size impact`.
 
-and eventually a link to the doc that would be moved here
+![legend of pull request comment](./docs/comment-legend.png)
+
+## group summary
+
+"critical files (1/2)"
+
+Translates into the following sentence:
+
+"There is a group of files named `critical files` and pull request impacts `1` file out of `2` in this group".
+
+## size impact
+
+"83.45KB (+6.84KB / +8.92%)"
+
+Translates into the following sentence:
+
+"The size after merge is `83.45KB` and pull request adds `6.84KB` representing an increase of `8.92%` of the size before merge"
 
 # Configuring a GitHub workflow
 

@@ -182,6 +182,140 @@ const examples = {
       },
     },
   }),
+  "realist (two groups + gzip + partial)": generateComment({
+    beforeMergeSnapshot: {
+      "critical files": {
+        fileMap: {
+          "dist/foo.js": {
+            hash: "a",
+            sizeMap: {
+              raw: 78450,
+              gzip: 32569,
+            },
+            meta: true,
+          },
+          "dist/bar.js": {
+            hash: "a",
+            sizeMap: {
+              raw: 45450,
+              gzip: 23532,
+            },
+            meta: true,
+          },
+        },
+      },
+      "remaining files": {
+        fileMap: {
+          "dist/feature.js": {
+            hash: "a",
+            sizeMap: {
+              raw: 17450,
+              gzip: 9532,
+            },
+            meta: true,
+          },
+          "dist/a.js": {
+            hash: "a",
+            sizeMap: {
+              raw: 17450,
+              gzip: 9532,
+            },
+            meta: true,
+          },
+          "dist/b.js": {
+            hash: "a",
+            sizeMap: {
+              raw: 17450,
+              gzip: 9532,
+            },
+            meta: true,
+          },
+          "dist/c.js": {
+            hash: "a",
+            sizeMap: {
+              raw: 17450,
+              gzip: 9532,
+            },
+            meta: true,
+          },
+          "dist/d.js": {
+            hash: "a",
+            sizeMap: {
+              raw: 17450,
+              gzip: 9532,
+            },
+            meta: true,
+          },
+        },
+      },
+    },
+    afterMergeSnapshot: {
+      "critical files": {
+        fileMap: {
+          "dist/foo.js": {
+            hash: "b",
+            sizeMap: {
+              raw: 85450,
+              gzip: 36569,
+            },
+            meta: true,
+          },
+          "dist/bar.js": {
+            hash: "a",
+            sizeMap: {
+              raw: 45450,
+              gzip: 23532,
+            },
+            meta: true,
+          },
+        },
+      },
+      "remaining files": {
+        fileMap: {
+          "dist/feature.js": {
+            hash: "b",
+            sizeMap: {
+              raw: 21560,
+              gzip: 12472,
+            },
+            meta: true,
+          },
+          "dist/a.js": {
+            hash: "a",
+            sizeMap: {
+              raw: 17450,
+              gzip: 9532,
+            },
+            meta: true,
+          },
+          "dist/b.js": {
+            hash: "a",
+            sizeMap: {
+              raw: 17450,
+              gzip: 9532,
+            },
+            meta: true,
+          },
+          "dist/c.js": {
+            hash: "a",
+            sizeMap: {
+              raw: 17450,
+              gzip: 9532,
+            },
+            meta: true,
+          },
+          "dist/d.js": {
+            hash: "a",
+            sizeMap: {
+              raw: 17450,
+              gzip: 9532,
+            },
+            meta: true,
+          },
+        },
+      },
+    },
+  }),
   "two groups + gzip + brotli": generateComment({
     beforeMergeSnapshot: {
       "dist/commonjs": {
