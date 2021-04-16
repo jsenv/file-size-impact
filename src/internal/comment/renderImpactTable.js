@@ -9,6 +9,8 @@ export const renderImpactTable = (
     formatFileCell,
     formatFileSizeImpactCell,
     formatGroupSizeImpactCell,
+    cacheImpact,
+    formatCacheImpactCell,
   },
 ) => {
   const table = `<table>
@@ -30,6 +32,8 @@ export const renderImpactTable = (
         groupComparison,
         transformations,
         formatGroupSizeImpactCell,
+        cacheImpact,
+        formatCacheImpactCell,
       })}
     </tfoot>
   </table>`
@@ -101,17 +105,33 @@ const renderSizeImpactTableBody = (
 
 const renderSizeImpactTableFooter = (
   fileByFileImpact,
-  { groupComparison, transformations, formatGroupSizeImpactCell },
+  {
+    groupComparison,
+    transformations,
+    formatGroupSizeImpactCell,
+    cacheImpact,
+    formatCacheImpactCell,
+  },
 ) => {
   const footerLines = []
 
-  const totalSizeImpactLine = [
+  const groupSizeImpactLine = [
     `<td nowrap><strong>Total group size</strong></td>`,
     ...Object.keys(transformations).map(
       (sizeName) => `<td nowrap>${formatGroupSizeImpactCell(groupComparison, sizeName)})}</td>`,
     ),
   ]
-  footerLines.push(totalSizeImpactLine)
+  footerLines.push(groupSizeImpactLine)
+
+  if (cacheImpact) {
+    const cacheImpactLine = [
+      `<td nowrap><strong>Cache impact</strong></td>`,
+      ...Object.keys(transformations).map(
+        (sizeName) => `<td nowrap>${formatCacheImpactCell(fileByFileImpact, sizeName)})}</td>`,
+      ),
+    ]
+    footerLines.push(cacheImpactLine)
+  }
 
   return renderTableLines(footerLines)
 }

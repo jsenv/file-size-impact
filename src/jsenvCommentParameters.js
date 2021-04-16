@@ -7,27 +7,6 @@ const bytes = require("bytes")
 
 const enDecimalFormatter = new Intl.NumberFormat("en", { style: "decimal" })
 
-const formatSize = (sizeNumber, { diff = false, unit = false } = {}) => {
-  const sizeNumberAbsolute = Math.abs(sizeNumber)
-
-  let sizeString
-  if (unit) {
-    sizeString = bytes(sizeNumberAbsolute, { decimalPlaces: 2 })
-  } else {
-    sizeString = enDecimalFormatter.format(sizeNumberAbsolute)
-  }
-
-  if (diff) {
-    if (sizeNumber < 0) {
-      sizeString = `-${sizeString}`
-    } else if (sizeNumber > 0) {
-      sizeString = `+${sizeString}`
-    }
-  }
-
-  return sizeString
-}
-
 export const jsenvCommentParameters = {
   formatGroupSummary: ({ groupName, groupImpactCount, groupLength }) => {
     return `${groupName} (${groupImpactCount}/${groupLength})`
@@ -56,11 +35,12 @@ export const jsenvCommentParameters = {
   0 (-100b, -100%)
   */
   formatFileSizeImpactCell: (fileImpact, sizeName) => {
-    const event = fileImpact.event
+    const { beforeMerge, afterMerge } = fileImpact
 
-    if (event === "added") {
+    // added
+    if (!beforeMerge) {
       const sizeBeforeMerge = 0
-      const sizeAfterMerge = fileImpact.afterMerge.sizeMap[sizeName]
+      const sizeAfterMerge = afterMerge.sizeMap[sizeName]
       return formatSizeImpact({
         sizeBeforeMerge,
         sizeAfterMerge,
@@ -70,8 +50,9 @@ export const jsenvCommentParameters = {
       })
     }
 
-    if (event === "deleted") {
-      const sizeBeforeMerge = fileImpact.beforeMerge.sizeMap[sizeName]
+    // deleted
+    if (!afterMerge) {
+      const sizeBeforeMerge = beforeMerge.sizeMap[sizeName]
       const sizeAfterMerge = 0
       return formatSizeImpact({
         sizeBeforeMerge,
@@ -81,8 +62,8 @@ export const jsenvCommentParameters = {
       })
     }
 
-    const sizeBeforeMerge = fileImpact.beforeMerge.sizeMap[sizeName]
-    const sizeAfterMerge = fileImpact.afterMerge.sizeMap[sizeName]
+    const sizeBeforeMerge = beforeMerge.sizeMap[sizeName]
+    const sizeAfterMerge = afterMerge.sizeMap[sizeName]
     return formatSizeImpact({
       sizeBeforeMerge,
       sizeAfterMerge,
@@ -100,7 +81,31 @@ export const jsenvCommentParameters = {
       percentage: true,
     })
   },
-  formatSize,
+  formatCacheImpactCell: (fileByFileImpact, sizeName) => {
+    const { totalBytesToDownload } = computeCacheImpact(fileByFileImpact, sizeName)
+    return formatSize(totalBytesToDownload, { unit: true })
+  },
+}
+
+const formatSize = (sizeNumber, { diff = false, unit = false } = {}) => {
+  const sizeNumberAbsolute = Math.abs(sizeNumber)
+
+  let sizeString
+  if (unit) {
+    sizeString = bytes(sizeNumberAbsolute, { decimalPlaces: 2 })
+  } else {
+    sizeString = enDecimalFormatter.format(sizeNumberAbsolute)
+  }
+
+  if (diff) {
+    if (sizeNumber < 0) {
+      sizeString = `-${sizeString}`
+    } else if (sizeNumber > 0) {
+      sizeString = `+${sizeString}`
+    }
+  }
+
+  return sizeString
 }
 
 const computeGroupImpact = (groupComparison, sizeName) => {
@@ -139,6 +144,19 @@ const computeGroupImpact = (groupComparison, sizeName) => {
     },
   )
   return groupImpact
+}
+
+const computeCacheImpact = (fileByFileImpact, sizeName) => {
+  // bytes to download is added file or modified file bytes
+  const totalBytesToDownload = Object.keys(fileByFileImpact).reduce((previous, fileImpact) => {
+    const { afterMerge } = fileImpact
+    // removed
+    if (!afterMerge) {
+      return previous
+    }
+    return previous + afterMerge.sizeMap[sizeName]
+  }, 0)
+  return { totalBytesToDownload }
 }
 
 const formatSizeImpact = ({ sizeBeforeMerge, sizeAfterMerge, percentage }) => {

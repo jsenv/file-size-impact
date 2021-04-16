@@ -12,7 +12,6 @@ const GITHUB_MAX_COMMENT_LENGTH = 65536
 const COMMENT_BODY_MAX_LENGTH = GITHUB_MAX_COMMENT_LENGTH - 5000
 
 export const formatComment = ({
-  cacheImpact,
   trackingConfig,
   transformations,
   pullRequestBase,
@@ -28,7 +27,8 @@ export const formatComment = ({
   formatFileCell,
   formatFileSizeImpactCell,
   formatGroupSizeImpactCell,
-  formatSize,
+  cacheImpact,
+  formatCacheImpactCell,
 }) => {
   const warnings = []
   const snapshotComparison = compareTwoSnapshots(beforeMergeSnapshot, afterMergeSnapshot)
@@ -41,15 +41,7 @@ export const formatComment = ({
     )
   }
 
-  // call formatFileSize only on numbers 'error' must be returned untouched
-  const formatSizeOriginal = formatSize
-  formatSize = (value, ...rest) => {
-    if (typeof value === "number") return formatSizeOriginal(value, ...rest)
-    return value
-  }
-
   let body = renderCommentBody({
-    cacheImpact,
     trackingConfig,
     transformations,
     pullRequestBase,
@@ -64,6 +56,8 @@ export const formatComment = ({
     formatFileCell,
     formatFileSizeImpactCell,
     formatGroupSizeImpactCell,
+    cacheImpact,
+    formatCacheImpactCell,
   })
 
   const bodyLength = Buffer.byteLength(body)
@@ -73,7 +67,7 @@ export const formatComment = ({
       `**Warning:** The comment body was truncated to fit GitHub limit on comment length.
 Your trackingConfig is maybe tracking too much files ?
 As the body is truncated the message might be hard to read.
-For the record the full comment length was ${formatSize(bodyLength, { unit: true })}.`,
+For the record the full comment length was ${bodyLength} bytes.`,
     )
   }
 
@@ -105,7 +99,6 @@ ${warnings.join(`
 }
 
 const renderCommentBody = ({
-  cacheImpact,
   trackingConfig,
   transformations,
   pullRequestBase,
@@ -120,6 +113,8 @@ const renderCommentBody = ({
   formatFileCell,
   formatFileSizeImpactCell,
   formatGroupSizeImpactCell,
+  cacheImpact,
+  formatCacheImpactCell,
 }) => {
   const overallImpactInfo = {}
 
@@ -144,9 +139,6 @@ const renderCommentBody = ({
         sizeImpactMap,
         beforeMerge,
         afterMerge,
-        ...(cacheImpact
-          ? { participatesToCacheImpact: event === "modified" || event === "added" }
-          : {}),
       }
 
       const data = metaToData(meta, fileRelativeUrl, impact)
@@ -234,6 +226,8 @@ const renderCommentBody = ({
               formatFileCell,
               formatFileSizeImpactCell,
               formatGroupSizeImpactCell,
+              cacheImpact,
+              formatCacheImpactCell,
             }),
           ]
         : []),
@@ -250,6 +244,8 @@ const renderCommentBody = ({
     formatFileCell,
     formatFileSizeImpactCell,
     formatGroupSizeImpactCell,
+    cacheImpact,
+    formatCacheImpactCell,
   })}
   </details>`,
           ]
