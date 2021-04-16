@@ -46,6 +46,7 @@ export const reportFileSizeImpact = async ({
   fileRelativeUrlMaxLength = jsenvCommentParameters.fileRelativeUrlMaxLength,
   formatFileCell = jsenvCommentParameters.formatFileCell,
   formatFileSizeImpactCell = jsenvCommentParameters.formatFileSizeImpactCell,
+  formatGroupSizeImpactCell = jsenvCommentParameters.formatGroupSizeImpactCell,
   cacheImpact = false,
   formatCacheImpactCell = jsenvCommentParameters.formatCacheImpactCell,
 
@@ -307,6 +308,7 @@ ${renderGeneratedBy({ runLink })}`
           fileRelativeUrlMaxLength,
           formatFileCell,
           formatFileSizeImpactCell,
+          formatGroupSizeImpactCell,
           cacheImpact,
           formatCacheImpactCell,
         }),
