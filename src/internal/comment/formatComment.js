@@ -149,10 +149,6 @@ const renderCommentBody = ({
           : {}),
       }
 
-      if (!cacheImpact && !hasSizeImpact(sizeImpactMap)) {
-        return
-      }
-
       const data = metaToData(meta, fileRelativeUrl, impact)
       if (data.showSizeImpact) {
         if (!overallImpactInfo.hasOwnProperty(fileRelativeUrl)) {
@@ -312,10 +308,6 @@ const formulateFileQuantity = (count) => {
 
 const formulateGroupQuantity = (count) => {
   return count === 1 ? `1 group` : `${count} groups`
-}
-
-const hasSizeImpact = (sizeImpactMap) => {
-  return Object.keys(sizeImpactMap).some((sizeName) => sizeImpactMap[sizeName] !== 0)
 }
 
 const renderEmptyGroup = ({ groupName, groupConfig, formatGroupSummary }) => {
