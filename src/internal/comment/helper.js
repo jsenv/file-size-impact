@@ -3,9 +3,9 @@ export const anchor = (text, id) => {
   return `<a href="#user-content-${id.replace()}">${text}<a>`
 }
 
-export const isAdded = ({ base }) => !base
+export const isAdded = ({ beforeMerge }) => !beforeMerge
 
-export const isDeleted = ({ base, afterMerge }) => base && !afterMerge
+export const isDeleted = ({ beforeMerge, afterMerge }) => beforeMerge && !afterMerge
 
-export const isModified = ({ base, afterMerge }) =>
-  base && afterMerge && base.hash !== afterMerge.hash
+export const isModified = ({ beforeMerge, afterMerge }) =>
+  beforeMerge && afterMerge && beforeMerge.hash !== afterMerge.hash

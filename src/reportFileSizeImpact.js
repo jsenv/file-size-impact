@@ -31,15 +31,14 @@ export const reportFileSizeImpact = async ({
   installCommand = "npm install",
   buildCommand = "npm run-script build",
 
-  cacheImpact = true,
   trackingConfig = jsenvTrackingConfig,
   manifestConfig = {
     "./dist/**/manifest.json": true,
   },
   transformations = { raw: rawTransform },
 
-  // doing this explicitely helps autocompletion in vscode for
-  // people using the function
+  // We could just to ...jsenvCommentParameters but explicitely passing params
+  // helps autocompletion in vscode for people using the function.
   formatGroupSummary = jsenvCommentParameters.formatGroupSummary,
   formatHiddenImpactSummary = jsenvCommentParameters.formatHiddenImpactSummary,
   formatFileRelativeUrl = jsenvCommentParameters.formatFileRelativeUrl,
@@ -47,7 +46,10 @@ export const reportFileSizeImpact = async ({
   fileRelativeUrlMaxLength = jsenvCommentParameters.fileRelativeUrlMaxLength,
   formatFileCell = jsenvCommentParameters.formatFileCell,
   formatFileSizeImpactCell = jsenvCommentParameters.formatFileSizeImpactCell,
-  formatSize = jsenvCommentParameters.formatSize,
+  formatGroupSizeImpactCell = jsenvCommentParameters.formatGroupSizeImpactCell,
+  cacheImpact = false,
+  formatCacheImpactCell = jsenvCommentParameters.formatCacheImpactCell,
+  shouldOpenGroupByDefault = jsenvCommentParameters.shouldOpenGroupByDefault,
 
   catchError = false,
   runLink,
@@ -217,13 +219,13 @@ ${renderGeneratedBy({ runLink })}`
         await execCommandInProjectDirectory(`git fetch --no-tags --prune origin ${ref}`)
       }
 
-      let baseSnapshot
+      let beforeMergeSnapshot
       try {
         await fetchRef(pullRequestBase)
         await execCommandInProjectDirectory(`git reset --hard origin/${pullRequestBase}`)
         await execCommandInProjectDirectory(installCommand)
         await execCommandInProjectDirectory(buildCommand)
-        baseSnapshot = await generateSnapshot({
+        beforeMergeSnapshot = await generateSnapshot({
           cancellationToken,
           logLevel,
           projectDirectoryUrl,
@@ -294,10 +296,10 @@ ${renderGeneratedBy({ runLink })}`
         formatComment({
           pullRequestBase,
           pullRequestHead,
-          cacheImpact,
+
           trackingConfig,
           transformations,
-          baseSnapshot,
+          beforeMergeSnapshot,
           afterMergeSnapshot,
 
           formatGroupSummary,
@@ -307,7 +309,10 @@ ${renderGeneratedBy({ runLink })}`
           fileRelativeUrlMaxLength,
           formatFileCell,
           formatFileSizeImpactCell,
-          formatSize,
+          formatGroupSizeImpactCell,
+          cacheImpact,
+          formatCacheImpactCell,
+          shouldOpenGroupByDefault,
         }),
       )
 

@@ -1,3 +1,4 @@
+import { getSizeMaps } from "../../getSizeMaps.js"
 import { compareTwoSnapshots } from "../compareTwoSnapshots.js"
 import { isAdded, isModified, isDeleted } from "./helper.js"
 import { renderImpactTable } from "./renderImpactTable.js"
@@ -12,12 +13,11 @@ const GITHUB_MAX_COMMENT_LENGTH = 65536
 const COMMENT_BODY_MAX_LENGTH = GITHUB_MAX_COMMENT_LENGTH - 5000
 
 export const formatComment = ({
-  cacheImpact,
   trackingConfig,
   transformations,
   pullRequestBase,
   pullRequestHead,
-  baseSnapshot,
+  beforeMergeSnapshot,
   afterMergeSnapshot,
 
   formatGroupSummary,
@@ -27,10 +27,13 @@ export const formatComment = ({
   fileRelativeUrlMaxLength,
   formatFileCell,
   formatFileSizeImpactCell,
-  formatSize,
+  formatGroupSizeImpactCell,
+  cacheImpact,
+  formatCacheImpactCell,
+  shouldOpenGroupByDefault,
 }) => {
   const warnings = []
-  const snapshotComparison = compareTwoSnapshots(baseSnapshot, afterMergeSnapshot)
+  const snapshotComparison = compareTwoSnapshots(beforeMergeSnapshot, afterMergeSnapshot)
   const groups = Object.keys(snapshotComparison)
   const groupCount = groups.length
 
@@ -40,15 +43,7 @@ export const formatComment = ({
     )
   }
 
-  // call formatFileSize only on numbers 'error' must be returned untouched
-  const formatSizeOriginal = formatSize
-  formatSize = (value, ...rest) => {
-    if (typeof value === "number") return formatSizeOriginal(value, ...rest)
-    return value
-  }
-
   let body = renderCommentBody({
-    cacheImpact,
     trackingConfig,
     transformations,
     pullRequestBase,
@@ -62,6 +57,10 @@ export const formatComment = ({
     formatFileRelativeUrl,
     formatFileCell,
     formatFileSizeImpactCell,
+    formatGroupSizeImpactCell,
+    cacheImpact,
+    formatCacheImpactCell,
+    shouldOpenGroupByDefault,
   })
 
   const bodyLength = Buffer.byteLength(body)
@@ -71,7 +70,7 @@ export const formatComment = ({
       `**Warning:** The comment body was truncated to fit GitHub limit on comment length.
 Your trackingConfig is maybe tracking too much files ?
 As the body is truncated the message might be hard to read.
-For the record the full comment length was ${formatSize(bodyLength, { unit: true })}.`,
+For the record the full comment length was ${bodyLength} bytes.`,
     )
   }
 
@@ -103,7 +102,6 @@ ${warnings.join(`
 }
 
 const renderCommentBody = ({
-  cacheImpact,
   trackingConfig,
   transformations,
   pullRequestBase,
@@ -117,37 +115,76 @@ const renderCommentBody = ({
   formatFileRelativeUrl,
   formatFileCell,
   formatFileSizeImpactCell,
+  formatGroupSizeImpactCell,
+  cacheImpact,
+  formatCacheImpactCell,
+  shouldOpenGroupByDefault,
 }) => {
   const overallImpactInfo = {}
 
+  const renderGroup = (
+    groupMessage,
+    {
+      groupName,
+      groupComparison,
+      groupFileCount,
+      groupImpactCount,
+      fileByFileImpact,
+      groupHiddenImpactCount,
+      fileByFileImpactHidden,
+    },
+  ) => {
+    const groupSummary = formatGroupSummary({
+      groupName,
+      groupImpactCount,
+      groupFileCount,
+    })
+    const groupShouldBeOpenByDefault = shouldOpenGroupByDefault({
+      groupName,
+      groupComparison,
+      groupFileCount,
+      groupImpactCount,
+      fileByFileImpact,
+      groupHiddenImpactCount,
+      fileByFileImpactHidden,
+    })
+
+    return renderDetails({
+      open: groupShouldBeOpenByDefault,
+      summary: groupSummary,
+      content: groupMessage,
+    })
+  }
+
   const groupMessages = Object.keys(snapshotComparison).map((groupName) => {
     const groupComparison = snapshotComparison[groupName]
-    const groupLength = Object.keys(groupComparison).length
-    if (groupLength === 0) {
-      return renderEmptyGroup({
-        groupName,
-        groupConfig: trackingConfig[groupName],
-        formatGroupSummary,
-      })
-    }
-
+    const groupFileCount = Object.keys(groupComparison).length
     const fileByFileImpact = {}
     const fileByFileImpactHidden = {}
+    if (groupFileCount === 0) {
+      return renderGroup(
+        formulateEmptyGroupContent({
+          groupName,
+          groupConfig: trackingConfig[groupName],
+        }),
+        {
+          groupName,
+          groupComparison,
+          groupFileCount,
+          groupImpactCount: 0,
+          fileByFileImpact,
+          groupHiddenImpactCount: 0,
+          fileByFileImpactHidden,
+        },
+      )
+    }
 
-    const addImpact = (fileRelativeUrl, { event, sizeImpactMap, base, afterMerge }) => {
-      const meta = event === "deleted" ? base.meta : afterMerge.meta
+    const addImpact = (fileRelativeUrl, { event, beforeMerge, afterMerge }) => {
+      const meta = event === "deleted" ? beforeMerge.meta : afterMerge.meta
       const impact = {
         event,
-        sizeImpactMap,
-        base,
+        beforeMerge,
         afterMerge,
-        ...(cacheImpact
-          ? { participatesToCacheImpact: event === "modified" || event === "added" }
-          : {}),
-      }
-
-      if (!cacheImpact && !hasSizeImpact(sizeImpactMap)) {
-        return
       }
 
       const data = metaToData(meta, fileRelativeUrl, impact)
@@ -163,52 +200,30 @@ const renderCommentBody = ({
     }
 
     Object.keys(groupComparison).forEach((fileRelativeUrl) => {
-      const { base, afterMerge } = groupComparison[fileRelativeUrl]
+      const { beforeMerge, afterMerge } = groupComparison[fileRelativeUrl]
 
-      if (isAdded({ base, afterMerge })) {
-        const event = "added"
-        const sizeImpactMap = {}
-        const sizeMapAfterMerge = afterMerge.sizeMap
-        Object.keys(sizeMapAfterMerge).forEach((sizeName) => {
-          sizeImpactMap[sizeName] = sizeMapAfterMerge[sizeName]
-        })
+      if (isAdded({ beforeMerge, afterMerge })) {
         addImpact(fileRelativeUrl, {
-          event,
-          sizeImpactMap,
-          base,
+          event: "added",
+          beforeMerge,
           afterMerge,
         })
         return
       }
 
-      if (isDeleted({ base, afterMerge })) {
-        const event = "deleted"
-        const sizeImpactMap = {}
-        const sizeMapOnBase = base.sizeMap
-        Object.keys(sizeMapOnBase).forEach((sizeName) => {
-          sizeImpactMap[sizeName] = -sizeMapOnBase[sizeName]
-        })
+      if (isDeleted({ beforeMerge, afterMerge })) {
         addImpact(fileRelativeUrl, {
-          event,
-          sizeImpactMap,
-          base,
+          event: "deleted",
+          beforeMerge,
           afterMerge,
         })
         return
       }
 
-      if (isModified({ base, afterMerge })) {
-        const event = "modified"
-        const sizeImpactMap = {}
-        const sizeMapOnBase = base.sizeMap
-        const sizeMapAfterMerge = afterMerge.sizeMap
-        Object.keys(sizeMapAfterMerge).forEach((sizeName) => {
-          sizeImpactMap[sizeName] = sizeMapAfterMerge[sizeName] - sizeMapOnBase[sizeName]
-        })
+      if (isModified({ beforeMerge, afterMerge })) {
         addImpact(fileRelativeUrl, {
-          event,
-          sizeImpactMap,
-          base,
+          event: "modified",
+          beforeMerge,
           afterMerge,
         })
       }
@@ -217,47 +232,68 @@ const renderCommentBody = ({
     const groupImpactCount = Object.keys(fileByFileImpact).length
     const groupHiddenImpactCount = Object.keys(fileByFileImpactHidden).length
     if (groupImpactCount === 0 && groupHiddenImpactCount === 0) {
-      return `<details>
-  <summary>${formatGroupSummary({ groupName, groupImpactCount, groupLength })}</summary>
-  <p>No impact on files in ${groupName} group.</p>
-</details>`
+      return renderGroup(`<p>No impact on files in ${groupName} group.</p>`, {
+        groupName,
+        groupComparison,
+        groupFileCount,
+        groupImpactCount,
+        fileByFileImpact,
+        groupHiddenImpactCount,
+        fileByFileImpactHidden,
+      })
     }
 
     const elements = [
       ...(groupImpactCount > 0
         ? [
             renderImpactTable(fileByFileImpact, {
+              groupComparison,
               transformations,
               fileRelativeUrlMaxLength,
               maxRowsPerTable,
               formatFileRelativeUrl,
               formatFileCell,
               formatFileSizeImpactCell,
+              formatGroupSizeImpactCell,
+              cacheImpact,
+              formatCacheImpactCell,
             }),
           ]
         : []),
       ...(groupHiddenImpactCount > 0
         ? [
-            `<details>
-  <summary>${formatHiddenImpactSummary({ groupName, groupHiddenImpactCount })}</summary>
-  ${renderImpactTable(fileByFileImpactHidden, {
-    transformations,
-    fileRelativeUrlMaxLength,
-    maxRowsPerTable,
-    formatFileRelativeUrl,
-    formatFileCell,
-    formatFileSizeImpactCell,
-  })}
-  </details>`,
+            renderDetails({
+              summary: formatHiddenImpactSummary({ groupName, groupHiddenImpactCount }),
+              content: renderImpactTable(fileByFileImpactHidden, {
+                groupComparison,
+                transformations,
+                fileRelativeUrlMaxLength,
+                maxRowsPerTable,
+                formatFileRelativeUrl,
+                formatFileCell,
+                formatFileSizeImpactCell,
+                formatGroupSizeImpactCell,
+                cacheImpact,
+                formatCacheImpactCell,
+              }),
+            }),
           ]
         : []),
     ]
 
-    return `<details>
-  <summary>${formatGroupSummary({ groupName, groupImpactCount, groupLength })}</summary>
-  ${elements.join(`
-  `)}
-</details>`
+    return renderGroup(
+      elements.join(`
+`),
+      {
+        groupName,
+        groupComparison,
+        groupFileCount,
+        groupImpactCount,
+        fileByFileImpact,
+        groupHiddenImpactCount,
+        fileByFileImpactHidden,
+      },
+    )
   })
 
   const mergeImpact = formulateMergeImpact({ pullRequestHead, pullRequestBase, overallImpactInfo })
@@ -307,26 +343,6 @@ const formulateGroupQuantity = (count) => {
   return count === 1 ? `1 group` : `${count} groups`
 }
 
-const hasSizeImpact = (sizeImpactMap) => {
-  return Object.keys(sizeImpactMap).some((sizeName) => sizeImpactMap[sizeName] !== 0)
-}
-
-const renderEmptyGroup = ({ groupName, groupConfig, formatGroupSummary }) => {
-  return `<details>
-  <summary>${formatGroupSummary({
-    groupName,
-    groupLength: 0,
-    groupImpactCount: 0,
-  })}</summary>
-  <p>No file in ${groupName} group (see config below).</p>
-
-\`\`\`json
-${JSON.stringify(groupConfig, null, "  ")}
-\`\`\`
-
-</details>`
-}
-
 const metaToData = (meta, ...args) => {
   if (typeof meta === "boolean") {
     return {
@@ -349,11 +365,7 @@ const metaToData = (meta, ...args) => {
   }
 }
 
-const showSizeImpactGetter = (
-  meta,
-  fileRelativeUrl,
-  { event, sizeImpactMap, base, afterMerge },
-) => {
+const showSizeImpactGetter = (meta, fileRelativeUrl, { event, beforeMerge, afterMerge }) => {
   const { showSizeImpact = true } = meta
   if (typeof showSizeImpact === "boolean") {
     return showSizeImpact
@@ -363,12 +375,26 @@ const showSizeImpactGetter = (
     return showSizeImpact({
       fileRelativeUrl,
       event,
-      sizeImpactMap,
-      sizeMapOnBase: base ? base.sizeMap : null,
-      sizeMapAfterMerge: afterMerge ? afterMerge.sizeMap : null,
+      ...getSizeMaps({ beforeMerge, afterMerge }),
     })
   }
 
   console.warn(`${showSizeImpact} must be a boolean or a function, received ${showSizeImpact}`)
   return true
+}
+
+const formulateEmptyGroupContent = ({ groupName, groupConfig }) => {
+  return `<p>No file in ${groupName} group (see config below).</p>
+
+\`\`\`json
+${JSON.stringify(groupConfig, null, "  ")}
+\`\`\`
+`
+}
+
+const renderDetails = ({ summary, content, open = false, indent = 0 }) => {
+  return `${" ".repeat(indent)}<details${open ? " open" : ""}>
+${" ".repeat(indent + 2)}<summary>${summary}</summary>
+${" ".repeat(indent + 2)}${content}
+${" ".repeat(indent)}</details>`
 }

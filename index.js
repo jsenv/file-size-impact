@@ -1,3 +1,4 @@
+export { getSizeMaps } from "./src/getSizeMaps.js"
 export { jsenvTrackingConfig } from "./src/jsenvTrackingConfig.js"
 export { transform as raw } from "./src/rawTransformation.js"
 export { transform as gzip } from "./src/gzipTransformation.js"

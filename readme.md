@@ -10,10 +10,13 @@ Add files size impact into pull requests.
 # Table of contents
 
 - [Presentation](#Presentation)
-- [How it works](#How-it-works)
+- [Pull request comment](#Pull-request-comment)
 - [Configuring a github workflow](#Configuring-a-github-workflow)
-- [Configuring other workflow](#configuring-other-workflow)
-- [Compression](#Compression)
+- [Configuring a workflow](#configuring-a-workflow)
+- [API](#API)
+- [Manifest file](#Manifest-file)
+- [Ignore some impact](#Ignore-some-impact)
+- [How it works](#How-it-works)
 - [See also](#See-also)
 
 # Presentation
@@ -28,34 +31,33 @@ The comment can be expanded to see details.
 
 </details>
 
-<details>
-  <summary>It can also be configured to track size after compression.</summary>
+- Compatible with any workflow like GitHub or Jenkins
+- Can track compressed file size
+- Configurable to create group of files according to your project. For exemple you can create one group with critical files and a second one for less important files.
 
-![screenshot of pull request comment with compression](./docs/comment-compression.png)
+# Pull request comment
 
-</details>
+This section document how to read two parts of the size impact comment: `group summary` and `size impact`.
 
-The main features are:
+![legend of pull request comment](./docs/comment-legend.png)
 
-- Compatible with many workflow: GitHub, Jenkins, Travis
-- Group files to track them according to your needs
-- Compact and readable output
-- Track compressed file size
+## group summary
 
-# How it works
+"critical files (1/2)"
 
-In order to analyse the impact of a pull request on file size the following steps are executed:
+Translates into the following sentence:
 
-1. Checkout pull request base branch
-2. Execute command to generate files (`npm build` by default)
-3. Take a snapshot of generated files
-4. Merge pull request into its base
-5. Execute command to generate files again
-6. Take a second snapshot of generated files
-7. Analyse differences between the two snapshots
-8. Post or update comment in the pull request
+"There is a group of files named `critical files` and pull request impacts `1` out of `2` files in this group".
 
-# Configuring a github workflow
+## size impact
+
+"83.45KB (+6.84KB / +8.92%)"
+
+Translates into the following sentence:
+
+"The size after merge is `83.45KB` and pull request adds `6.84KB` representing an increase of `8.92%` of the size before merge"
+
+# Configuring a GitHub workflow
 
 You need:
 
@@ -125,7 +127,7 @@ jobs:
 
 </details>
 
-# Configuring other workflow
+# Configuring a workflow
 
 <details>
   <summary>1. @jsenv/file-size-impact in devDependencies</summary>
@@ -200,23 +202,378 @@ node ./report-size-impact.js
 
 </details>
 
-# Compression
+# API
 
-You can enable compressed file size tracking using the `transformations` parameter.
-The following code would track raw and compressed file size (using gzip).
+## reportFileSizeImpact
+
+`reportFileSizeImpact` is an async function that will analyse a pull request file size impact and post a comment with the result of this analysis.
+
+<details>
+  <summary>reportFileSizeImpact code example</summary>
+
+```js
+import { reportFileSizeImpact, raw } from "@jsenv/file-size-impact"
+
+await reportFileSizeImpact({
+  projectDirectoryUrl: "file:///directory",
+  logLevel: "info",
+  githubToken: "xxx",
+  repositoryOwner: "jsenv",
+  repositoryName: "jsenv-file-size-impact",
+  pullRequestNumber: 10,
+  installCommand: "npm install",
+  buildCommand: "npm run build",
+  trackingConfig: {
+    dist: {
+      "./dist/**/*.js": true,
+    },
+  },
+  transformations: { raw },
+  manifestConfig: {
+    "./dist/**/manifest.json": true,
+  },
+})
+```
+
+[implementation](../src/reportFileSizeImpact.js)
+
+</details>
+
+<details>
+  <summary>projectDirectoryUrl parameter</summary>
+
+`projectDirectoryUrl` parameter is a string leading to your project root directory. This parameter is **required**.
+
+  </details>
+
+<details>
+  <summary>logLevel parameter</summary>
+
+`logLevel` parameter controls verbosity of logs during the function execution. This parameters is optional with a default value of `"info"`.
+
+You likely don't need to modify this parameter. Except eventually to pass `"debug"`: this will enable more verbose logs to follow closely what is hapenning during `reportFileSizeImpact` execution.
+
+The list of available `logLevel` values can be found on [@jsenv/logger documentation](https://github.com/jsenv/jsenv-logger#loglevel).
+
+</details>
+
+<details>
+  <summary>trackingConfig parameter</summary>
+
+`trackingConfig` parameter is an object used to configure group of files you want to track. This parameter is optional with a default value exported in [src/jsenvTrackingConfig.js](./src/jsenvTrackingConfig.js)
+
+`trackingConfig` keys are group names that will appear in the generated comment.
+`trackingConfig` values are objects associating a pattern to a value. This object is refered as `metaValueMap` in https://github.com/jsenv/jsenv-url-meta.
+
+For example you can create two groups named `critical files` and `remaining files` like this:
+
+```js
+import { reportFileSizeImpact } from "@jsenv/file-size-impact"
+
+reportFileSizeImpact({
+  trackingConfig: {
+    "critical files": {
+      "./dist/main.js": true,
+      "./dist/main.css": true,
+    },
+    "remaining files": {
+      "./dist/**/*.js": true,
+      "./dist/**/*.css": true,
+      "./dist/main.js": false,
+      "./dist/main.css": false,
+    },
+  },
+})
+```
+
+![screenshot of pull request comment where groups are highlighted](./docs/group-highlighted.png)
+
+</details>
+
+<details>
+  <summary>shouldOpenGroupByDefault parameter</summary>
+
+`shouldOpenGroupByDefault` parameter is a function received named arguments and returning a boolean. When the returned boolean is true, the group is opened by default in the pull request comment.
+
+The following code would always open `critical files` group.
+
+```js
+import { reportFileSizeImpact } from "@jsenv/file-size-impact"
+
+reportFileSizeImpact({
+  trackingConfig: {
+    "critical files": {
+      "./dist/main.js": true,
+    },
+    "remaining files": {
+      "./dist/**/*.js": true,
+      "./dist/main.js": false,
+    },
+  },
+  shouldOpenGroupByDefault: ({ groupName }) => groupName === "critical files",
+})
+```
+
+</details>
+
+<details>
+  <summary>transformations parameter</summary>
+
+`transformations` parameter is an object used to transform files content before computing their size. This parameter is optional with a default tracking file size without transformation called `raw`.
+
+You can use this parameter to track file size after gzip compression.
+
+```js
+import { reportFileSizeImpact, raw, gzip, brotli } from "@jsenv/file-size-impact"
+
+reportFileSizeImpact({
+  transformations: { raw, gzip, brotli },
+})
+```
+
+![screenshot of pull request comment with gzip and brotli](./docs/comment-compression.png)
+
+`raw`, `gzip` and `brotli` compression can be enabled this way.
+
+It's also possible to control compression level.
 
 ```js
 import { reportFileSizeImpact, raw, gzip } from "@jsenv/file-size-impact"
 
 reportFileSizeImpact({
-  ...readGithubWorkflowEnv(),
-  transformations: { raw, gzip },
+  transformations: {
+    raw,
+    gzip7: (buffer) => gzip(buffer, { level: 7 }),
+    gzip9: (buffer) => gzip(buffer, { level: 9 }),
+  },
 })
 ```
 
-# See also
+Finally `transformations` can be used to add custom transformations.
 
-- API documentation around `reportFileSizeImpact`: [docs/api.md](./docs/api.md)
+```js
+import { reportFileSizeImpact, raw, gzip, brotli } from "@jsenv/file-size-impact"
+
+reportFileSizeImpact({
+  transformations: {
+    raw,
+    trim: (buffer) => String(buffer).trim(),
+  },
+})
+```
+
+</details>
+
+<details>
+  <summary>installCommand parameter</summary>
+
+`installCommand` parameter is a string representing the command to run in order to install things just after a switching to a git branch. This parameter is optional with a default value of `"npm install"`.
+
+</details>
+
+<details>
+  <summary>buildCommand parameter</summary>
+
+`buildCommand` parameter is a string representing the command to run in order to generate files. This parameter is optional with a default value of `"npm run-script build"`.
+
+</details>
+
+<details>
+
+  <summary>manifestConfig parameter</summary>
+
+`manifestConfig` parameter is an object used to configure the location of an optional [manifest file](#Manifest-file). This parameter is optional with a default considering `dist/**/manifest.json` as manifest files.
+
+This parameter reuses the shape of `trackingConfig parameter` (associating pattern + value).
+
+```js
+import { reportFileSizeImpact } from "@jsenv/file-size-impact"
+
+reportFileSizeImpact({
+  manifestConfig: {
+    "./dist/**/manifest.json": true,
+  },
+})
+```
+
+You can disable manifest file handling by passing `manifestConfig: null` (`manifest.json` will be handled as a regular file).
+
+</details>
+
+<details>
+  <summary>runLink parameter</summary>
+
+`runLink` parameter allow to put a link to the workflow run in the generated comment body. It is used to indicates where file size impact was runned.
+
+![screenshot of pull request comment where runlink is highlighted](./docs/runlink-highlighted.png)
+
+This parameter is returned by [readGithubWorkflowEnv](#readGithubWorkflowEnv) meaning it comes for free inside a GitHub workflow.
+
+Inside an other workflow, you can pass your own `runLink`. As in the example below where it is assumed that script is runned by jenkins.
+
+```js
+import { reportFileSizeImpact } from "@jsenv/file-size-impact"
+
+reportFileSizeImpact({
+  runLink: {
+    url: process.env.BUILD_URL,
+    text: `${process.env.JOB_NAME}#${process.env.BUILD_ID}`,
+  },
+})
+```
+
+</details>
+
+## readGithubWorkflowEnv
+
+`readGithubWorkflowEnv` is a function meant to be runned inside a GitHub workflow. It returns an object meant to be forwarded to [reportFileSizeImpact](reportFileSizeImpact).
+
+<details>
+  <summary>readGithubWorkflowEnv code example</summary>
+
+```js
+import { reportFileSizeImpact, readGithubWorkflowEnv } from "@jsenv/file-size-impact"
+
+const githubWorkflowEnv = readGithubWorkflowEnv()
+
+reportFileSizeImpact({
+  projectDirectoryUrl: new URL("./", import.meta.url),
+  ...githubWorkflowEnv,
+})
+```
+
+`githubWorkflowEnv` object looks like this:
+
+```js
+const githubWorkflowEnv = {
+  projectDirectoryUrl: "/home/runner/work/repo-name/repo-name",
+  githubToken: "xxx",
+  repositoryOwner: "jsenv",
+  repositoryName: "jsenv-file-size-impact",
+  pullRequestNumber: 10,
+  runLink: {
+    url: "https://github.com/jsenv/jsenv-file-size-impact/actions/runs/34",
+    text: "workflow-name#34",
+  },
+}
+```
+
+[implementation](../src/readGithubWorkflowEnv.js).
+
+</details>
+
+# Manifest file
+
+File size impact is comparing the files generated before merging and after merging the pull request. If the generated files have dynamic names the files after merge will always be considered as new files. Manifest file allows to compare file with dynamic names.
+
+The content of a manifest file looks like this:
+
+```json
+{
+  "dist/file.js": "dist/file.4798774987w97er984798.js"
+}
+```
+
+These files are generated by build tools. For example by [webpack-manifest-plugin](https://github.com/danethurber/webpack-manifest-plugin) or [rollup-plugin-output-manifest](https://github.com/shuizhongyueming/rollup-plugin-output-manifest/tree/master/packages/main).
+
+# Ignore some impact
+
+Size impact analysis occurs only if the file was deleted, added or modified by the pull request. To detect if the file is modified we compare file content before and after merging branch. By default every file size impact is shown. You can control if the file ends up displayed in the analysis.
+
+In the comment below, two files are modified but only one is big enough to be displayed. The impact description says 1 file impacted over 2. A hidden details contains the impacts that where hidden.
+
+![screenshot of pull request comment with collapsed hidden impacts](./docs/hidden-details-collapsed.png)
+
+Opening this details display the impacts that where hidden.
+
+![screenshot of pull request comment with expanded hidden impacts](./docs/hidden-details-expanded.png)
+
+Useful if you have several files always modified by the build but with a size impact of 0. You can also decide that you don't want to show very small size impact. In order to configure this, use [showSizeImpact](#showSizeImpact) documented below.
+
+## showSizeImpact
+
+`showSizeImpact` is a function receiving named parameters that should return a boolean. This boolean represent if the size impact will be shown or hidden. `showSizeImpact` is part of your `trackingConfig`.
+
+<details>
+  <summary>showSizeImpact code example</summary>
+
+```js
+import { reportFileSizeImpact, raw } from "@jsenv/file-size-impact"
+
+await reportFileSizeImpact({
+  transformations: { raw },
+  trackingConfig: {
+    dist: {
+      "**/*.html": {
+        showSizeImpact: ({ sizeImpactMap }) => Math.abs(sizeImpactMap.raw) > 10,
+      },
+    },
+  },
+})
+```
+
+</details>
+
+<details>
+  <summary>showSizeImpact call example</summary>
+
+Code below illustrates the named parameter passed to `showSizeImpact`.
+
+```js
+showSizeImpact({
+  fileRelativeUrl: "dist/file.js",
+  event: "modified",
+  sizeMapBeforeMerge: {
+    raw: 200,
+    gzip: 20,
+  },
+  sizeMapAfterMerge: {
+    raw: 300,
+    gzip: 15,
+  },
+  sizeImpactMap: {
+    raw: 100,
+    gzip: -5,
+  },
+})
+```
+
+### fileRelativeUrl
+
+A string representing the file url relative to [projectDirectoryUrl](#projectDirectoryUrl).
+
+### event
+
+A string that can be either `added`, `removed`, `modified`.
+
+### sizeMapBeforeMerge
+
+An object mapping all transformations to a number corresponding to file size on base branch. This parameter is `null` when event is `added` because the file did not exists on base branch.
+
+### sizeMapAfterMerge
+
+An object mapping all transformations to a number corresponding to file size after merging pr in base branch. This parameter is `null` when event is `deleted` because the file is gone.
+
+### sizeImpactMap
+
+An object mapping all transformations to a number representing impact on that file size.
+
+</details>
+
+# How it works
+
+In order to analyse the impact of a pull request on file size the following steps are executed:
+
+1. Checkout pull request base branch
+2. Execute command to generate files (`npm build` by default)
+3. Take a snapshot of generated files
+4. Merge pull request into its base
+5. Execute command to generate files again
+6. Take a second snapshot of generated files
+7. Analyse differences between the two snapshots
+8. Post or update comment in the pull request
+
+# See also
 
 - An other repository from jsenv monitoring pull requests impacts but on lighthouse score: https://github.com/jsenv/jsenv-lighthouse-score-impact
 
