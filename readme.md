@@ -456,9 +456,7 @@ const githubWorkflowEnv = {
 
 # Manifest file
 
-File size impact is comparing the files generated before merging and after merging the pull request. If the generated files have dynamic names the files after merge will always be considered as new files. Manifest file allows to compare file with dynamic names.
-
-The content of a manifest file looks like this:
+Manifest file allows to compare file with dynamic names. The content of a manifest file looks like this:
 
 ```json
 {
