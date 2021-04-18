@@ -284,32 +284,6 @@ reportFileSizeImpact({
 </details>
 
 <details>
-  <summary>shouldOpenGroupByDefault parameter</summary>
-
-`shouldOpenGroupByDefault` parameter is a function received named arguments and returning a boolean. When the returned boolean is true, the group is opened by default in the pull request comment.
-
-The following code would always open `critical files` group.
-
-```js
-import { reportFileSizeImpact } from "@jsenv/file-size-impact"
-
-reportFileSizeImpact({
-  trackingConfig: {
-    "critical files": {
-      "./dist/main.js": true,
-    },
-    "remaining files": {
-      "./dist/**/*.js": true,
-      "./dist/main.js": false,
-    },
-  },
-  shouldOpenGroupByDefault: ({ groupName }) => groupName === "critical files",
-})
-```
-
-</details>
-
-<details>
   <summary>transformations parameter</summary>
 
 `transformations` parameter is an object used to transform files content before computing their size. This parameter is optional with a default tracking file size without transformation called `raw`.
@@ -417,6 +391,32 @@ reportFileSizeImpact({
 
 </details>
 
+<details>
+  <summary>shouldOpenGroupByDefault parameter</summary>
+
+`shouldOpenGroupByDefault` parameter is a function received named arguments and returning a boolean. When the returned boolean is true, the group is opened by default in the pull request comment.
+
+The following code would always open `critical files` group.
+
+```js
+import { reportFileSizeImpact } from "@jsenv/file-size-impact"
+
+reportFileSizeImpact({
+  trackingConfig: {
+    "critical files": {
+      "./dist/main.js": true,
+    },
+    "remaining files": {
+      "./dist/**/*.js": true,
+      "./dist/main.js": false,
+    },
+  },
+  shouldOpenGroupByDefault: ({ groupName }) => groupName === "critical files",
+})
+```
+
+</details>
+
 ## readGithubWorkflowEnv
 
 `readGithubWorkflowEnv` is a function meant to be runned inside a GitHub workflow. It returns an object meant to be forwarded to [reportFileSizeImpact](reportFileSizeImpact).
@@ -500,6 +500,10 @@ await reportFileSizeImpact({
   },
 })
 ```
+
+The code above translates into the following sentence:
+
+> "Report size impact for all files ending with html AND hide size impact on these html files when it's smaller than 10 bytes"
 
 </details>
 
