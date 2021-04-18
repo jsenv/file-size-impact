@@ -50,11 +50,9 @@ This section document how to read `group summary` and `size impact` in the pull 
 
 # Installation
 
-This section explains how integrate file size impact to pull requests on GitHub. If you want to configure a GitHub workflow follow [Configuring a GitHub workflow](#Configuring-a-GitHub-workflow), otherwise follow [Configuring a workflow](#Configuring-a-workflow).
+This section explains how integrate file size impact to pull requests on GitHub. To configure a GitHub workflow, see [Configuring a GitHub workflow](#Configuring-a-GitHub-workflow), otherwise see [Configuring a workflow](#Configuring-a-workflow). If you don't know what to choose, prefer a GitHub workflow as it's a bit easier to configure.
 
 ## Configuring a GitHub workflow
-
-You need:
 
 <details>
   <summary>1. @jsenv/file-size-impact in devDependencies</summary>
