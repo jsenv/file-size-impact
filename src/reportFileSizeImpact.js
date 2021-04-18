@@ -37,8 +37,8 @@ export const reportFileSizeImpact = async ({
   },
   transformations = { raw: rawTransform },
 
-  // doing this explicitely helps autocompletion in vscode for
-  // people using the function
+  // We could just to ...jsenvCommentParameters but explicitely passing params
+  // helps autocompletion in vscode for people using the function.
   formatGroupSummary = jsenvCommentParameters.formatGroupSummary,
   formatHiddenImpactSummary = jsenvCommentParameters.formatHiddenImpactSummary,
   formatFileRelativeUrl = jsenvCommentParameters.formatFileRelativeUrl,
@@ -49,10 +49,10 @@ export const reportFileSizeImpact = async ({
   formatGroupSizeImpactCell = jsenvCommentParameters.formatGroupSizeImpactCell,
   cacheImpact = false,
   formatCacheImpactCell = jsenvCommentParameters.formatCacheImpactCell,
+  shouldOpenGroupByDefault = jsenvCommentParameters.shouldOpenGroupByDefault,
 
   catchError = false,
   runLink,
-  shouldOpenGroupByDefault = () => false,
 }) => {
   return executeAsyncFunction(
     async () => {

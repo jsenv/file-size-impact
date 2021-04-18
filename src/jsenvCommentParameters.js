@@ -8,8 +8,8 @@ const bytes = require("bytes")
 const enDecimalFormatter = new Intl.NumberFormat("en", { style: "decimal" })
 
 export const jsenvCommentParameters = {
-  formatGroupSummary: ({ groupName, groupImpactCount, groupLength }) => {
-    return `${groupName} (${groupImpactCount}/${groupLength})`
+  formatGroupSummary: ({ groupName, groupImpactCount, groupFileCount }) => {
+    return `${groupName} (${groupImpactCount}/${groupFileCount})`
   },
   formatHiddenImpactSummary: ({ groupHiddenImpactCount }) => {
     return `Hidden (${groupHiddenImpactCount})`
@@ -85,6 +85,7 @@ export const jsenvCommentParameters = {
     const { totalBytesToDownload } = computeCacheImpact(fileByFileImpact, sizeName)
     return formatSize(totalBytesToDownload, { unit: true })
   },
+  shouldOpenGroupByDefault: () => false,
 }
 
 const formatSize = (sizeNumber, { diff = false, unit = false } = {}) => {

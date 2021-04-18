@@ -1,3 +1,4 @@
+import { getSizeMaps } from "../../getSizeMaps.js"
 import { compareTwoSnapshots } from "../compareTwoSnapshots.js"
 import { isAdded, isModified, isDeleted } from "./helper.js"
 import { renderImpactTable } from "./renderImpactTable.js"
@@ -382,61 +383,18 @@ const showSizeImpactGetter = (meta, fileRelativeUrl, { event, beforeMerge, after
   return true
 }
 
-const getSizeMaps = ({ beforeMerge, afterMerge }) => {
-  // added
-  if (!beforeMerge) {
-    const sizeMapBeforeMerge = null
-    const sizeMapAfterMerge = afterMerge.sizeMap
-    const sizeImpactMap = {}
-    Object.keys(sizeMapAfterMerge).forEach((sizeName) => {
-      sizeImpactMap[sizeName] = sizeMapAfterMerge[sizeName]
-    })
-    return {
-      sizeMapBeforeMerge,
-      sizeMapAfterMerge,
-      sizeImpactMap,
-    }
-  }
-
-  // deleted
-  if (!afterMerge) {
-    const sizeMapBeforeMerge = beforeMerge.sizeMap
-    const sizeMapAfterMerge = null
-    const sizeImpactMap = {}
-    Object.keys(sizeMapBeforeMerge).forEach((sizeName) => {
-      sizeImpactMap[sizeName] = -sizeMapBeforeMerge[sizeName]
-    })
-    return {
-      sizeMapBeforeMerge,
-      sizeMapAfterMerge,
-      sizeImpactMap,
-    }
-  }
-
-  const sizeMapBeforeMerge = beforeMerge.sizeMap
-  const sizeMapAfterMerge = afterMerge.sizeMap
-  const sizeImpactMap = {}
-  Object.keys(sizeMapAfterMerge).forEach((sizeName) => {
-    sizeImpactMap[sizeName] = sizeMapAfterMerge[sizeName] - sizeMapBeforeMerge[sizeName]
-  })
-  return {
-    sizeMapBeforeMerge,
-    sizeMapAfterMerge,
-    sizeImpactMap,
-  }
-}
-
 const formulateEmptyGroupContent = ({ groupName, groupConfig }) => {
   return `<p>No file in ${groupName} group (see config below).</p>
 
 \`\`\`json
 ${JSON.stringify(groupConfig, null, "  ")}
 \`\`\`
-  `
+`
 }
 
-const renderDetails = ({ summary, content, open = false }) => {
-  return `<details${open ? " open" : ""}>
-  <summary>${summary}</summary>
-${content}</details>`
+const renderDetails = ({ summary, content, open = false, indent = 0 }) => {
+  return `${" ".repeat(indent)}<details${open ? " open" : ""}>
+${" ".repeat(indent + 2)}<summary>${summary}</summary>
+${" ".repeat(indent + 2)}${content}
+${" ".repeat(indent)}</details>`
 }

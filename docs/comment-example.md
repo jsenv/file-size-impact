@@ -431,7 +431,7 @@
       </tr>
     </tfoot>
   </table>
-  </details>
+</details>
 </details>
 
 # size impact 1/2
@@ -462,7 +462,7 @@
       </tr>
     </tfoot>
   </table>
-  <details>
+<details>
   <summary>Hidden (1)</summary>
   <table>
     <thead>
@@ -484,7 +484,7 @@
       </tr>
     </tfoot>
   </table>
-  </details>
+</details>
 </details>
 
 # formating file relative url
