@@ -37,25 +37,17 @@ The comment can be expanded to see details.
 
 # Pull request comment
 
-This section document how to read two parts of the size impact comment: `group summary` and `size impact`.
+This section document how to read `group summary` and `size impact` in the pull request comment.
 
 ![legend of pull request comment](./docs/comment-legend.png)
 
-## group summary
+`critical files (1/2)` translates into the following sentence:
 
-"critical files (1/2)"
+> "There is a group of files named `critical files` and pull request impacts `1` out of `2` files in this group."
 
-Translates into the following sentence:
+`127.83KB (+6.84KB / +5.65%)` translates into the following sentence:
 
-"There is a group of files named `critical files` and pull request impacts `1` out of `2` files in this group".
-
-## size impact
-
-"83.45KB (+6.84KB / +8.92%)"
-
-Translates into the following sentence:
-
-"The size after merge is `83.45KB` and pull request adds `6.84KB` representing an increase of `8.92%` of the size before merge"
+> "The size after merge is `127.83KB` and pull request adds `6.84KB` representing an increase of `5.65%` of the size before merge."
 
 # Configuring a GitHub workflow
 
@@ -235,7 +227,7 @@ await reportFileSizeImpact({
 })
 ```
 
-[implementation](../src/reportFileSizeImpact.js)
+[implementation](./src/reportFileSizeImpact.js)
 
 </details>
 
@@ -458,7 +450,7 @@ const githubWorkflowEnv = {
 }
 ```
 
-[implementation](../src/readGithubWorkflowEnv.js).
+[implementation](./src/readGithubWorkflowEnv.js).
 
 </details>
 
