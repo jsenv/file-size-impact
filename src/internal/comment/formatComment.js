@@ -29,6 +29,7 @@ export const formatComment = ({
   formatGroupSizeImpactCell,
   cacheImpact,
   formatCacheImpactCell,
+  shouldOpenGroupByDefault,
 }) => {
   const warnings = []
   const snapshotComparison = compareTwoSnapshots(beforeMergeSnapshot, afterMergeSnapshot)
@@ -58,6 +59,7 @@ export const formatComment = ({
     formatGroupSizeImpactCell,
     cacheImpact,
     formatCacheImpactCell,
+    shouldOpenGroupByDefault,
   })
 
   const bodyLength = Buffer.byteLength(body)
@@ -115,22 +117,66 @@ const renderCommentBody = ({
   formatGroupSizeImpactCell,
   cacheImpact,
   formatCacheImpactCell,
+  shouldOpenGroupByDefault,
 }) => {
   const overallImpactInfo = {}
 
+  const renderGroup = (
+    groupMessage,
+    {
+      groupName,
+      groupComparison,
+      groupFileCount,
+      groupImpactCount,
+      fileByFileImpact,
+      groupHiddenImpactCount,
+      fileByFileImpactHidden,
+    },
+  ) => {
+    const groupSummary = formatGroupSummary({
+      groupName,
+      groupImpactCount,
+      groupFileCount,
+    })
+    const groupShouldBeOpenByDefault = shouldOpenGroupByDefault({
+      groupName,
+      groupComparison,
+      groupFileCount,
+      groupImpactCount,
+      fileByFileImpact,
+      groupHiddenImpactCount,
+      fileByFileImpactHidden,
+    })
+
+    return renderDetails({
+      open: groupShouldBeOpenByDefault,
+      summary: groupSummary,
+      content: groupMessage,
+    })
+  }
+
   const groupMessages = Object.keys(snapshotComparison).map((groupName) => {
     const groupComparison = snapshotComparison[groupName]
-    const groupLength = Object.keys(groupComparison).length
-    if (groupLength === 0) {
-      return renderEmptyGroup({
-        groupName,
-        groupConfig: trackingConfig[groupName],
-        formatGroupSummary,
-      })
-    }
-
+    const groupFileCount = Object.keys(groupComparison).length
     const fileByFileImpact = {}
     const fileByFileImpactHidden = {}
+    if (groupFileCount === 0) {
+      return renderGroup(
+        formulateEmptyGroupContent({
+          groupName,
+          groupConfig: trackingConfig[groupName],
+        }),
+        {
+          groupName,
+          groupComparison,
+          groupFileCount,
+          groupImpactCount: 0,
+          fileByFileImpact,
+          groupHiddenImpactCount: 0,
+          fileByFileImpactHidden,
+        },
+      )
+    }
 
     const addImpact = (fileRelativeUrl, { event, beforeMerge, afterMerge }) => {
       const meta = event === "deleted" ? beforeMerge.meta : afterMerge.meta
@@ -185,10 +231,15 @@ const renderCommentBody = ({
     const groupImpactCount = Object.keys(fileByFileImpact).length
     const groupHiddenImpactCount = Object.keys(fileByFileImpactHidden).length
     if (groupImpactCount === 0 && groupHiddenImpactCount === 0) {
-      return `<details>
-  <summary>${formatGroupSummary({ groupName, groupImpactCount, groupLength })}</summary>
-  <p>No impact on files in ${groupName} group.</p>
-</details>`
+      return renderGroup(`<p>No impact on files in ${groupName} group.</p>`, {
+        groupName,
+        groupComparison,
+        groupFileCount,
+        groupImpactCount,
+        fileByFileImpact,
+        groupHiddenImpactCount,
+        fileByFileImpactHidden,
+      })
     }
 
     const elements = [
@@ -210,30 +261,38 @@ const renderCommentBody = ({
         : []),
       ...(groupHiddenImpactCount > 0
         ? [
-            `<details>
-  <summary>${formatHiddenImpactSummary({ groupName, groupHiddenImpactCount })}</summary>
-  ${renderImpactTable(fileByFileImpactHidden, {
-    groupComparison,
-    transformations,
-    fileRelativeUrlMaxLength,
-    maxRowsPerTable,
-    formatFileRelativeUrl,
-    formatFileCell,
-    formatFileSizeImpactCell,
-    formatGroupSizeImpactCell,
-    cacheImpact,
-    formatCacheImpactCell,
-  })}
-  </details>`,
+            renderDetails({
+              summary: formatHiddenImpactSummary({ groupName, groupHiddenImpactCount }),
+              content: renderImpactTable(fileByFileImpactHidden, {
+                groupComparison,
+                transformations,
+                fileRelativeUrlMaxLength,
+                maxRowsPerTable,
+                formatFileRelativeUrl,
+                formatFileCell,
+                formatFileSizeImpactCell,
+                formatGroupSizeImpactCell,
+                cacheImpact,
+                formatCacheImpactCell,
+              }),
+            }),
           ]
         : []),
     ]
 
-    return `<details>
-  <summary>${formatGroupSummary({ groupName, groupImpactCount, groupLength })}</summary>
-  ${elements.join(`
-  `)}
-</details>`
+    return renderGroup(
+      elements.join(`
+`),
+      {
+        groupName,
+        groupComparison,
+        groupFileCount,
+        groupImpactCount,
+        fileByFileImpact,
+        groupHiddenImpactCount,
+        fileByFileImpactHidden,
+      },
+    )
   })
 
   const mergeImpact = formulateMergeImpact({ pullRequestHead, pullRequestBase, overallImpactInfo })
@@ -281,22 +340,6 @@ const formulateFileQuantity = (count) => {
 
 const formulateGroupQuantity = (count) => {
   return count === 1 ? `1 group` : `${count} groups`
-}
-
-const renderEmptyGroup = ({ groupName, groupConfig, formatGroupSummary }) => {
-  return `<details>
-  <summary>${formatGroupSummary({
-    groupName,
-    groupLength: 0,
-    groupImpactCount: 0,
-  })}</summary>
-  <p>No file in ${groupName} group (see config below).</p>
-
-\`\`\`json
-${JSON.stringify(groupConfig, null, "  ")}
-\`\`\`
-
-</details>`
 }
 
 const metaToData = (meta, ...args) => {
@@ -381,4 +424,19 @@ const getSizeMaps = ({ beforeMerge, afterMerge }) => {
     sizeMapAfterMerge,
     sizeImpactMap,
   }
+}
+
+const formulateEmptyGroupContent = ({ groupName, groupConfig }) => {
+  return `<p>No file in ${groupName} group (see config below).</p>
+
+\`\`\`json
+${JSON.stringify(groupConfig, null, "  ")}
+\`\`\`
+  `
+}
+
+const renderDetails = ({ summary, content, open = false }) => {
+  return `<details${open ? " open" : ""}>
+  <summary>${summary}</summary>
+${content}</details>`
 }

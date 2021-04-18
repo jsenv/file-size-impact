@@ -52,6 +52,7 @@ export const reportFileSizeImpact = async ({
 
   catchError = false,
   runLink,
+  shouldOpenGroupByDefault = () => false,
 }) => {
   return executeAsyncFunction(
     async () => {
@@ -311,6 +312,7 @@ ${renderGeneratedBy({ runLink })}`
           formatGroupSizeImpactCell,
           cacheImpact,
           formatCacheImpactCell,
+          shouldOpenGroupByDefault,
         }),
       )
 
