@@ -11,8 +11,7 @@ Add files size impact into pull requests.
 
 - [Presentation](#Presentation)
 - [Pull request comment](#Pull-request-comment)
-- [Configuring a github workflow](#Configuring-a-github-workflow)
-- [Configuring a workflow](#configuring-a-workflow)
+- [Installation](#Installation)
 - [API](#API)
 - [Manifest file](#Manifest-file)
 - [Ignore some impact](#Ignore-some-impact)
@@ -33,7 +32,7 @@ The comment can be expanded to see details.
 
 - Compatible with any workflow like GitHub or Jenkins
 - Can track compressed file size
-- Configurable to create group of files according to your project. For exemple you can create one group with critical files and a second one for less important files.
+- Configurable to create group of files according to your project. For example you can create one group with critical files and a second one for less important files.
 
 # Pull request comment
 
@@ -49,7 +48,11 @@ This section document how to read `group summary` and `size impact` in the pull 
 
 > "The size after merge is `127.83KB` and pull request adds `6.84KB` representing an increase of `5.65%` of the size before merge."
 
-# Configuring a GitHub workflow
+# Installation
+
+This section explains how integrate file size impact to pull requests on GitHub. If you want to configure a GitHub workflow follow [Configuring a GitHub workflow](#Configuring-a-GitHub-workflow), otherwise follow [Configuring a workflow](#Configuring-a-workflow).
+
+## Configuring a GitHub workflow
 
 You need:
 
@@ -119,7 +122,7 @@ jobs:
 
 </details>
 
-# Configuring a workflow
+## Configuring a workflow
 
 <details>
   <summary>1. @jsenv/file-size-impact in devDependencies</summary>
