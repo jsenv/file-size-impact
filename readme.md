@@ -75,9 +75,9 @@ reportFileSizeImpact({
   ...readGithubWorkflowEnv(),
   buildCommand: "npm run dist",
   trackingConfig: {
-    "dist/commonjs": {
-      "./dist/commonjs/**/*": true,
-      "./dist/commonjs/**/*.map": false,
+    dist: {
+      "./dist/**/*": true,
+      "./dist/**/*.map": false,
     },
   },
 })
@@ -150,11 +150,11 @@ reportFileSizeImpact({
   repositoryName: process.env.TRAVIS_REPO_SLUG.split("/")[1],
   pullRequestNumber: process.env.TRAVIS_PULL_REQUEST,
 
-  buildCommand: "npm run-script dist",
+  buildCommand: "npm run dist",
   trackingConfig: {
-    "dist/commonjs": {
-      "./dist/commonjs/**/*": true,
-      "./dist/commonjs/**/*.map": false,
+    dist: {
+      "./dist/**/*": true,
+      "./dist/**/*.map": false,
     },
   },
 })
