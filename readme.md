@@ -576,7 +576,7 @@ In order to analyse the impact of a pull request on file size the following step
 It would be more efficient to enable size impact workflow only if certain file changes (the one that could impact dist/ files). It could be done with `on` condition in a workflow.yml.
 
 ```yml
- on:
+on:
   pull_request:
     paths:
       - "index.js"
