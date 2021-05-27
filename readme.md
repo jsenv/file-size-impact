@@ -2,7 +2,6 @@
 
 Add files size impact into pull requests.
 
-[![github package](https://img.shields.io/github/package-json/v/jsenv/jsenv-file-size-impact.svg?label=package&logo=github)](https://github.com/jsenv/jsenv-file-size-impact/packages)
 [![npm package](https://img.shields.io/npm/v/@jsenv/file-size-impact.svg?logo=npm&label=package)](https://www.npmjs.com/package/@jsenv/file-size-impact)
 [![workflow status](https://github.com/jsenv/jsenv-file-size-impact/workflows/ci/badge.svg)](https://github.com/jsenv/jsenv-file-size-impact/actions?workflow=ci)
 [![codecov](https://codecov.io/gh/jsenv/jsenv-file-size-impact/branch/master/graph/badge.svg)](https://codecov.io/gh/jsenv/jsenv-file-size-impact)
@@ -568,8 +567,20 @@ In order to analyse the impact of a pull request on file size the following step
 
 # See also
 
-- An other repository from jsenv monitoring pull requests impacts but on lighthouse score: https://github.com/jsenv/jsenv-lighthouse-score-impact
+- [@jsenv/lighthouse-score-impact](https://github.com/jsenv/jsenv-lighthouse-score-impact): Monitor pull requests impacts but on lighthouse score.
 
-- A similar GitHub action called `compressed-size-action`: https://github.com/preactjs/compressed-size-action
+# Other
 
-- A related GitHub action called `size-limit`: https://github.com/andresz1/size-limit-action
+## Note about GitHub workflow paths
+
+It would be more efficient to enable size impact workflow only if certain file changes (the one that could impact dist/ files). It could be done with `on` condition in a workflow.yml.
+
+```yml
+ on:
+  pull_request:
+    paths:
+      - "index.js"
+      - "src/**"
+```
+
+But in practice humans will wonder why the workflow did not run and think something is wrong.
