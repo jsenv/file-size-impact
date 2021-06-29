@@ -17,7 +17,7 @@
 # a YAML validator such as https://marketplace.visualstudio.com/items?itemName=redhat.vscode-yaml
 # configured to validate this file with https://json.schemastore.org/github-workflow.json
 
-name: ci
+name: main
 
 on:
   pull_request:
