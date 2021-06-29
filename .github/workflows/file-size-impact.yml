@@ -14,7 +14,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest]
-        node: [14.5.0]
+        node: [14.17.0]
     runs-on: ${{ matrix.os }}
     name: size impact
     env:

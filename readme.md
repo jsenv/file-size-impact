@@ -3,7 +3,7 @@
 Add files size impact into pull requests.
 
 [![npm package](https://img.shields.io/npm/v/@jsenv/file-size-impact.svg?logo=npm&label=package)](https://www.npmjs.com/package/@jsenv/file-size-impact)
-[![workflow status](https://github.com/jsenv/jsenv-file-size-impact/workflows/ci/badge.svg)](https://github.com/jsenv/jsenv-file-size-impact/actions?workflow=ci)
+[![workflow status](https://github.com/jsenv/jsenv-file-size-impact/workflows/main/badge.svg)](https://github.com/jsenv/jsenv-file-size-impact/actions?workflow=main)
 [![codecov](https://codecov.io/gh/jsenv/jsenv-file-size-impact/branch/master/graph/badge.svg)](https://codecov.io/gh/jsenv/jsenv-file-size-impact)
 
 # Presentation
