@@ -16,7 +16,7 @@ await buildProject({
   buildDirectoryRelativeUrl: "./dist/commonjs/",
   format: "commonjs",
   entryPointMap: {
-    "./main.js": "./jsenv_file_size_impact.cjs",
+    "./index.js": "./jsenv_file_size_impact.cjs",
   },
   babelPluginMap: getBabelPluginMapForNode(),
   buildDirectoryClean: true,
