@@ -1,0 +1,73 @@
+# This file configure a GitHub workflow responsible to perform
+# various checks related to the codebase.
+#
+# For that reason it's runned on every pull request and push to main.
+#
+# It does the following:
+#  - Check lint passes (no eslint error on files)
+#  - Check tests passes (none is failing)
+#  - Upload code coverage from tests to codecov
+#
+# If all these steps are passing the workflow ends up
+# publishing package on npm if needed. It will publish the npm package
+# using the token found in secrets.NPM_TOKEN. Be sure to create this
+# token in the GitHub repository.
+#
+# If you want to update this file it's recommended to use
+# a YAML validator such as https://marketplace.visualstudio.com/items?itemName=redhat.vscode-yaml
+# configured to validate this file with https://json.schemastore.org/github-workflow.json
+
+name: main
+
+on:
+  pull_request:
+    branches:
+      - "**"
+  push:
+    branches:
+      - main
+
+jobs:
+  test:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        node: [14.17.0]
+    runs-on: ${{ matrix.os }}
+    name: test on ${{ matrix.os }} and node ${{ matrix.node }}
+    env:
+      CI: true
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node }}
+      - name: npm install
+        run: npm install
+      - name: check lint
+        run: npm run eslint-check
+      - name: check tests
+        run: npm run test-with-coverage
+      - name: upload coverage
+        run: npm run upload-coverage
+
+  release:
+    needs: [test]
+    if: success() && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    name: release
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v1
+        with:
+          node-version: "14.x"
+      - name: npm install
+        run: npm install
+      - name: publish package
+        run: node --experimental-top-level-await ./.github/workflows/main/publish-package.js
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - name: ensure github release
+        run: node --experimental-top-level-await ./.github/workflows/main/ensure-github-release-for-package.js
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
