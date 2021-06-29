@@ -11,8 +11,6 @@
 import { buildProject, getBabelPluginMapForNode } from "@jsenv/core"
 import * as jsenvConfig from "../../jsenv.config.js"
 
-const isProduction = process.execArgv.some((arg) => arg.includes("--conditions=production"))
-
 await buildProject({
   ...jsenvConfig,
   buildDirectoryRelativeUrl: "./dist/commonjs/",
