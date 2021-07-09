@@ -187,7 +187,7 @@ const renderCommentBody = ({
         afterMerge,
       }
 
-      const data = metaToData(meta, fileRelativeUrl, impact)
+      const data = metaToData(meta, { fileRelativeUrl, event, beforeMerge, afterMerge })
       if (data.showSizeImpact) {
         if (!overallImpactInfo.hasOwnProperty(fileRelativeUrl)) {
           overallImpactInfo[fileRelativeUrl] = groupName
@@ -343,7 +343,7 @@ const formulateGroupQuantity = (count) => {
   return count === 1 ? `1 group` : `${count} groups`
 }
 
-const metaToData = (meta, ...args) => {
+const metaToData = (meta, { fileRelativeUrl, event, beforeMerge, afterMerge }) => {
   if (typeof meta === "boolean") {
     return {
       showSizeImpact: true,
@@ -351,7 +351,12 @@ const metaToData = (meta, ...args) => {
   }
 
   if (typeof meta === "object") {
-    const showSizeImpact = showSizeImpactGetter(meta, ...args)
+    const showSizeImpact = showSizeImpactGetter(meta, {
+      fileRelativeUrl,
+      event,
+      beforeMerge,
+      afterMerge,
+    })
     const { formatFileRelativeUrl } = meta
     return {
       showSizeImpact,
@@ -365,8 +370,13 @@ const metaToData = (meta, ...args) => {
   }
 }
 
-const showSizeImpactGetter = (meta, fileRelativeUrl, { event, beforeMerge, afterMerge }) => {
-  const { showSizeImpact = true } = meta
+const showSizeImpactGetter = (meta, { fileRelativeUrl, event, beforeMerge, afterMerge }) => {
+  const { showSizeImpact } = meta
+
+  if (typeof showSizeImpact === "undefined") {
+    return true
+  }
+
   if (typeof showSizeImpact === "boolean") {
     return showSizeImpact
   }
@@ -379,7 +389,9 @@ const showSizeImpactGetter = (meta, fileRelativeUrl, { event, beforeMerge, after
     })
   }
 
-  console.warn(`${showSizeImpact} must be a boolean or a function, received ${showSizeImpact}`)
+  console.warn(
+    `showSizeImpact must be a boolean or a function, received ${showSizeImpact} for ${fileRelativeUrl}`,
+  )
   return true
 }
 
