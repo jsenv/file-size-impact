@@ -364,7 +364,7 @@ const metaToData = (meta, { fileRelativeUrl, event, beforeMerge, afterMerge }) =
     }
   }
 
-  console.warn(`meta must be a boolean or a function, received ${meta}`)
+  console.warn(`meta must be a boolean or an object, received ${meta} for ${fileRelativeUrl}`)
   return {
     showSizeImpact: Boolean(meta),
   }
