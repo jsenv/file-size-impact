@@ -17,91 +17,53 @@ const compareTwoGroups = (beforeMergeGroup, afterMergeGroup) => {
   const groupComparison = {}
 
   const beforeMergeManifestMap = beforeMergeGroup.manifestMap || {}
-  const afterMergeManifestMap = afterMergeGroup.manifestMap || {}
   const beforeMergeFileMap = beforeMergeGroup.fileMap || {}
-  const afterMergeFileMap = afterMergeGroup.fileMap || {}
   const beforeMergeMappings = manifestToMappings(beforeMergeManifestMap)
-  const afterMergeMappings = manifestToMappings(afterMergeManifestMap)
+  const beforeMergeFileInfos = fileInfosFromFileMap(beforeMergeFileMap, beforeMergeMappings)
 
-  const added = (relativeUrl, afterMergeRelativeUrl) => {
-    groupComparison[relativeUrl] = {
+  const afterMergeManifestMap = afterMergeGroup.manifestMap || {}
+  const afterMergeFileMap = afterMergeGroup.fileMap || {}
+  const afterMergeMappings = manifestToMappings(afterMergeManifestMap)
+  const afterMergeFileInfos = fileInfosFromFileMap(afterMergeFileMap, afterMergeMappings)
+
+  const added = (afterMergeName, afterMergeInfo) => {
+    groupComparison[afterMergeName] = {
       beforeMerge: null,
-      afterMerge: {
-        relativeUrl: afterMergeRelativeUrl,
-        ...afterMergeFileMap[afterMergeRelativeUrl],
-      },
+      afterMerge: afterMergeInfo,
     }
   }
-  const removed = (relativeUrl, beforeMergeRelativeUrl) => {
-    groupComparison[relativeUrl] = {
-      beforeMerge: {
-        relativeUrl: beforeMergeRelativeUrl,
-        ...beforeMergeFileMap[beforeMergeRelativeUrl],
-      },
+  const updated = (beforeMergeName, beforeMergeInfo, afterMergeInfo) => {
+    groupComparison[beforeMergeName] = {
+      beforeMerge: beforeMergeInfo,
+      afterMerge: afterMergeInfo,
+    }
+  }
+  const removed = (beforeMergeName, beforeMergeInfo) => {
+    groupComparison[beforeMergeName] = {
+      beforeMerge: beforeMergeInfo,
       afterMerge: null,
     }
   }
-  const updated = (relativeUrl, beforeMergeRelativeUrl, afterMergeRelativeUrl) => {
-    groupComparison[relativeUrl] = {
-      beforeMerge: {
-        relativeUrl: beforeMergeRelativeUrl,
-        ...beforeMergeFileMap[beforeMergeRelativeUrl],
-      },
-      afterMerge: {
-        relativeUrl: afterMergeRelativeUrl,
-        ...afterMergeFileMap[afterMergeRelativeUrl],
-      },
-    }
-  }
 
-  Object.keys(afterMergeFileMap).forEach((afterMergeRelativeUrl) => {
-    const originalAfterMergeRelativeUrl = getOriginalRelativeUrl(
-      afterMergeRelativeUrl,
-      afterMergeMappings,
-    )
-    if (originalAfterMergeRelativeUrl) {
-      const beforeMergeRelativeUrl = getRenamedRelativeUrl(
-        originalAfterMergeRelativeUrl,
-        beforeMergeMappings,
-      )
-      if (beforeMergeRelativeUrl) {
-        // the mapping should be the same and already found while iterating
-        // beforeMergeReport, otherwise it means the mappings
-        // afterMerge and beforeMerge are different right ?
-        updated(originalAfterMergeRelativeUrl, beforeMergeRelativeUrl, afterMergeRelativeUrl)
-      } else if (afterMergeRelativeUrl in beforeMergeFileMap) {
-        updated(originalAfterMergeRelativeUrl, afterMergeRelativeUrl, afterMergeRelativeUrl)
-      } else {
-        added(originalAfterMergeRelativeUrl, afterMergeRelativeUrl)
-      }
-    } else if (afterMergeRelativeUrl in beforeMergeFileMap) {
-      updated(afterMergeRelativeUrl, afterMergeRelativeUrl, afterMergeRelativeUrl)
+  Object.keys(afterMergeFileInfos).forEach((afterMergeName) => {
+    const afterMergeInfo = afterMergeFileInfos[afterMergeName]
+    const beforeMergeInfo = beforeMergeFileInfos[afterMergeName]
+
+    if (beforeMergeInfo) {
+      updated(afterMergeName, beforeMergeInfo, afterMergeInfo)
     } else {
-      added(afterMergeRelativeUrl, afterMergeRelativeUrl)
+      added(afterMergeName, afterMergeInfo)
     }
   })
+  Object.keys(beforeMergeFileInfos).forEach((beforeMergeName) => {
+    const beforeMergeInfo = beforeMergeFileInfos[beforeMergeName]
+    const afterMergeInfo = afterMergeFileInfos[beforeMergeName]
 
-  Object.keys(beforeMergeFileMap).forEach((beforeMergeRelativeUrl) => {
-    const originalBeforeMergeRelativeUrl = getOriginalRelativeUrl(
-      beforeMergeRelativeUrl,
-      beforeMergeMappings,
-    )
-    if (originalBeforeMergeRelativeUrl) {
-      const afterMergeRelativeUrl = getRenamedRelativeUrl(
-        originalBeforeMergeRelativeUrl,
-        afterMergeMappings,
-      )
-      if (afterMergeRelativeUrl) {
-        updated(originalBeforeMergeRelativeUrl, beforeMergeRelativeUrl, afterMergeRelativeUrl)
-      } else if (beforeMergeRelativeUrl in afterMergeFileMap) {
-        updated(originalBeforeMergeRelativeUrl, beforeMergeRelativeUrl, beforeMergeRelativeUrl)
-      } else {
-        removed(originalBeforeMergeRelativeUrl, beforeMergeRelativeUrl)
-      }
-    } else if (beforeMergeRelativeUrl in afterMergeFileMap) {
-      updated(beforeMergeRelativeUrl, beforeMergeRelativeUrl, beforeMergeRelativeUrl)
+    if (afterMergeInfo) {
+      // already handled by the previous loop
+      // updated(beforeMergeName, beforeMergeInfo, afterMergeInfo)
     } else {
-      removed(beforeMergeRelativeUrl, beforeMergeRelativeUrl)
+      removed(beforeMergeName, beforeMergeInfo)
     }
   })
 
@@ -109,6 +71,19 @@ const compareTwoGroups = (beforeMergeGroup, afterMergeGroup) => {
 }
 
 const ABSTRACT_DIRECTORY_URL = "file:///directory/"
+
+const fileInfosFromFileMap = (fileMap, mappings) => {
+  const fileInfos = {}
+  Object.keys(fileMap).forEach((relativeUrl) => {
+    const nameMapped = nameFromMappings(relativeUrl, mappings)
+    const name = nameMapped || relativeUrl
+    fileInfos[name] = {
+      relativeUrl,
+      ...fileMap[relativeUrl],
+    }
+  })
+  return fileInfos
+}
 
 const manifestToMappings = (manifestMap) => {
   const mappings = {}
@@ -135,16 +110,8 @@ const manifestToMappings = (manifestMap) => {
   return mappings
 }
 
-const getOriginalRelativeUrl = (relativeUrl, mappings) => {
+const nameFromMappings = (relativeUrl, mappings) => {
   return relativeUrl in mappings ? mappings[relativeUrl] : null
-}
-
-const getRenamedRelativeUrl = (originalRelativeUrl, mappings) => {
-  const relativeUrl = Object.keys(mappings).find((relativeUrlCandidate) => {
-    const originalRelativeUrlCandidate = mappings[relativeUrlCandidate]
-    return originalRelativeUrlCandidate === originalRelativeUrl
-  })
-  return relativeUrl
 }
 
 const sortFileStructure = (fileStructure) => {
