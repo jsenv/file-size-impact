@@ -1,4 +1,5 @@
 import { assert } from "@jsenv/assert"
+
 import { compareTwoSnapshots } from "../../src/internal/compareTwoSnapshots.js"
 
 {
@@ -10,13 +11,13 @@ import { compareTwoSnapshots } from "../../src/internal/compareTwoSnapshots.js"
         },
         manifestMap: {
           "manifest.json": {
-            "dir/file.js": "dir/file.base.js",
-            "old.js": "old.base.js",
+            "dir/file.js": "dir/file.beforeMerge.js",
+            "old.js": "old.beforeMerge.js",
           },
         },
         fileMap: {
-          "dir/file.base.js": { hash: "hash1" },
-          "old.base.js": { hash: "hash2" },
+          "dir/file.beforeMerge.js": { hash: "hash1" },
+          "old.beforeMerge.js": { hash: "hash2" },
           "whatever.js": { hash: "hash3" },
         },
       },
@@ -28,13 +29,13 @@ import { compareTwoSnapshots } from "../../src/internal/compareTwoSnapshots.js"
         },
         manifestMap: {
           "manifest.json": {
-            "dir/file.js": "dir/file.head.js",
-            "new.js": "new.head.js",
+            "dir/file.js": "dir/file.afterMerge.js",
+            "new.js": "new.afterMerge.js",
           },
         },
         fileMap: {
-          "dir/file.head.js": { hash: "hash4" },
-          "new.head.js": { hash: "hash5" },
+          "dir/file.afterMerge.js": { hash: "hash4" },
+          "new.afterMerge.js": { hash: "hash5" },
           "whatever.js": { hash: "hash6" },
         },
       },
@@ -44,24 +45,24 @@ import { compareTwoSnapshots } from "../../src/internal/compareTwoSnapshots.js"
     dist: {
       "dir/file.js": {
         beforeMerge: {
-          relativeUrl: "dir/file.base.js",
+          relativeUrl: "dir/file.beforeMerge.js",
           hash: "hash1",
         },
         afterMerge: {
-          relativeUrl: "dir/file.head.js",
+          relativeUrl: "dir/file.afterMerge.js",
           hash: "hash4",
         },
       },
       "new.js": {
         beforeMerge: null,
         afterMerge: {
-          relativeUrl: "new.head.js",
+          relativeUrl: "new.afterMerge.js",
           hash: "hash5",
         },
       },
       "old.js": {
         beforeMerge: {
-          relativeUrl: "old.base.js",
+          relativeUrl: "old.beforeMerge.js",
           hash: "hash2",
         },
         afterMerge: null,
@@ -129,5 +130,50 @@ import { compareTwoSnapshots } from "../../src/internal/compareTwoSnapshots.js"
       },
     },
   }
+  assert({ actual, expected })
+}
+
+// a mapping after merge refer to the same file before merge
+// but leads to a file that is not in fileMap
+{
+  const actual = compareTwoSnapshots(
+    {
+      dist: {
+        tracking: {
+          "**/*": true,
+        },
+        manifestMap: {
+          "dist/cdn/manifest.json": {
+            "svg_critical.js": "dmp.svg_critical.2202bba64ea46ecc7424.js",
+          },
+        },
+        fileMap: {
+          "dist/cdn/dmp.svg_critical.2202bba64ea46ecc7424.js": {
+            sizeMap: { raw: 11684 },
+            hash: '"2da4-3NMwjvenZ2aks5RKh8BPcDEnaco"',
+          },
+        },
+      },
+    },
+    {
+      dist: {
+        tracking: {
+          "**/*": true,
+        },
+        manifestMap: {
+          "dist/cdn/manifest.json": {
+            "svg_critical.js": "/player/neondmp.svg_critical.2202bba64ea46ecc7424.js",
+          },
+        },
+        fileMap: {
+          "dist/cdn/dmp.svg_critical.2202bba64ea46ecc7424.js": {
+            sizeMap: { raw: 11684 },
+            hash: '"2da4-3NMwjvenZ2aks5RKh8BPcDEnaco"',
+          },
+        },
+      },
+    },
+  )
+  const expected = actual
   assert({ actual, expected })
 }
