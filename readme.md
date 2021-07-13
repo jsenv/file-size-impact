@@ -194,13 +194,11 @@ await reportFileSizeImpact({
 
 </details>
 
-### reportFileSizeImpact parameters
-
-#### projectDirectoryUrl
+### projectDirectoryUrl
 
 `projectDirectoryUrl` parameter is a string leading to your project root directory. This parameter is **required**.
 
-#### logLevel
+### logLevel
 
 `logLevel` parameter controls verbosity of logs during the function execution. This parameters is optional with a default value of `"info"`.
 
@@ -208,7 +206,7 @@ You likely don't need to modify this parameter. Except eventually to pass `"debu
 
 The list of available `logLevel` values can be found on [@jsenv/logger documentation](https://github.com/jsenv/jsenv-logger#loglevel).
 
-#### trackingConfig
+### trackingConfig
 
 `trackingConfig` parameter is an object used to configure group of files you want to track. This parameter is optional with a default value exported in [src/jsenvTrackingConfig.js](./src/jsenvTrackingConfig.js)
 
@@ -238,7 +236,7 @@ reportFileSizeImpact({
 
 ![screenshot of pull request comment where groups are highlighted](./docs/group-highlighted.png)
 
-#### transformations
+### transformations
 
 `transformations` parameter is an object used to transform files content before computing their size. This parameter is optional with a default tracking file size without transformation called `raw`.
 
@@ -283,15 +281,15 @@ reportFileSizeImpact({
 })
 ```
 
-#### installCommand
+### installCommand
 
 `installCommand` parameter is a string representing the command to run in order to install things just after a switching to a git branch. This parameter is optional with a default value of `"npm install"`.
 
-#### buildCommand
+### buildCommand
 
 `buildCommand` parameter is a string representing the command to run in order to generate files. This parameter is optional with a default value of `"npm run-script build"`.
 
-#### manifestConfig
+### manifestConfig
 
 `manifestConfig` parameter is an object used to configure the location of an optional manifest file. It is used to compare [files with dynamic names](#File-with-dynamic-names). This parameter is optional with a default considering `dist/**/manifest.json` as manifest files.
 
@@ -309,7 +307,7 @@ reportFileSizeImpact({
 
 You can disable manifest file handling by passing `manifestConfig: null` (`manifest.json` will be handled as a regular file).
 
-#### runLink
+### runLink
 
 `runLink` parameter allow to put a link to the workflow run in the generated comment body. It is used to indicates where file size impact was runned.
 
@@ -330,7 +328,7 @@ reportFileSizeImpact({
 })
 ```
 
-#### shouldOpenGroupByDefault
+### shouldOpenGroupByDefault
 
 `shouldOpenGroupByDefault` parameter is a function received named arguments and returning a boolean. When the returned boolean is true, the group is opened by default in the pull request comment.
 
