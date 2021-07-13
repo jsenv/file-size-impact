@@ -32,11 +32,11 @@ _Legend of the pull request comment:_
 
 ![legend of pull request comment](./docs/comment-legend.png)
 
-`group summary` says _critical files (1/2)_; it translates into the following sentence:
+"_critical files (1/2)_" is a group summary, it translates into the following sentence:
 
 > "There is a group of files named **critical files** and pull request impacts **1** out of **2** files in this group."
 
-`size impact` says _127.83KB (+6.84KB / +5.65%)_; it translates into the following sentence:
+"\_127.83KB (+6.84KB / +5.65%)" is a size impact, it translates into the following sentence:
 
 > "The size after merge is **127.83KB** and pull request adds **6.84KB** representing an increase of **5.65%** of the size before merge."
 
