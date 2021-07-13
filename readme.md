@@ -36,7 +36,7 @@ _Legend of the pull request comment:_
 
 > "There is a group of files named **critical files** and pull request impacts **1** out of **2** files in this group."
 
-"\_127.83KB (+6.84KB / +5.65%)" is a size impact, it translates into the following sentence:
+"_127.83KB (+6.84KB / +5.65%)_" is a size impact, it translates into the following sentence:
 
 > "The size after merge is **127.83KB** and pull request adds **6.84KB** representing an increase of **5.65%** of the size before merge."
 
@@ -338,9 +338,9 @@ reportFileSizeImpact({
 
   <summary>manifestConfig</summary>
 
-`manifestConfig` parameter is an object used to configure the location of an optional [manifest file](#Manifest-file). This parameter is optional with a default considering `dist/**/manifest.json` as manifest files.
+`manifestConfig` parameter is an object used to configure the location of an optional manifest file. It is used to compare [files with dynamic names](#File-with-dynamic-names). This parameter is optional with a default considering `dist/**/manifest.json` as manifest files.
 
-This parameter reuses the shape of `trackingConfig parameter` (associating pattern + value).
+This parameter reuses the shape of `trackingConfig` (associating pattern + value).
 
 ```js
 import { reportFileSizeImpact } from "@jsenv/file-size-impact"
