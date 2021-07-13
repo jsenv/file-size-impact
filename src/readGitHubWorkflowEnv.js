@@ -1,6 +1,6 @@
 import { readFileSync } from "fs"
 
-export const readGithubWorkflowEnv = () => {
+export const readGitHubWorkflowEnv = () => {
   const eventName = process.env.GITHUB_EVENT_NAME
   if (!eventName) {
     throw new Error(`missing process.env.GITHUB_EVENT_NAME, we are not in a github workflow`)

@@ -43,26 +43,29 @@ import { compareTwoSnapshots } from "../../src/internal/compareTwoSnapshots.js"
   )
   const expected = {
     dist: {
-      "dir/file.js": {
+      "dir/file.afterMerge.js": {
         beforeMerge: {
           relativeUrl: "dir/file.beforeMerge.js",
-          hash: "hash1",
+          manifestKey: "dir/file.js",
         },
         afterMerge: {
           relativeUrl: "dir/file.afterMerge.js",
+          manifestKey: "dir/file.js",
           hash: "hash4",
         },
       },
-      "new.js": {
+      "new.afterMerge.js": {
         beforeMerge: null,
         afterMerge: {
           relativeUrl: "new.afterMerge.js",
+          manifestKey: "new.js",
           hash: "hash5",
         },
       },
-      "old.js": {
+      "old.beforeMerge.js": {
         beforeMerge: {
           relativeUrl: "old.beforeMerge.js",
+          manifestKey: "old.js",
           hash: "hash2",
         },
         afterMerge: null,
@@ -70,10 +73,12 @@ import { compareTwoSnapshots } from "../../src/internal/compareTwoSnapshots.js"
       "whatever.js": {
         beforeMerge: {
           relativeUrl: "whatever.js",
+          manifestKey: null,
           hash: "hash3",
         },
         afterMerge: {
           relativeUrl: "whatever.js",
+          manifestKey: null,
           hash: "hash6",
         },
       },
@@ -121,10 +126,12 @@ import { compareTwoSnapshots } from "../../src/internal/compareTwoSnapshots.js"
       "whatever.js": {
         beforeMerge: {
           relativeUrl: "whatever.js",
+          manifestKey: null,
           hash: "hash",
         },
         afterMerge: {
           relativeUrl: "whatever.js",
+          manifestKey: null,
           hash: "hash2",
         },
       },
@@ -174,6 +181,27 @@ import { compareTwoSnapshots } from "../../src/internal/compareTwoSnapshots.js"
       },
     },
   )
-  const expected = actual
+  const expected = {
+    dist: {
+      "dist/cdn/dmp.svg_critical.2202bba64ea46ecc7424.js": {
+        beforeMerge: {
+          relativeUrl: "dist/cdn/dmp.svg_critical.2202bba64ea46ecc7424.js",
+          manifestKey: "dist/cdn/svg_critical.js",
+          sizeMap: {
+            raw: 11684,
+          },
+          hash: '"2da4-3NMwjvenZ2aks5RKh8BPcDEnaco"',
+        },
+        afterMerge: {
+          relativeUrl: "dist/cdn/dmp.svg_critical.2202bba64ea46ecc7424.js",
+          manifestKey: null,
+          sizeMap: {
+            raw: 11684,
+          },
+          hash: '"2da4-3NMwjvenZ2aks5RKh8BPcDEnaco"',
+        },
+      },
+    },
+  }
   assert({ actual, expected })
 }
