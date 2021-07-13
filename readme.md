@@ -20,23 +20,23 @@ Add files size impact into pull requests.
 
 This section shows pull request comment and how to read _group summary_ and _size impact_ sections.
 
-**Screenshot of a pull request comment**
+_Screenshot of a pull request comment:_
 
 ![screenshot of pull request comment](./docs/comment-collapsed.png)
 
-**Screenshot when comment is expanded**
+_Screenshot when comment is expanded:_
 
 ![screenshot of pull request comment expanded](./docs/comment-expanded.png)
 
-**Legend of the pull request comment**
+_Legend of the pull request comment:_
 
 ![legend of pull request comment](./docs/comment-legend.png)
 
-_critical files (1/2)_ translates into the following sentence:
+The group summary says _critical files (1/2)_; it translates into the following sentence:
 
 > "There is a group of files named **critical files** and pull request impacts **1** out of **2** files in this group."
 
-_127.83KB (+6.84KB / +5.65%)_ translates into the following sentence:
+THe size impact says _127.83KB (+6.84KB / +5.65%)_; it translates into the following sentence:
 
 > "The size after merge is **127.83KB** and pull request adds **6.84KB** representing an increase of **5.65%** of the size before merge."
 
