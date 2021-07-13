@@ -14,8 +14,6 @@ Add files size impact into pull requests.
 - Track compressed file size
 - Tracking groups to match your project needs
 
-</details>
-
 # Pull request comment
 
 This section shows pull request comment and how to read _group summary_ and _size impact_ sections.
@@ -202,8 +200,7 @@ await reportFileSizeImpact({
 
 `projectDirectoryUrl` parameter is a string leading to your project root directory. This parameter is **required**.
 
-<details>
-  <summary>logLevel</summary>
+### logLevel
 
 `logLevel` parameter controls verbosity of logs during the function execution. This parameters is optional with a default value of `"info"`.
 
@@ -211,10 +208,7 @@ You likely don't need to modify this parameter. Except eventually to pass `"debu
 
 The list of available `logLevel` values can be found on [@jsenv/logger documentation](https://github.com/jsenv/jsenv-logger#loglevel).
 
-</details>
-
-<details>
-  <summary>trackingConfig</summary>
+### trackingConfig
 
 `trackingConfig` parameter is an object used to configure group of files you want to track. This parameter is optional with a default value exported in [src/jsenvTrackingConfig.js](./src/jsenvTrackingConfig.js)
 
@@ -244,10 +238,7 @@ reportFileSizeImpact({
 
 ![screenshot of pull request comment where groups are highlighted](./docs/group-highlighted.png)
 
-</details>
-
-<details>
-  <summary>transformations</summary>
+### transformations
 
 `transformations` parameter is an object used to transform files content before computing their size. This parameter is optional with a default tracking file size without transformation called `raw`.
 
@@ -292,25 +283,15 @@ reportFileSizeImpact({
 })
 ```
 
-</details>
-
-<details>
-  <summary>installCommand</summary>
+### installCommand
 
 `installCommand` parameter is a string representing the command to run in order to install things just after a switching to a git branch. This parameter is optional with a default value of `"npm install"`.
 
-</details>
-
-<details>
-  <summary>buildCommand</summary>
+### buildCommand
 
 `buildCommand` parameter is a string representing the command to run in order to generate files. This parameter is optional with a default value of `"npm run-script build"`.
 
-</details>
-
-<details>
-
-  <summary>manifestConfig</summary>
+### manifestConfig
 
 `manifestConfig` parameter is an object used to configure the location of an optional manifest file. It is used to compare [files with dynamic names](#File-with-dynamic-names). This parameter is optional with a default considering `dist/**/manifest.json` as manifest files.
 
@@ -328,10 +309,7 @@ reportFileSizeImpact({
 
 You can disable manifest file handling by passing `manifestConfig: null` (`manifest.json` will be handled as a regular file).
 
-</details>
-
-<details>
-  <summary>runLink</summary>
+### runLink
 
 `runLink` parameter allow to put a link to the workflow run in the generated comment body. It is used to indicates where file size impact was runned.
 
@@ -352,10 +330,7 @@ reportFileSizeImpact({
 })
 ```
 
-</details>
-
-<details>
-  <summary>shouldOpenGroupByDefault</summary>
+### shouldOpenGroupByDefault
 
 `shouldOpenGroupByDefault` parameter is a function received named arguments and returning a boolean. When the returned boolean is true, the group is opened by default in the pull request comment.
 
@@ -377,8 +352,6 @@ reportFileSizeImpact({
   shouldOpenGroupByDefault: ({ groupName }) => groupName === "critical files",
 })
 ```
-
-</details>
 
 ## readGitHubWorkflowEnv
 
@@ -441,9 +414,6 @@ Useful if you have several files always modified by the build but with a size im
 
 `showSizeImpact` is a function receiving named parameters that should return a boolean. Boolean use to decide if size impact will be shown or hidden. `showSizeImpact` is part of `trackingConfig parameter` documented in [reportFileSizeImpact](#reportFileSizeImpact).
 
-<details>
-  <summary>showSizeImpact code example</summary>
-
 ```js
 import { reportFileSizeImpact, raw } from "@jsenv/file-size-impact"
 
@@ -463,10 +433,7 @@ The code above translates into the following sentence:
 
 > "Report size impact for all files ending with html AND hide size impact on these html files when it's smaller than 10 bytes"
 
-</details>
-
-<details>
-  <summary>showSizeImpact call example</summary>
+### showSizeImpact call example
 
 Code below illustrates the named parameter passed to `showSizeImpact`.
 
@@ -508,8 +475,6 @@ An object mapping all transformations to a number corresponding to file size aft
 ### sizeImpactMap
 
 An object mapping all transformations to a number representing impact on that file size.
-
-</details>
 
 # How it works
 
