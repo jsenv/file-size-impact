@@ -83,13 +83,17 @@ const renderSizeImpactTableBody = (
   }
   filesShown.forEach((fileRelativeUrl) => {
     const fileImpact = fileByFileImpact[fileRelativeUrl]
-    const fileRelativeUrlFormatted = truncateFileRelativeUrl(
-      (fileImpact.formatFileRelativeUrl || formatFileRelativeUrl)(fileRelativeUrl),
+    const fileAbstractRelativeUrl = fileAbstractRelativeUrlFromFileImpact(fileImpact)
+    const fileRelativeUrlFormatted = (fileImpact.formatFileRelativeUrl || formatFileRelativeUrl)(
+      fileAbstractRelativeUrl,
+    )
+    const fileRelativeUrlDisplayed = truncateFileRelativeUrl(
+      fileRelativeUrlFormatted,
       fileRelativeUrlMaxLength,
     )
     const fileCellFormatted = formatFileCell({
       fileRelativeUrl,
-      fileRelativeUrlFormatted,
+      fileRelativeUrlDisplayed,
       ...fileImpact,
     })
     const line = [
@@ -103,6 +107,13 @@ const renderSizeImpactTableBody = (
   }
 
   return renderTableLines(lines)
+}
+
+const fileAbstractRelativeUrlFromFileImpact = ({ beforeMerge, afterMerge }) => {
+  if (afterMerge) {
+    return afterMerge.manifestKey || afterMerge.relativeUrl
+  }
+  return beforeMerge.manifestKey || beforeMerge.relativeUrl
 }
 
 const renderSizeImpactTableFooter = (

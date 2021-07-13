@@ -17,14 +17,14 @@ export const jsenvCommentParameters = {
   formatFileRelativeUrl: (fileRelativeUrl) => fileRelativeUrl,
   maxRowsPerTable: 600,
   fileRelativeUrlMaxLength: 100,
-  formatFileCell: ({ fileRelativeUrlFormatted, event }) => {
+  formatFileCell: ({ fileRelativeUrlDisplayed, event }) => {
     if (event === "added") {
-      return `${fileRelativeUrlFormatted}[new]`
+      return `${fileRelativeUrlDisplayed}[new]`
     }
     if (event === "deleted") {
-      return `<del>${fileRelativeUrlFormatted}</del>`
+      return `<del>${fileRelativeUrlDisplayed}</del>`
     }
-    return fileRelativeUrlFormatted
+    return fileRelativeUrlDisplayed
   },
   /*
   - when modified

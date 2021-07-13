@@ -15,56 +15,116 @@ export const compareTwoSnapshots = (beforeMergeSnapshot, afterMergeSnapshot) => 
 
 const compareTwoGroups = (beforeMergeGroup, afterMergeGroup) => {
   const groupComparison = {}
-
   const beforeMergeManifestMap = beforeMergeGroup.manifestMap || {}
   const beforeMergeFileMap = beforeMergeGroup.fileMap || {}
   const beforeMergeMappings = manifestToMappings(beforeMergeManifestMap)
-  const beforeMergeFileInfos = fileInfosFromFileMap(beforeMergeFileMap, beforeMergeMappings)
-
   const afterMergeManifestMap = afterMergeGroup.manifestMap || {}
   const afterMergeFileMap = afterMergeGroup.fileMap || {}
   const afterMergeMappings = manifestToMappings(afterMergeManifestMap)
-  const afterMergeFileInfos = fileInfosFromFileMap(afterMergeFileMap, afterMergeMappings)
 
-  const added = (afterMergeName, afterMergeInfo) => {
-    groupComparison[afterMergeName] = {
+  const getAddInfo = ({ afterMergeRelativeUrl }) => {
+    return {
       beforeMerge: null,
-      afterMerge: afterMergeInfo,
+      afterMerge: {
+        relativeUrl: afterMergeRelativeUrl,
+        manifestKey: manifestKeyFromRelativeUrl(afterMergeRelativeUrl, afterMergeMappings) || null,
+        ...afterMergeFileMap[afterMergeRelativeUrl],
+      },
     }
   }
-  const updated = (beforeMergeName, beforeMergeInfo, afterMergeInfo) => {
-    groupComparison[beforeMergeName] = {
-      beforeMerge: beforeMergeInfo,
-      afterMerge: afterMergeInfo,
+  const getUpdateInfo = ({ beforeMergeRelativeUrl, afterMergeRelativeUrl }) => {
+    return {
+      beforeMerge: {
+        relativeUrl: beforeMergeRelativeUrl,
+        manifestKey:
+          manifestKeyFromRelativeUrl(beforeMergeRelativeUrl, beforeMergeMappings) || null,
+        ...beforeMergeFileMap[afterMergeRelativeUrl],
+      },
+      afterMerge: {
+        relativeUrl: afterMergeRelativeUrl,
+        manifestKey: manifestKeyFromRelativeUrl(afterMergeRelativeUrl, afterMergeMappings) || null,
+        ...afterMergeFileMap[afterMergeRelativeUrl],
+      },
     }
   }
-  const removed = (beforeMergeName, beforeMergeInfo) => {
-    groupComparison[beforeMergeName] = {
-      beforeMerge: beforeMergeInfo,
+  const getRemoveInfo = ({ beforeMergeRelativeUrl }) => {
+    return {
+      beforeMerge: {
+        relativeUrl: beforeMergeRelativeUrl,
+        manifestKey: manifestKeyFromRelativeUrl(beforeMergeRelativeUrl, beforeMergeMappings),
+        ...beforeMergeFileMap[beforeMergeRelativeUrl],
+      },
       afterMerge: null,
     }
   }
 
-  Object.keys(afterMergeFileInfos).forEach((afterMergeName) => {
-    const afterMergeInfo = afterMergeFileInfos[afterMergeName]
-    const beforeMergeInfo = beforeMergeFileInfos[afterMergeName]
+  Object.keys(afterMergeFileMap).forEach((afterMergeRelativeUrl) => {
+    const afterMergeManifestKey = manifestKeyFromRelativeUrl(
+      afterMergeRelativeUrl,
+      afterMergeMappings,
+    )
 
-    if (beforeMergeInfo) {
-      updated(afterMergeName, beforeMergeInfo, afterMergeInfo)
-    } else {
-      added(afterMergeName, afterMergeInfo)
+    if (afterMergeManifestKey) {
+      const existsInBeforeMergeManifest =
+        Object.keys(beforeMergeMappings).includes(afterMergeManifestKey)
+      if (existsInBeforeMergeManifest) {
+        // the manifest key also appears in the manifest before merge.
+        // It means that even if both file have different relative urls,
+        // they are considered the same.
+        // This is to support file generated with a dynamic name
+        const beforeMergeRelativeUrl = beforeMergeMappings[afterMergeManifestKey]
+        const beforeMerge = beforeMergeFileMap[beforeMergeRelativeUrl]
+        if (beforeMerge) {
+          groupComparison[afterMergeRelativeUrl] = getUpdateInfo({
+            beforeMergeRelativeUrl,
+            afterMergeRelativeUrl,
+          })
+          return
+        }
+      }
     }
+
+    const beforeMerge = beforeMergeFileMap[afterMergeRelativeUrl]
+    groupComparison[afterMergeRelativeUrl] = beforeMerge
+      ? getUpdateInfo({
+          beforeMergeRelativeUrl: afterMergeRelativeUrl,
+          afterMergeRelativeUrl,
+        })
+      : getAddInfo({ afterMergeRelativeUrl })
   })
-  Object.keys(beforeMergeFileInfos).forEach((beforeMergeName) => {
-    const beforeMergeInfo = beforeMergeFileInfos[beforeMergeName]
-    const afterMergeInfo = afterMergeFileInfos[beforeMergeName]
-
-    if (afterMergeInfo) {
-      // already handled by the previous loop
-      // updated(beforeMergeName, beforeMergeInfo, afterMergeInfo)
-    } else {
-      removed(beforeMergeName, beforeMergeInfo)
+  Object.keys(beforeMergeFileMap).forEach((beforeMergeRelativeUrl) => {
+    // if the file is not in the after merge, it got deleted
+    // except if it is remapped, in this case it can be ignored
+    const beforeMergeManifestKey = manifestKeyFromRelativeUrl(
+      beforeMergeRelativeUrl,
+      beforeMergeMappings,
+    )
+    if (beforeMergeManifestKey) {
+      const existsInAfterMergeManifest =
+        Object.keys(afterMergeMappings).includes(beforeMergeManifestKey)
+      if (existsInAfterMergeManifest) {
+        // file also referenced in after merge manifest
+        // let's first see if the file still exists
+        const afterMergeRelativeUrl = afterMergeMappings[beforeMergeManifestKey]
+        const afterMerge = afterMergeFileMap[afterMergeRelativeUrl]
+        if (afterMerge) {
+          // there is a file for this mapping, file was already
+          // detected and considered as an update during afterMergeFileMap loop above
+          return
+        }
+      }
     }
+
+    const afterMerge = afterMergeFileMap[beforeMergeRelativeUrl]
+    if (afterMerge) {
+      // there is a file
+      return
+    }
+
+    // at this point there is no file for an eventual file mapping from manifest
+    // AND no file for the real relative url after merge
+    // -> the file is gone
+    groupComparison[beforeMergeRelativeUrl] = getRemoveInfo({ beforeMergeRelativeUrl })
   })
 
   return sortFileStructure(groupComparison)
@@ -72,46 +132,33 @@ const compareTwoGroups = (beforeMergeGroup, afterMergeGroup) => {
 
 const ABSTRACT_DIRECTORY_URL = "file:///directory/"
 
-const fileInfosFromFileMap = (fileMap, mappings) => {
-  const fileInfos = {}
-  Object.keys(fileMap).forEach((relativeUrl) => {
-    const nameMapped = nameFromMappings(relativeUrl, mappings)
-    const name = nameMapped || relativeUrl
-    fileInfos[name] = {
-      relativeUrl,
-      ...fileMap[relativeUrl],
-    }
-  })
-  return fileInfos
-}
-
 const manifestToMappings = (manifestMap) => {
   const mappings = {}
   Object.keys(manifestMap).forEach((manifestRelativeUrl) => {
     const manifest = manifestMap[manifestRelativeUrl]
     const manifestAbstractUrl = resolveUrl(manifestRelativeUrl, ABSTRACT_DIRECTORY_URL)
-    Object.keys(manifest).forEach((originalFileManifestRelativeUrl) => {
-      const fileManifestRelativeUrl = manifest[originalFileManifestRelativeUrl]
-
-      const originalFileAbstractUrl = resolveUrl(
-        originalFileManifestRelativeUrl,
-        manifestAbstractUrl,
-      )
-      const fileAbstractUrl = resolveUrl(fileManifestRelativeUrl, manifestAbstractUrl)
-
-      const fileRelativeUrl = urlToRelativeUrl(fileAbstractUrl, ABSTRACT_DIRECTORY_URL)
-      const originalFileRelativeUrl = urlToRelativeUrl(
-        originalFileAbstractUrl,
+    Object.keys(manifest).forEach((manifestKey) => {
+      const manifestValue = manifest[manifestKey]
+      const manifestKeyAsAbstractUrl = resolveUrl(manifestKey, manifestAbstractUrl)
+      const manifestValueAsAbstractUrl = resolveUrl(manifestValue, manifestAbstractUrl)
+      const manifestKeyAsRelativeUrl = urlToRelativeUrl(
+        manifestKeyAsAbstractUrl,
         ABSTRACT_DIRECTORY_URL,
       )
-      mappings[fileRelativeUrl] = originalFileRelativeUrl
+      const manifestValueAsRelativeUrl = urlToRelativeUrl(
+        manifestValueAsAbstractUrl,
+        ABSTRACT_DIRECTORY_URL,
+      )
+      mappings[manifestKeyAsRelativeUrl] = manifestValueAsRelativeUrl
     })
   })
   return mappings
 }
 
-const nameFromMappings = (relativeUrl, mappings) => {
-  return relativeUrl in mappings ? mappings[relativeUrl] : null
+const manifestKeyFromRelativeUrl = (relativeUrl, mappings) => {
+  return Object.keys(mappings).find((keyCandidate) => {
+    return mappings[keyCandidate] === relativeUrl
+  })
 }
 
 const sortFileStructure = (fileStructure) => {

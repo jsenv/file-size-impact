@@ -8,37 +8,41 @@ Add files size impact into pull requests.
 
 # Presentation
 
-`@jsenv/file-size-impact` analyses a pull request impact on specific files size. This analysis is posted in a comment of the pull request.
+`@jsenv/file-size-impact` analyses a pull request impact on specific files size. This analysis is posted in a comment of the pull request on GitHub.
 
-![screenshot of pull request comment](./docs/comment-collapsed.png)
-
-The comment can be expanded to see details.
-
-![screenshot of pull request comment expanded](./docs/comment-expanded.png)
+- Can be integrated into GitHub workflow, Jenkins, Travis, ...
+- Track compressed file size
+- Tracking groups to match your project needs
 
 </details>
 
-- Compatible with any workflow like GitHub or Jenkins
-- Can track compressed file size
-- Configurable to create group of files according to your project. For example you can create one group with critical files and a second one for less important files.
-
 # Pull request comment
 
-This section document how to read `group summary` and `size impact` in the pull request comment.
+This section shows pull request comment and how to read _group summary_ and _size impact_ sections.
+
+**Screenshot of a pull request comment**
+
+![screenshot of pull request comment](./docs/comment-collapsed.png)
+
+**Screenshot when comment is expanded**
+
+![screenshot of pull request comment expanded](./docs/comment-expanded.png)
+
+**Legend of the pull request comment**
 
 ![legend of pull request comment](./docs/comment-legend.png)
 
-`critical files (1/2)` translates into the following sentence:
+_critical files (1/2)_ translates into the following sentence:
 
-> "There is a group of files named `critical files` and pull request impacts `1` out of `2` files in this group."
+> "There is a group of files named **critical files** and pull request impacts **1** out of **2** files in this group."
 
-`127.83KB (+6.84KB / +5.65%)` translates into the following sentence:
+_127.83KB (+6.84KB / +5.65%)_ translates into the following sentence:
 
-> "The size after merge is `127.83KB` and pull request adds `6.84KB` representing an increase of `5.65%` of the size before merge."
+> "The size after merge is **127.83KB** and pull request adds **6.84KB** representing an increase of **5.65%** of the size before merge."
 
 # Installation
 
-This section explains how integrate file size impact to pull requests on GitHub. To configure a GitHub workflow, see [Configuring a GitHub workflow](#Configuring-a-GitHub-workflow), otherwise see [Configuring a workflow](#Configuring-a-workflow). If you don't know what to choose, prefer a GitHub workflow as it's a bit easier to configure.
+This section explains how integrate file size impact to pull requests on GitHub. See [Configuring a GitHub workflow](#Configuring-a-GitHub-workflow) or [Configuring a workflow](#Configuring-a-workflow). If you don't have a workflow yet, a GitHub workflow is a good start as it's easier to configure.
 
 ## Configuring a GitHub workflow
 
@@ -57,10 +61,10 @@ npm install --save-dev @jsenv/file-size-impact
 `.github/workflows/report-size-impact.js`
 
 ```js
-import { reportFileSizeImpact, readGithubWorkflowEnv } from "@jsenv/file-size-impact"
+import { reportFileSizeImpact, readGitHubWorkflowEnv } from "@jsenv/file-size-impact"
 
 reportFileSizeImpact({
-  ...readGithubWorkflowEnv(),
+  ...readGitHubWorkflowEnv(),
   buildCommand: "npm run dist",
   trackingConfig: {
     dist: {
@@ -189,9 +193,6 @@ node ./report-size-impact.js
 
 `reportFileSizeImpact` is an async function that will analyse a pull request file size impact and post a comment with the result of this analysis.
 
-<details>
-  <summary>reportFileSizeImpact code example</summary>
-
 ```js
 import { reportFileSizeImpact, raw } from "@jsenv/file-size-impact"
 
@@ -216,19 +217,19 @@ await reportFileSizeImpact({
 })
 ```
 
-[implementation](./src/reportFileSizeImpact.js)
-
 </details>
 
+### reportFileSizeImpact parameters
+
 <details>
-  <summary>projectDirectoryUrl parameter</summary>
+  <summary>projectDirectoryUrl</summary>
 
 `projectDirectoryUrl` parameter is a string leading to your project root directory. This parameter is **required**.
 
   </details>
 
 <details>
-  <summary>logLevel parameter</summary>
+  <summary>logLevel</summary>
 
 `logLevel` parameter controls verbosity of logs during the function execution. This parameters is optional with a default value of `"info"`.
 
@@ -239,7 +240,7 @@ The list of available `logLevel` values can be found on [@jsenv/logger documenta
 </details>
 
 <details>
-  <summary>trackingConfig parameter</summary>
+  <summary>trackingConfig</summary>
 
 `trackingConfig` parameter is an object used to configure group of files you want to track. This parameter is optional with a default value exported in [src/jsenvTrackingConfig.js](./src/jsenvTrackingConfig.js)
 
@@ -272,7 +273,7 @@ reportFileSizeImpact({
 </details>
 
 <details>
-  <summary>transformations parameter</summary>
+  <summary>transformations</summary>
 
 `transformations` parameter is an object used to transform files content before computing their size. This parameter is optional with a default tracking file size without transformation called `raw`.
 
@@ -320,14 +321,14 @@ reportFileSizeImpact({
 </details>
 
 <details>
-  <summary>installCommand parameter</summary>
+  <summary>installCommand</summary>
 
 `installCommand` parameter is a string representing the command to run in order to install things just after a switching to a git branch. This parameter is optional with a default value of `"npm install"`.
 
 </details>
 
 <details>
-  <summary>buildCommand parameter</summary>
+  <summary>buildCommand</summary>
 
 `buildCommand` parameter is a string representing the command to run in order to generate files. This parameter is optional with a default value of `"npm run-script build"`.
 
@@ -335,7 +336,7 @@ reportFileSizeImpact({
 
 <details>
 
-  <summary>manifestConfig parameter</summary>
+  <summary>manifestConfig</summary>
 
 `manifestConfig` parameter is an object used to configure the location of an optional [manifest file](#Manifest-file). This parameter is optional with a default considering `dist/**/manifest.json` as manifest files.
 
@@ -356,13 +357,13 @@ You can disable manifest file handling by passing `manifestConfig: null` (`manif
 </details>
 
 <details>
-  <summary>runLink parameter</summary>
+  <summary>runLink</summary>
 
 `runLink` parameter allow to put a link to the workflow run in the generated comment body. It is used to indicates where file size impact was runned.
 
 ![screenshot of pull request comment where runlink is highlighted](./docs/runlink-highlighted.png)
 
-This parameter is returned by [readGithubWorkflowEnv](#readGithubWorkflowEnv) meaning it comes for free inside a GitHub workflow.
+This parameter is returned by [readGitHubWorkflowEnv](#readGitHubWorkflowEnv) meaning it comes for free inside a GitHub workflow.
 
 Inside an other workflow, you can pass your own `runLink`. As in the example below where it is assumed that script is runned by jenkins.
 
@@ -380,7 +381,7 @@ reportFileSizeImpact({
 </details>
 
 <details>
-  <summary>shouldOpenGroupByDefault parameter</summary>
+  <summary>shouldOpenGroupByDefault</summary>
 
 `shouldOpenGroupByDefault` parameter is a function received named arguments and returning a boolean. When the returned boolean is true, the group is opened by default in the pull request comment.
 
@@ -405,28 +406,25 @@ reportFileSizeImpact({
 
 </details>
 
-## readGithubWorkflowEnv
+## readGitHubWorkflowEnv
 
-`readGithubWorkflowEnv` is a function meant to be runned inside a GitHub workflow. It returns an object meant to be forwarded to [reportFileSizeImpact](#reportFileSizeImpact).
-
-<details>
-  <summary>readGithubWorkflowEnv code example</summary>
+`readGitHubWorkflowEnv` is a function meant to be runned inside a GitHub workflow. It returns an object meant to be forwarded to [reportFileSizeImpact](#reportFileSizeImpact).
 
 ```js
-import { reportFileSizeImpact, readGithubWorkflowEnv } from "@jsenv/file-size-impact"
+import { reportFileSizeImpact, readGitHubWorkflowEnv } from "@jsenv/file-size-impact"
 
-const githubWorkflowEnv = readGithubWorkflowEnv()
+const gitHubWorkflowEnv = readGitHubWorkflowEnv()
 
 reportFileSizeImpact({
   projectDirectoryUrl: new URL("./", import.meta.url),
-  ...githubWorkflowEnv,
+  ...gitHubWorkflowEnv,
 })
 ```
 
-`githubWorkflowEnv` object looks like this:
+`gitHubWorkflowEnv` object looks like this:
 
 ```js
-const githubWorkflowEnv = {
+const gitHubWorkflowEnv = {
   projectDirectoryUrl: "/home/runner/work/repo-name/repo-name",
   githubToken: "xxx",
   repositoryOwner: "jsenv",
@@ -439,11 +437,7 @@ const githubWorkflowEnv = {
 }
 ```
 
-[implementation](./src/readGithubWorkflowEnv.js).
-
-</details>
-
-# Manifest file
+# File with dynamic names
 
 Manifest file allows to compare file with dynamic names. The content of a manifest file looks like this:
 
@@ -454,6 +448,8 @@ Manifest file allows to compare file with dynamic names. The content of a manife
 ```
 
 These files are generated by build tools. For example by [webpack-manifest-plugin](https://github.com/danethurber/webpack-manifest-plugin) or [rollup-plugin-output-manifest](https://github.com/shuizhongyueming/rollup-plugin-output-manifest/tree/master/packages/main).
+
+Read more in [manifestConfig](#reportFileSizeImpact-parameters) parameter
 
 # Ignore some impact
 
