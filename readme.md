@@ -46,146 +46,123 @@ This section explains how integrate file size impact to pull requests on GitHub.
 
 ## Configuring a GitHub workflow
 
-<details>
-  <summary>1. @jsenv/file-size-impact in devDependencies</summary>
+1. @jsenv/file-size-impact in devDependencies
 
-```console
-npm install --save-dev @jsenv/file-size-impact
-```
+   ```console
+   npm install --save-dev @jsenv/file-size-impact
+   ```
 
-</details>
+2. Create a script file
 
-<details>
-  <summary>2. Create a script file</summary>
+   `.github/workflows/report-size-impact.js`
 
-`.github/workflows/report-size-impact.js`
+   ```js
+   import { reportFileSizeImpact, readGitHubWorkflowEnv } from "@jsenv/file-size-impact"
 
-```js
-import { reportFileSizeImpact, readGitHubWorkflowEnv } from "@jsenv/file-size-impact"
+   reportFileSizeImpact({
+     ...readGitHubWorkflowEnv(),
+     buildCommand: "npm run dist",
+     trackingConfig: {
+       dist: {
+         "./dist/**/*": true,
+         "./dist/**/*.map": false,
+       },
+     },
+   })
+   ```
 
-reportFileSizeImpact({
-  ...readGitHubWorkflowEnv(),
-  buildCommand: "npm run dist",
-  trackingConfig: {
-    dist: {
-      "./dist/**/*": true,
-      "./dist/**/*.map": false,
-    },
-  },
-})
-```
+3. Create a workflow.yml file
 
-</details>
+   `.github/workflows/size-impact.yml`
 
-<details>
-  <summary>3. Create a workflow.yml file</summary>
+   ```yml
+   name: size-impact
 
-`.github/workflows/size-impact.yml`
+   on: pull_request_target
 
-```yml
-name: size-impact
-
-on: pull_request_target
-
-jobs:
-  size-impact:
-    strategy:
-      matrix:
-        os: [ubuntu-latest]
-        node: [14.5.0]
-    runs-on: ${{ matrix.os }}
-    name: report size impact
-    steps:
-      - name: Setup git
-        uses: actions/checkout@v2
-      - name: Setup node ${{ matrix.node }}
-        uses: actions/setup-node@v1
-        with:
-          node-version: ${{ matrix.node }}
-      - name: npm install
-        run: npm install
-      - name: Report size impact
-        run: node ./.github/workflows/report-size-impact.js
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-```
-
-</details>
+   jobs:
+     size-impact:
+       strategy:
+         matrix:
+           os: [ubuntu-latest]
+           node: [14.17.0]
+       runs-on: ${{ matrix.os }}
+       name: report size impact
+       steps:
+         - name: Setup git
+           uses: actions/checkout@v2
+         - name: Setup node ${{ matrix.node }}
+           uses: actions/setup-node@v1
+           with:
+             node-version: ${{ matrix.node }}
+         - name: npm install
+           run: npm install
+         - name: Report size impact
+           run: node ./.github/workflows/report-size-impact.js
+           env:
+             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+   ```
 
 ## Configuring a workflow
 
-<details>
-  <summary>1. @jsenv/file-size-impact in devDependencies</summary>
+1.  @jsenv/file-size-impact in devDependencies
 
-```console
-npm install --save-dev @jsenv/file-size-impact
-```
+    ```console
+    npm install --save-dev @jsenv/file-size-impact
+    ```
 
-</details>
+2.  Create a script file
 
-<details>
-  <summary>2. Create a script file (depends what you use)</summary>
+    The code below is an example for Travis.
 
-When outside a github workflow you must provide `{ projectDirectoryUrl, githubToken, repositoryOwner, repositoryName, pullRequestNumber }` "manually" to `reportFileSizeImpact`.
+    `report-size-impact.js`
 
-The code below is an example for Travis.
+    ```js
+    import { reportFileSizeImpact } from "@jsenv/file-size-impact"
 
-`report-size-impact.js`
+    reportFileSizeImpact({
+      projectDirectoryUrl: process.env.TRAVIS_BUILD_DIR,
+      githubToken: process.env.GITHUB_TOKEN,
+      repositoryOwner: process.env.TRAVIS_REPO_SLUG.split("/")[0],
+      repositoryName: process.env.TRAVIS_REPO_SLUG.split("/")[1],
+      pullRequestNumber: process.env.TRAVIS_PULL_REQUEST,
 
-```js
-import { reportFileSizeImpact } from "@jsenv/file-size-impact"
+      buildCommand: "npm run dist",
+      trackingConfig: {
+        dist: {
+          "./dist/**/*": true,
+          "./dist/**/*.map": false,
+        },
+      },
+    })
+    ```
 
-reportFileSizeImpact({
-  projectDirectoryUrl: process.env.TRAVIS_BUILD_DIR,
-  githubToken: process.env.GITHUB_TOKEN,
-  repositoryOwner: process.env.TRAVIS_REPO_SLUG.split("/")[0],
-  repositoryName: process.env.TRAVIS_REPO_SLUG.split("/")[1],
-  pullRequestNumber: process.env.TRAVIS_PULL_REQUEST,
+3.  Create a GitHub token
 
-  buildCommand: "npm run dist",
-  trackingConfig: {
-    dist: {
-      "./dist/**/*": true,
-      "./dist/**/*.map": false,
-    },
-  },
-})
-```
+    In order to have `process.env.GITHUB_TOKEN` you need to create a github token with `repo` scope at https://github.com/settings/tokens/new. After that you need to setup this environment variable. The exact way to do this is specific to your project and tools. Applied to travis you could add it to your environment variables as documented in https://docs.travis-ci.com/user/environment-variables/#defining-variables-in-repository-settings.
 
-</details>
+4.  Create a workflow file
 
-<details>
-  <summary>3. Create a GitHub token</summary>
+    The exact file to create depends on the tool you are using. Depending if you use Jenkins, Travis or something else. The important thing to know is that `reportFileSizeImpact` must be called in a state where your git repository has been cloned and you are currently on the pull request branch. Inside github workflow this is done by the following lines in `file-size-impact.yml`.
 
-In order to have `process.env.GITHUB_TOKEN` you need to create a github token with `repo` scope at https://github.com/settings/tokens/new. After that you need to setup this environment variable. The exact way to do this is specific to your project and tools. Applied to travis you could add it to your environment variables as documented in https://docs.travis-ci.com/user/environment-variables/#defining-variables-in-repository-settings.
+    ```yml
+    uses: actions/checkout@v2
+    uses: actions/setup-node@v1
+    with:
+      node-version: ${{ matrix.node }}
+    run: npm install
+    ```
 
-</details>
+    In your tool you must replicate this, the corresponding commands looks as below:
 
-<details>
-  <summary>4. Create your workflow (depends what you use)</summary>
-
-`reportFileSizeImpact` must be called in a state where your git repository has been cloned and you are currently on the pull request branch. Inside github workflow this is done by the following lines in `file-size-impact.yml`.
-
-```yml
-uses: actions/checkout@v2
-uses: actions/setup-node@v1
-with:
-  node-version: ${{ matrix.node }}
-run: npm install
-```
-
-In your CI you must replicate this, the corresponding commands looks as below:
-
-```console
-git init
-git remote add origin $GITHUB_REPOSITORY_URL
-git fetch --no-tags --prune origin $PULL_REQUEST_HEAD_REF
-git checkout origin/$PULL_REQUEST_HEAD_REF
-npm install
-node ./report-size-impact.js
-```
-
-</details>
+    ```console
+    git init
+    git remote add origin $GITHUB_REPOSITORY_URL
+    git fetch --no-tags --prune origin $PULL_REQUEST_HEAD_REF
+    git checkout origin/$PULL_REQUEST_HEAD_REF
+    npm install
+    node ./report-size-impact.js
+    ```
 
 # API
 
@@ -221,12 +198,9 @@ await reportFileSizeImpact({
 
 ### reportFileSizeImpact parameters
 
-<details>
-  <summary>projectDirectoryUrl</summary>
+#### projectDirectoryUrl
 
 `projectDirectoryUrl` parameter is a string leading to your project root directory. This parameter is **required**.
-
-  </details>
 
 <details>
   <summary>logLevel</summary>
