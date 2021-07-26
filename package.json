@@ -1,14 +1,14 @@
 {
   "name": "@jsenv/file-size-impact",
-  "version": "8.0.0",
+  "version": "9.0.0",
   "description": "Add files size impact into pull requests.",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/jsenv/jsenv-file-size-impact"
+    "url": "https://github.com/jsenv/file-size-impact"
   },
   "engines": {
-    "node": ">=12.0.0"
+    "node": ">=14.17.0"
   },
   "publishConfig": {
     "access": "public"
@@ -16,20 +16,16 @@
   "type": "module",
   "exports": {
     ".": {
-      "import": "./index.js",
-      "require": "./dist/commonjs/jsenv_file_size_impact.cjs"
+      "import": "./index.js"
     },
     "./*": "./*"
   },
-  "main": "./dist/commonjs/jsenv_file_size_impact.cjs",
   "files": [
-    "/dist/",
     "/src/",
     "/index.js"
   ],
   "scripts": {
     "eslint-check": "node ./node_modules/eslint/bin/eslint.js .",
-    "dist": "npm run build",
     "test": "node ./script/test/test.js",
     "test-with-coverage": "npm run test -- --coverage",
     "prettier-format": "node ./script/prettier-format/prettier-format.js",
@@ -37,10 +33,9 @@
     "prettier-check": "npm run prettier-format -- --dry-run",
     "upload-coverage": "node ./script/upload-coverage/upload-coverage.js",
     "generate-comment-example": "node --experimental-top-level-await ./docs/generate-comment-example.js",
-    "build": "node --experimental-import-meta-resolve ./script/build/build.js",
     "generate-import-map": "node ./script/generate-import-map/generate-import-map.js",
     "postinstall": "npm run generate-import-map",
-    "prepublishOnly": "node ./script/transform-package/remove-postinstall.js && npm run dist",
+    "prepublishOnly": "node ./script/transform-package/remove-postinstall.js",
     "postpublish": "node ./script/transform-package/restore-postinstall.js"
   },
   "dependencies": {

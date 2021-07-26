@@ -332,7 +332,7 @@ const renderGeneratedBy = ({ runLink }) => {
 }
 
 const renderSelfLink = () => {
-  return `<a href="https://github.com/jsenv/jsenv-file-size-impact">file size impact</a>`
+  return `<a href="https://github.com/jsenv/file-size-impact">file size impact</a>`
 }
 
 const renderRunLink = (runLink) => {

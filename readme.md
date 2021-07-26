@@ -3,8 +3,8 @@
 Add files size impact into pull requests.
 
 [![npm package](https://img.shields.io/npm/v/@jsenv/file-size-impact.svg?logo=npm&label=package)](https://www.npmjs.com/package/@jsenv/file-size-impact)
-[![workflow status](https://github.com/jsenv/jsenv-file-size-impact/workflows/main/badge.svg)](https://github.com/jsenv/jsenv-file-size-impact/actions?workflow=main)
-[![codecov](https://codecov.io/gh/jsenv/jsenv-file-size-impact/branch/master/graph/badge.svg)](https://codecov.io/gh/jsenv/jsenv-file-size-impact)
+[![workflow status](https://github.com/jsenv/file-size-impact/workflows/main/badge.svg)](https://github.com/jsenv/file-size-impact/actions?workflow=main)
+[![codecov](https://codecov.io/gh/jsenv/file-size-impact/branch/master/graph/badge.svg)](https://codecov.io/gh/jsenv/file-size-impact)
 
 # Presentation
 
@@ -176,7 +176,7 @@ await reportFileSizeImpact({
   logLevel: "info",
   githubToken: "xxx",
   repositoryOwner: "jsenv",
-  repositoryName: "jsenv-file-size-impact",
+  repositoryName: "file-size-impact",
   pullRequestNumber: 10,
   installCommand: "npm install",
   buildCommand: "npm run build",
@@ -373,10 +373,10 @@ const gitHubWorkflowEnv = {
   projectDirectoryUrl: "/home/runner/work/repo-name/repo-name",
   githubToken: "xxx",
   repositoryOwner: "jsenv",
-  repositoryName: "jsenv-file-size-impact",
+  repositoryName: "file-size-impact",
   pullRequestNumber: 10,
   runLink: {
-    url: "https://github.com/jsenv/jsenv-file-size-impact/actions/runs/34",
+    url: "https://github.com/jsenv/file-size-impact/actions/runs/34",
     text: "workflow-name#34",
   },
 }
