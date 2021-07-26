@@ -2,7 +2,7 @@
 
 <h4 id="file-size-impact">File size impact</h4>
 
-<p>Merging head into base will impact 2 files in 1 group.</p>
+<p>Merging <em>head</em> into <em>base</em> will impact 2 files in 1 group.</p>
 <details>
   <summary>dist (2/2)</summary>
   <table>
@@ -39,7 +39,7 @@
 
 <h4 id="file-size-impact">File size impact</h4>
 
-<p>Merging head into base will impact 2 files in 1 group.</p>
+<p>Merging <em>head</em> into <em>base</em> will impact 2 files in 1 group.</p>
 <details>
   <summary>dist (2/2)</summary>
   <table>
@@ -84,7 +84,7 @@
 
 <h4 id="file-size-impact">File size impact</h4>
 
-<p>Merging head into base will not impact files in any group.</p>
+<p>Merging <em>head</em> into <em>base</em> will not impact files in any group.</p>
 <details>
   <summary>dist (0/1)</summary>
   <p>No impact on files in dist group.</p>
@@ -94,7 +94,7 @@
 
 <h4 id="file-size-impact">File size impact</h4>
 
-<p>Merging head into base will not impact files in any group.</p>
+<p>Merging <em>head</em> into <em>base</em> will not impact files in any group.</p>
 <details>
   <summary>dist (0/0)</summary>
   <p>No file in dist group (see config below).</p>
@@ -111,7 +111,7 @@
 
 <h4 id="file-size-impact">File size impact</h4>
 
-<p>Merging head into base will impact 2 files in 1 group.</p>
+<p>Merging <em>head</em> into <em>base</em> will impact 2 files in 1 group.</p>
 <details>
   <summary>dist (2/2)</summary>
   <table>
@@ -148,7 +148,7 @@
 
 <h4 id="file-size-impact">File size impact</h4>
 
-<p>Merging head into base will impact 2 files in 2 groups.</p>
+<p>Merging <em>head</em> into <em>base</em> will impact 2 files in 2 groups.</p>
 <details>
   <summary>critical files (1/2)</summary>
   <table>
@@ -213,7 +213,7 @@
 
 <h4 id="file-size-impact">File size impact</h4>
 
-<p>Merging head into base will impact 6 files in 2 groups.</p>
+<p>Merging <em>head</em> into <em>base</em> will impact 6 files in 2 groups.</p>
 <details>
   <summary>dist/commonjs (3/3)</summary>
   <table>
@@ -312,7 +312,7 @@
 
 <h4 id="file-size-impact">File size impact</h4>
 
-<p>Merging head into base will impact 2 files in 1 group.</p>
+<p>Merging <em>head</em> into <em>base</em> will impact 2 files in 1 group.</p>
 <details>
   <summary>dist (2/2)</summary>
   <table>
@@ -349,7 +349,7 @@
 
 <h4 id="file-size-impact">File size impact</h4>
 
-<p>Merging head into base will impact 2 files in 1 group.</p>
+<p>Merging <em>head</em> into <em>base</em> will impact 2 files in 1 group.</p>
 <details>
   <summary>dist (2/2)</summary>
   <table>
@@ -391,7 +391,7 @@
 
 <h4 id="file-size-impact">File size impact</h4>
 
-<p>Merging head into base will impact 3 files in 1 group.</p>
+<p>Merging <em>head</em> into <em>base</em> will impact 3 files in 1 group.</p>
 <details>
   <summary>dist (3/3)</summary>
   <table>
@@ -438,7 +438,7 @@
 
 <h4 id="file-size-impact">File size impact</h4>
 
-<p>Merging head into base will not impact files in any group.</p>
+<p>Merging <em>head</em> into <em>base</em> will not impact files in any group.</p>
 <details>
   <summary>dist (0/1)</summary>
   <details>
@@ -473,7 +473,7 @@
 
 <h4 id="file-size-impact">File size impact</h4>
 
-<p>Merging head into base will impact 1 file in 1 group.</p>
+<p>Merging <em>head</em> into <em>base</em> will impact 1 file in 1 group.</p>
 <details>
   <summary>dist (1/2)</summary>
   <table>
@@ -531,7 +531,7 @@
 
 <h4 id="file-size-impact">File size impact</h4>
 
-<p>Merging head into base will impact 1 file in 1 group.</p>
+<p>Merging <em>head</em> into <em>base</em> will impact 1 file in 1 group.</p>
 <details>
   <summary>dist (1/1)</summary>
   <table>
@@ -569,13 +569,13 @@
 
 <h4 id="file-size-impact">File size impact</h4>
 
-<p>Merging head into base will not impact files in any group.</p>
+<p>Merging <em>head</em> into <em>base</em> will not impact files in any group.</p>
 
 # new file + showSizeImpact
 
 <h4 id="file-size-impact">File size impact</h4>
 
-<p>Merging head into base will impact 1 file in 1 group.</p>
+<p>Merging <em>head</em> into <em>base</em> will impact 1 file in 1 group.</p>
 <details>
   <summary>dist (1/1)</summary>
   <table>
@@ -607,7 +607,7 @@
 
 <h4 id="file-size-impact">File size impact</h4>
 
-<p>Merging head into base will impact 1 file in 1 group.</p>
+<p>Merging <em>head</em> into <em>base</em> will impact 1 file in 1 group.</p>
 <details>
   <summary>dist (1/1)</summary>
   <table>

@@ -269,7 +269,7 @@ ${groupMessages.join(`
 
 const formulateMergeImpact = ({ pullRequestBase, pullRequestHead, overallImpactInfo }) => {
   const overallImpact = formulateOverallImpact(overallImpactInfo)
-  return `<p>Merging ${pullRequestHead} into ${pullRequestBase} will ${overallImpact}.</p>`
+  return `<p>Merging <em>${pullRequestHead}</em> into <em>${pullRequestBase}</em> will ${overallImpact}.</p>`
 }
 
 const formulateOverallImpact = (overallImpactInfo) => {
