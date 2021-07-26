@@ -1,7 +1,7 @@
 import { assertAndNormalizeDirectoryUrl } from "@jsenv/util"
 import { commentGitHubPullRequestImpact } from "@jsenv/github-pull-request-impact"
 
-import { formatComment } from "./internal/comment/formatComment.js"
+import { formatComment } from "./internal/formatComment.js"
 import { generateSnapshot } from "./internal/generateSnapshot.js"
 import { jsenvCommentParameters } from "./jsenvCommentParameters.js"
 import { jsenvTrackingConfig } from "./jsenvTrackingConfig.js"

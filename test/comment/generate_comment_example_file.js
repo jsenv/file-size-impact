@@ -657,7 +657,7 @@ const examples = {
   }),
 }
 
-const exampleFileUrl = resolveUrl("../../docs/comment-example.md", import.meta.url)
+const exampleFileUrl = resolveUrl("../../docs/comment_example.md", import.meta.url)
 const exampleFileContent = Object.keys(examples).map((exampleName) => {
   return `# ${exampleName}
 

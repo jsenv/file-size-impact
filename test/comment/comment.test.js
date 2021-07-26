@@ -12,7 +12,7 @@ The goal is to force user to regenerate comment-example.md and ensure it looks c
 import { readFile, resolveUrl } from "@jsenv/util"
 import { assert } from "@jsenv/assert"
 
-const commentExampleFileUrl = resolveUrl("../../docs/comment-example.md", import.meta.url)
+const commentExampleFileUrl = resolveUrl("../../docs/comment_example.md", import.meta.url)
 const readCommentExampleFile = async () => {
   const fileContent = await readFile(commentExampleFileUrl)
   return fileContent
