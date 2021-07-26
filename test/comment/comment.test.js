@@ -21,7 +21,7 @@ const readCommentExampleFile = async () => {
 // disable on windows because it would fails due to line endings (CRLF)
 if (process.platform !== "win32") {
   const expected = await readCommentExampleFile()
-  await import("../../docs/generate-comment-example.js")
+  await import("./generate_comment_example_file.js")
   const actual = await readCommentExampleFile()
   assert({ actual, expected })
 }

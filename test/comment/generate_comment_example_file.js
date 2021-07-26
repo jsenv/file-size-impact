@@ -1,17 +1,21 @@
 import { writeFile, resolveUrl } from "@jsenv/util"
+import { createGitHubPullRequestCommentText } from "@jsenv/github-pull-request-impact"
+
 import { jsenvCommentParameters } from "@jsenv/file-size-impact/src/jsenvCommentParameters.js"
-import { formatComment } from "@jsenv/file-size-impact/src/internal/comment/formatComment.js"
+import { formatComment } from "@jsenv/file-size-impact/src/internal/formatComment.js"
 
 const generateComment = (data) => {
   const transformations = deduceTransformations(data)
-  return formatComment({
-    pullRequestBase: "base",
-    pullRequestHead: "head",
-    cacheImpact: false,
-    transformations,
-    ...jsenvCommentParameters,
-    ...data,
-  })
+  return createGitHubPullRequestCommentText(
+    formatComment({
+      pullRequestBase: "base",
+      pullRequestHead: "head",
+      cacheImpact: false,
+      transformations,
+      ...jsenvCommentParameters,
+      ...data,
+    }),
+  )
 }
 
 const deduceTransformations = ({ beforeMergeSnapshot, afterMergeSnapshot }) => {
@@ -653,7 +657,7 @@ const examples = {
   }),
 }
 
-const exampleFileUrl = resolveUrl("./comment-example.md", import.meta.url)
+const exampleFileUrl = resolveUrl("../../docs/comment-example.md", import.meta.url)
 const exampleFileContent = Object.keys(examples).map((exampleName) => {
   return `# ${exampleName}
 

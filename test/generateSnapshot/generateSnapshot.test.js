@@ -1,10 +1,18 @@
 import { assert } from "@jsenv/assert"
 import { resolveUrl, ensureEmptyDirectory, writeFile, writeDirectory } from "@jsenv/util"
+import { createCancellationToken } from "@jsenv/cancellation"
+
 import { generateSnapshot } from "../../src/internal/generateSnapshot.js"
 import { raw } from "../../index.js"
 
 const transformations = { raw }
 const tempDirectoryUrl = resolveUrl("./temp/", import.meta.url)
+const test = (params) => {
+  return generateSnapshot({
+    cancellationToken: createCancellationToken(),
+    ...params,
+  })
+}
 
 // .js + .js.map without manifest
 {
@@ -14,7 +22,7 @@ const tempDirectoryUrl = resolveUrl("./temp/", import.meta.url)
   await writeFile(fileUrl, `console.log("hello")`)
   await writeFile(fileMapUrl, `{ "file": "foo" }`)
 
-  const actual = await generateSnapshot({
+  const actual = await test({
     logLevel: "warn",
     projectDirectoryUrl: tempDirectoryUrl,
     trackingConfig: {
@@ -47,7 +55,7 @@ const tempDirectoryUrl = resolveUrl("./temp/", import.meta.url)
   await writeFile(fileUrl, `console.log("hello")`)
   await writeFile(manifestUrl, `{ "file.js": "file.hash.js" }`)
 
-  const actual = await generateSnapshot({
+  const actual = await test({
     logLevel: "warn",
     projectDirectoryUrl: tempDirectoryUrl,
     trackingConfig: {
@@ -89,7 +97,7 @@ const tempDirectoryUrl = resolveUrl("./temp/", import.meta.url)
   const directoryUrl = resolveUrl("dist", tempDirectoryUrl)
   await writeDirectory(directoryUrl)
 
-  const actual = await generateSnapshot({
+  const actual = await test({
     logLevel: "warn",
     projectDirectoryUrl: tempDirectoryUrl,
     trackingConfig: {
