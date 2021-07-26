@@ -48,6 +48,7 @@ const renderSizeImpactTableHeader = (transformations) => {
     ...Object.keys(transformations).map(
       (sizeName) => `<th nowrap>${sizeName === "raw" ? `new size` : `new ${sizeName} size`}</th>`,
     ),
+    `<th></th>`,
   ]
   lines.push(headerLine)
 
@@ -99,14 +100,79 @@ const renderSizeImpactTableBody = (
     const line = [
       `<td nowrap>${fileCellFormatted}</td>`,
       ...sizeNames.map((sizeName) => `<td nowrap>${renderDiffCell(fileImpact, sizeName)}</td>`),
+      `<td>${renderEmojiCellContent(fileImpact)}</td>`,
     ]
     lines.push(line)
   })
   if (filesShown !== files) {
-    lines.push([`<td colspan="3" align="center">... ${fileCount - maxRowsPerTable} more ...</td>`])
+    const columnCount =
+      // file name
+      1 +
+      // all sizes
+      sizeNames.length +
+      // emoji column
+      1
+    lines.push([
+      `<td colspan="${columnCount}" align="center">... ${
+        fileCount - maxRowsPerTable
+      } more ...</td>`,
+    ])
   }
 
   return renderTableLines(lines)
+}
+
+const renderEmojiCellContent = (fileImpact) => {
+  const { event } = fileImpact
+
+  if (event === "added") {
+    return ":new:"
+  }
+
+  if (event === "deleted") {
+    return ""
+  }
+
+  const { afterMerge, beforeMerge } = fileImpact
+  const afterMergeSizeMap = afterMerge.sizeMap
+  const beforeMergeSizeMap = beforeMerge.sizeMap
+  const sizeNames = Object.keys(afterMergeSizeMap)
+  const sizeName = sizeNames[sizeNames.length - 1]
+  const afterMergeSize = afterMergeSizeMap[sizeName]
+  const beforeMergeSize = beforeMergeSizeMap[sizeName]
+  const delta = afterMergeSize - beforeMergeSize
+  if (delta === 0) {
+    return ":ghost:"
+  }
+
+  const isBig = Math.abs(delta) / beforeMergeSize > 0.05
+  if (delta > 0) {
+    return isBig ? ":arrow_double_up:" : ":arrow_up_small:"
+  }
+
+  return isBig ? ":arrow_double_down:" : ":arrow_down_small:"
+}
+
+const renderGroupEmojiCellContent = ({ groupSizeAfterMerge, groupSizeBeforeMerge }) => {
+  const delta = groupSizeAfterMerge - groupSizeBeforeMerge
+  if (delta === 0) {
+    return ":ghost:"
+  }
+
+  const isBig = Math.abs(delta) / groupSizeBeforeMerge > 0.05
+  if (delta > 0) {
+    return isBig ? ":arrow_double_up:" : ":arrow_up_small:"
+  }
+
+  return isBig ? ":arrow_double_down:" : ":arrow_down_small:"
+}
+
+const renderCacheEmojiCellContent = ({ totalBytesToDownload }) => {
+  if (totalBytesToDownload === 0) {
+    return ":ghost:"
+  }
+
+  return ":arrow_up:"
 }
 
 const fileAbstractRelativeUrlFromFileImpact = ({ beforeMerge, afterMerge }) => {
@@ -128,25 +194,93 @@ const renderSizeImpactTableFooter = (
 ) => {
   const footerLines = []
 
+  const sizeNames = Object.keys(transformations)
+  const lastSizeName = sizeNames[sizeNames.length - 1]
+
+  const groupImpacts = {}
+  sizeNames.forEach((sizeName) => {
+    groupImpacts[sizeName] = computeGroupImpact(groupComparison, sizeName)
+  })
+
   const groupSizeImpactLine = [
     `<td nowrap><strong>Whole group</strong></td>`,
-    ...Object.keys(transformations).map(
-      (sizeName) => `<td nowrap>${formatGroupSizeImpactCell(groupComparison, sizeName)}</td>`,
+    ...sizeNames.map(
+      (sizeName) => `<td nowrap>${formatGroupSizeImpactCell(groupImpacts[sizeName])}</td>`,
     ),
+    `<td>${renderGroupEmojiCellContent(groupImpacts[lastSizeName])}</td>`,
   ]
   footerLines.push(groupSizeImpactLine)
 
   if (cacheImpact) {
+    const cacheImpacts = {}
+    sizeNames.forEach((sizeName) => {
+      cacheImpacts[sizeName] = computeCacheImpact(fileByFileImpact, sizeName)
+    })
+
     const cacheImpactLine = [
       `<td nowrap><strong>Cache impact</strong></td>`,
-      ...Object.keys(transformations).map(
-        (sizeName) => `<td nowrap>${formatCacheImpactCell(fileByFileImpact, sizeName)}</td>`,
+      ...sizeNames.map(
+        (sizeName) => `<td nowrap>${formatCacheImpactCell(cacheImpacts[sizeName])}</td>`,
       ),
+      `<td>${renderCacheEmojiCellContent(cacheImpacts[lastSizeName])}</td>`,
     ]
     footerLines.push(cacheImpactLine)
   }
 
   return renderTableLines(footerLines)
+}
+
+const computeGroupImpact = (groupComparison, sizeName) => {
+  const groupImpact = Object.keys(groupComparison).reduce(
+    (previous, fileRelativeUrl) => {
+      const fileImpact = groupComparison[fileRelativeUrl]
+      const { beforeMerge, afterMerge } = fileImpact
+      // added
+      if (!beforeMerge) {
+        const sizeAfterMerge = afterMerge.sizeMap[sizeName]
+        return {
+          groupSizeBeforeMerge: previous.groupSizeBeforeMerge,
+          groupSizeAfterMerge: previous.groupSizeAfterMerge + sizeAfterMerge,
+        }
+      }
+
+      // removed
+      if (!afterMerge) {
+        const sizeBeforeMerge = beforeMerge.sizeMap[sizeName]
+        return {
+          groupSizeBeforeMerge: previous.groupSizeBeforeMerge + sizeBeforeMerge,
+          groupSizeAfterMerge: previous.groupSizeAfterMerge,
+        }
+      }
+
+      // modified or not, does not matter
+      const sizeBeforeMerge = beforeMerge.sizeMap[sizeName]
+      const sizeAfterMerge = afterMerge.sizeMap[sizeName]
+      return {
+        groupSizeBeforeMerge: previous.groupSizeBeforeMerge + sizeBeforeMerge,
+        groupSizeAfterMerge: previous.groupSizeAfterMerge + sizeAfterMerge,
+      }
+    },
+    {
+      groupSizeBeforeMerge: 0,
+      groupSizeAfterMerge: 0,
+    },
+  )
+  return groupImpact
+}
+
+const computeCacheImpact = (fileByFileImpact, sizeName) => {
+  // bytes to download is added file or modified file bytes
+  const totalBytesToDownload = Object.keys(fileByFileImpact).reduce((previous, fileRelativeUrl) => {
+    const fileImpact = fileByFileImpact[fileRelativeUrl]
+    const { afterMerge } = fileImpact
+    // removed
+    if (!afterMerge) {
+      return previous
+    }
+    return previous + afterMerge.sizeMap[sizeName]
+  }, 0)
+  return { totalBytesToDownload }
 }
 
 const truncateFileRelativeUrl = (fileRelativeUrl, fileRelativeUrlMaxLength) => {

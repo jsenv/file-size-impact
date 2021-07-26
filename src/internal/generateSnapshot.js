@@ -1,10 +1,10 @@
 import { createLogger } from "@jsenv/logger"
 import { assertAndNormalizeDirectoryUrl, bufferToEtag, resolveUrl, readFile } from "@jsenv/util"
-import { createCancellationToken } from "@jsenv/cancellation"
+
 import { applyTrackingConfig } from "./applyTrackingConfig.js"
 
 export const generateSnapshot = async ({
-  cancellationToken = createCancellationToken(),
+  cancellationToken,
   logLevel,
   projectDirectoryUrl,
   trackingConfig,

@@ -3,11 +3,10 @@ import { reportFileSizeImpact, raw, gzip, brotli, readGitHubWorkflowEnv } from "
 reportFileSizeImpact({
   ...readGitHubWorkflowEnv(),
   logLevel: "debug",
-  buildCommand: "npm run dist",
+  buildCommand: "npm pack",
   trackingConfig: {
-    "dist/commonjs": {
-      "./dist/commonjs/**/*": true,
-      "./dist/commonjs/**/*.map": false,
+    "npm tarball": {
+      "./jsenv-file-size-impact-*.tgz": true,
     },
   },
   transformations: { raw, gzip, brotli },

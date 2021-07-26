@@ -18,9 +18,6 @@ export const jsenvCommentParameters = {
   maxRowsPerTable: 600,
   fileRelativeUrlMaxLength: 100,
   formatFileCell: ({ fileRelativeUrlDisplayed, event }) => {
-    if (event === "added") {
-      return `${fileRelativeUrlDisplayed}[new]`
-    }
     if (event === "deleted") {
       return `<del>${fileRelativeUrlDisplayed}</del>`
     }
@@ -46,7 +43,7 @@ export const jsenvCommentParameters = {
         sizeAfterMerge,
         // +100 % of something that was not here
         // makes no sense
-        percentage: false,
+        showDiff: false,
       })
     }
 
@@ -58,7 +55,7 @@ export const jsenvCommentParameters = {
         sizeBeforeMerge,
         sizeAfterMerge,
         // -100% of the file kinda makes sense
-        percentage: true,
+        showDiffPercentage: false,
       })
     }
 
@@ -67,22 +64,15 @@ export const jsenvCommentParameters = {
     return formatSizeImpact({
       sizeBeforeMerge,
       sizeAfterMerge,
-      percentage: true,
     })
   },
-  formatGroupSizeImpactCell: (groupComparison, sizeName) => {
-    const { groupSizeBeforeMerge, groupSizeAfterMerge } = computeGroupImpact(
-      groupComparison,
-      sizeName,
-    )
+  formatGroupSizeImpactCell: ({ groupSizeAfterMerge, groupSizeBeforeMerge }) => {
     return formatSizeImpact({
       sizeBeforeMerge: groupSizeBeforeMerge,
       sizeAfterMerge: groupSizeAfterMerge,
-      percentage: true,
     })
   },
-  formatCacheImpactCell: (fileByFileImpact, sizeName) => {
-    const { totalBytesToDownload } = computeCacheImpact(fileByFileImpact, sizeName)
+  formatCacheImpactCell: ({ totalBytesToDownload }) => {
     return formatSize(totalBytesToDownload, { unit: true })
   },
   shouldOpenGroupByDefault: () => false,
@@ -109,66 +99,21 @@ const formatSize = (sizeNumber, { diff = false, unit = false } = {}) => {
   return sizeString
 }
 
-const computeGroupImpact = (groupComparison, sizeName) => {
-  const groupImpact = Object.keys(groupComparison).reduce(
-    (previous, fileRelativeUrl) => {
-      const fileImpact = groupComparison[fileRelativeUrl]
-      const { beforeMerge, afterMerge } = fileImpact
-      // added
-      if (!beforeMerge) {
-        const sizeAfterMerge = afterMerge.sizeMap[sizeName]
-        return {
-          groupSizeBeforeMerge: previous.groupSizeBeforeMerge,
-          groupSizeAfterMerge: previous.groupSizeAfterMerge + sizeAfterMerge,
-        }
-      }
-
-      // removed
-      if (!afterMerge) {
-        const sizeBeforeMerge = beforeMerge.sizeMap[sizeName]
-        return {
-          groupSizeBeforeMerge: previous.groupSizeBeforeMerge + sizeBeforeMerge,
-          groupSizeAfterMerge: previous.groupSizeAfterMerge,
-        }
-      }
-
-      // modified or not, does not matter
-      const sizeBeforeMerge = beforeMerge.sizeMap[sizeName]
-      const sizeAfterMerge = afterMerge.sizeMap[sizeName]
-      return {
-        groupSizeBeforeMerge: previous.groupSizeBeforeMerge + sizeBeforeMerge,
-        groupSizeAfterMerge: previous.groupSizeAfterMerge + sizeAfterMerge,
-      }
-    },
-    {
-      groupSizeBeforeMerge: 0,
-      groupSizeAfterMerge: 0,
-    },
-  )
-  return groupImpact
-}
-
-const computeCacheImpact = (fileByFileImpact, sizeName) => {
-  // bytes to download is added file or modified file bytes
-  const totalBytesToDownload = Object.keys(fileByFileImpact).reduce((previous, fileRelativeUrl) => {
-    const fileImpact = fileByFileImpact[fileRelativeUrl]
-    const { afterMerge } = fileImpact
-    // removed
-    if (!afterMerge) {
-      return previous
-    }
-    return previous + afterMerge.sizeMap[sizeName]
-  }, 0)
-  return { totalBytesToDownload }
-}
-
-const formatSizeImpact = ({ sizeBeforeMerge, sizeAfterMerge, percentage }) => {
+const formatSizeImpact = ({
+  sizeBeforeMerge,
+  sizeAfterMerge,
+  showDiff = true,
+  showDiffPercentage = true,
+}) => {
   const sizeAfterMergeFormatted = formatSize(sizeAfterMerge, { unit: true })
+  if (!showDiff) {
+    return sizeAfterMergeFormatted
+  }
 
   const sizeDiff = sizeAfterMerge - sizeBeforeMerge
   const sizeDiffFormatted = formatSize(sizeDiff, { diff: true, unit: true })
 
-  if (!percentage) {
+  if (!showDiffPercentage) {
     return `${sizeAfterMergeFormatted} (${sizeDiffFormatted})`
   }
 

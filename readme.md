@@ -1,10 +1,10 @@
 # File size impact
 
-Add files size impact into pull requests.
+Report pull request impacts on specific files size.
 
 [![npm package](https://img.shields.io/npm/v/@jsenv/file-size-impact.svg?logo=npm&label=package)](https://www.npmjs.com/package/@jsenv/file-size-impact)
-[![workflow status](https://github.com/jsenv/jsenv-file-size-impact/workflows/main/badge.svg)](https://github.com/jsenv/jsenv-file-size-impact/actions?workflow=main)
-[![codecov](https://codecov.io/gh/jsenv/jsenv-file-size-impact/branch/master/graph/badge.svg)](https://codecov.io/gh/jsenv/jsenv-file-size-impact)
+[![workflow status](https://github.com/jsenv/file-size-impact/workflows/main/badge.svg)](https://github.com/jsenv/file-size-impact/actions?workflow=main)
+[![codecov](https://codecov.io/gh/jsenv/file-size-impact/branch/master/graph/badge.svg)](https://codecov.io/gh/jsenv/file-size-impact)
 
 # Presentation
 
@@ -52,7 +52,7 @@ This section explains how integrate file size impact to pull requests on GitHub.
 
 2. Create a script file
 
-   `.github/workflows/report-size-impact.js`
+   `.github/workflows/report_file_size_impact.mjs`
 
    ```js
    import { reportFileSizeImpact, readGitHubWorkflowEnv } from "@jsenv/file-size-impact"
@@ -71,21 +71,21 @@ This section explains how integrate file size impact to pull requests on GitHub.
 
 3. Create a workflow.yml file
 
-   `.github/workflows/size-impact.yml`
+   `.github/workflows/file_size_impact.yml`
 
    ```yml
-   name: size-impact
+   name: file size impact
 
    on: pull_request_target
 
    jobs:
-     size-impact:
+     file-size-impact:
        strategy:
          matrix:
            os: [ubuntu-latest]
            node: [14.17.0]
        runs-on: ${{ matrix.os }}
-       name: report size impact
+       name: report file size impact
        steps:
          - name: Setup git
            uses: actions/checkout@v2
@@ -96,7 +96,7 @@ This section explains how integrate file size impact to pull requests on GitHub.
          - name: npm install
            run: npm install
          - name: Report size impact
-           run: node ./.github/workflows/report-size-impact.js
+           run: node ./.github/workflows/report_file_size_impact.mjs
            env:
              GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
    ```
@@ -113,7 +113,7 @@ This section explains how integrate file size impact to pull requests on GitHub.
 
     The code below is an example for Travis.
 
-    `report-size-impact.js`
+    `report_file_size_impact.mjs`
 
     ```js
     import { reportFileSizeImpact } from "@jsenv/file-size-impact"
@@ -141,7 +141,7 @@ This section explains how integrate file size impact to pull requests on GitHub.
 
 4.  Create a workflow file
 
-    The exact file to create depends on the tool you are using. Depending if you use Jenkins, Travis or something else. The important thing to know is that `reportFileSizeImpact` must be called in a state where your git repository has been cloned and you are currently on the pull request branch. Inside github workflow this is done by the following lines in `file-size-impact.yml`.
+    The exact file to create depends on the tool you are using. Depending if you use Jenkins, Travis or something else. The important thing to know is that `reportFileSizeImpact` must be called in a state where your git repository has been cloned and you are currently on the pull request branch. Inside github workflow this is done by the following lines in `file_size_impact.yml`.
 
     ```yml
     uses: actions/checkout@v2
@@ -176,7 +176,7 @@ await reportFileSizeImpact({
   logLevel: "info",
   githubToken: "xxx",
   repositoryOwner: "jsenv",
-  repositoryName: "jsenv-file-size-impact",
+  repositoryName: "file-size-impact",
   pullRequestNumber: 10,
   installCommand: "npm install",
   buildCommand: "npm run build",
@@ -373,10 +373,10 @@ const gitHubWorkflowEnv = {
   projectDirectoryUrl: "/home/runner/work/repo-name/repo-name",
   githubToken: "xxx",
   repositoryOwner: "jsenv",
-  repositoryName: "jsenv-file-size-impact",
+  repositoryName: "file-size-impact",
   pullRequestNumber: 10,
   runLink: {
-    url: "https://github.com/jsenv/jsenv-file-size-impact/actions/runs/34",
+    url: "https://github.com/jsenv/file-size-impact/actions/runs/34",
     text: "workflow-name#34",
   },
 }
@@ -489,6 +489,7 @@ In order to analyse the impact of a pull request on file size the following step
 
 # See also
 
+- [@jsenv/performance-impact](https://github.com/jsenv/performance-impact): Monitor pull requests impacts but on performance metrics.
 - [@jsenv/lighthouse-score-impact](https://github.com/jsenv/jsenv-lighthouse-score-impact): Monitor pull requests impacts but on lighthouse score.
 
 # Other
