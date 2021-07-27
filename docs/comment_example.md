@@ -17,19 +17,19 @@
       <tr>
         <td nowrap>dist/bar.js</td>
         <td nowrap>110B (+10B / +10%)</td>
-        <td>:arrow_double_up:</td>
+        <td>:arrow_upper_right:</td>
       </tr>
       <tr>
         <td nowrap>dist/foo.js</td>
         <td nowrap>115B (+15B / +15%)</td>
-        <td>:arrow_double_up:</td>
+        <td>:arrow_upper_right:</td>
       </tr>
     </tbody>
     <tfoot>
       <tr>
         <td nowrap><strong>Whole group</strong></td>
         <td nowrap>225B (+25B / +12.5%)</td>
-        <td>:arrow_double_up:</td>
+        <td>:arrow_upper_right:</td>
       </tr>
     </tfoot>
   </table>
@@ -58,14 +58,14 @@
         <td nowrap>110B (+10B / +10%)</td>
         <td nowrap>22B (+2B / +10%)</td>
         <td nowrap>19B (+1B / +5.56%)</td>
-        <td>:arrow_double_up:</td>
+        <td>:arrow_upper_right:</td>
       </tr>
       <tr>
         <td nowrap>dist/foo.js</td>
         <td nowrap>115B (+15B / +15%)</td>
         <td nowrap>24B (+4B / +20%)</td>
         <td nowrap>21B (+3B / +16.67%)</td>
-        <td>:arrow_double_up:</td>
+        <td>:arrow_upper_right:</td>
       </tr>
     </tbody>
     <tfoot>
@@ -74,7 +74,7 @@
         <td nowrap>225B (+25B / +12.5%)</td>
         <td nowrap>46B (+6B / +15%)</td>
         <td nowrap>40B (+4B / +11.11%)</td>
-        <td>:arrow_double_up:</td>
+        <td>:arrow_upper_right:</td>
       </tr>
     </tfoot>
   </table>
@@ -126,12 +126,12 @@
       <tr>
         <td nowrap>dist/file-a.js</td>
         <td nowrap>15B (+5B / +50%)</td>
-        <td>:arrow_double_up:</td>
+        <td>:arrow_upper_right:</td>
       </tr>
       <tr>
         <td nowrap>dist/file-b.js</td>
         <td nowrap>10B (-5B / -33.33%)</td>
-        <td>:arrow_double_down:</td>
+        <td>:arrow_lower_right:</td>
       </tr>
     </tbody>
     <tfoot>
@@ -165,7 +165,7 @@
         <td nowrap>dist/foo.js</td>
         <td nowrap>83.45KB (+6.84KB / +8.92%)</td>
         <td nowrap>35.71KB (+3.91KB / +12.28%)</td>
-        <td>:arrow_double_up:</td>
+        <td>:arrow_upper_right:</td>
       </tr>
     </tbody>
     <tfoot>
@@ -173,7 +173,7 @@
         <td nowrap><strong>Whole group</strong></td>
         <td nowrap>127.83KB (+6.84KB / +5.65%)</td>
         <td nowrap>58.69KB (+3.91KB / +7.13%)</td>
-        <td>:arrow_double_up:</td>
+        <td>:arrow_upper_right:</td>
       </tr>
     </tfoot>
   </table>
@@ -195,7 +195,7 @@
         <td nowrap>dist/feature.js</td>
         <td nowrap>21.05KB (+4.01KB / +23.55%)</td>
         <td nowrap>12.18KB (+2.87KB / +30.84%)</td>
-        <td>:arrow_double_up:</td>
+        <td>:arrow_upper_right:</td>
       </tr>
     </tbody>
     <tfoot>
@@ -203,7 +203,7 @@
         <td nowrap><strong>Whole group</strong></td>
         <td nowrap>89.22KB (+4.01KB / +4.71%)</td>
         <td nowrap>49.41KB (+2.87KB / +6.17%)</td>
-        <td>:arrow_double_up:</td>
+        <td>:arrow_upper_right:</td>
       </tr>
     </tfoot>
   </table>
@@ -246,7 +246,7 @@
         <td nowrap>182.62KB (+19.53KB / +11.98%)</td>
         <td nowrap>1.76KB (+200B / +12.5%)</td>
         <td nowrap>1.66KB (+200B / +13.33%)</td>
-        <td>:arrow_double_up:</td>
+        <td>:arrow_upper_right:</td>
       </tr>
     </tbody>
     <tfoot>
@@ -255,7 +255,7 @@
         <td nowrap>182.73KB (+19.55KB / +11.98%)</td>
         <td nowrap>1.77KB (+202B / +12.55%)</td>
         <td nowrap>1.67KB (+202B / +13.39%)</td>
-        <td>:arrow_double_up:</td>
+        <td>:arrow_upper_right:</td>
       </tr>
     </tfoot>
   </table>
@@ -293,7 +293,7 @@
         <td nowrap>182.62KB (+19.53KB / +11.98%)</td>
         <td nowrap>1.76KB (+200B / +12.5%)</td>
         <td nowrap>1.66KB (+200B / +13.33%)</td>
-        <td>:arrow_double_up:</td>
+        <td>:arrow_upper_right:</td>
       </tr>
     </tbody>
     <tfoot>
@@ -302,7 +302,7 @@
         <td nowrap>182.73KB (+19.55KB / +11.98%)</td>
         <td nowrap>1.77KB (+202B / +12.55%)</td>
         <td nowrap>1.67KB (+202B / +13.39%)</td>
-        <td>:arrow_double_up:</td>
+        <td>:arrow_upper_right:</td>
       </tr>
     </tfoot>
   </table>
@@ -327,7 +327,7 @@
       <tr>
         <td nowrap>dist/bar.js</td>
         <td nowrap>315B (+15B / +5%)</td>
-        <td>:arrow_up_small:</td>
+        <td>:arrow_upper_right:</td>
       </tr>
       <tr>
         <td nowrap>dist/foo.js</td>
@@ -339,7 +339,7 @@
       <tr>
         <td nowrap><strong>Whole group</strong></td>
         <td nowrap>2.75KB (+15B / +0.54%)</td>
-        <td>:arrow_up_small:</td>
+        <td>:arrow_upper_right:</td>
       </tr>
     </tfoot>
   </table>
@@ -364,7 +364,7 @@
       <tr>
         <td nowrap>dist/bar.js</td>
         <td nowrap>315B (+15B / +5%)</td>
-        <td>:arrow_up_small:</td>
+        <td>:arrow_upper_right:</td>
       </tr>
       <tr>
         <td nowrap>dist/foo.js</td>
@@ -376,12 +376,12 @@
       <tr>
         <td nowrap><strong>Whole group</strong></td>
         <td nowrap>2.75KB (+15B / +0.54%)</td>
-        <td>:arrow_up_small:</td>
+        <td>:arrow_upper_right:</td>
       </tr>
       <tr>
         <td nowrap><strong>Cache impact</strong></td>
         <td nowrap>2.75KB</td>
-        <td>:arrow_up:</td>
+        <td>:arrow_upper_right:</td>
       </tr>
     </tfoot>
   </table>
@@ -406,7 +406,7 @@
       <tr>
         <td nowrap>dist/bar.js</td>
         <td nowrap>110B (+10B / +10%)</td>
-        <td>:arrow_double_up:</td>
+        <td>:arrow_upper_right:</td>
       </tr>
       <tr>
         <td nowrap>dist/foo.js</td>
@@ -416,19 +416,19 @@
       <tr>
         <td nowrap>dist/hello.js</td>
         <td nowrap>110B (+10B / +10%)</td>
-        <td>:arrow_double_up:</td>
+        <td>:arrow_upper_right:</td>
       </tr>
     </tbody>
     <tfoot>
       <tr>
         <td nowrap><strong>Whole group</strong></td>
         <td nowrap>320B (+120B / +60%)</td>
-        <td>:arrow_double_up:</td>
+        <td>:arrow_upper_right:</td>
       </tr>
       <tr>
         <td nowrap><strong>Cache impact</strong></td>
         <td nowrap>320B</td>
-        <td>:arrow_up:</td>
+        <td>:arrow_upper_right:</td>
       </tr>
     </tfoot>
   </table>
@@ -455,14 +455,14 @@
       <tr>
         <td nowrap>dist/bar.js</td>
         <td nowrap>101B (+1B / +1%)</td>
-        <td>:arrow_up_small:</td>
+        <td>:arrow_upper_right:</td>
       </tr>
     </tbody>
     <tfoot>
       <tr>
         <td nowrap><strong>Whole group</strong></td>
         <td nowrap>101B (+1B / +1%)</td>
-        <td>:arrow_up_small:</td>
+        <td>:arrow_upper_right:</td>
       </tr>
     </tfoot>
   </table>
@@ -488,14 +488,14 @@
       <tr>
         <td nowrap>dist/foo.js</td>
         <td nowrap>115B (+14B / +13.86%)</td>
-        <td>:arrow_double_up:</td>
+        <td>:arrow_upper_right:</td>
       </tr>
     </tbody>
     <tfoot>
       <tr>
         <td nowrap><strong>Whole group</strong></td>
         <td nowrap>216B (+15B / +7.46%)</td>
-        <td>:arrow_double_up:</td>
+        <td>:arrow_upper_right:</td>
       </tr>
     </tfoot>
   </table>
@@ -513,14 +513,14 @@
       <tr>
         <td nowrap>dist/bar.js</td>
         <td nowrap>101B (+1B / +1%)</td>
-        <td>:arrow_up_small:</td>
+        <td>:arrow_upper_right:</td>
       </tr>
     </tbody>
     <tfoot>
       <tr>
         <td nowrap><strong>Whole group</strong></td>
         <td nowrap>216B (+15B / +7.46%)</td>
-        <td>:arrow_double_up:</td>
+        <td>:arrow_upper_right:</td>
       </tr>
     </tfoot>
   </table>
@@ -546,14 +546,14 @@
       <tr>
         <td nowrap>foo.js</td>
         <td nowrap>115B (+14B / +13.86%)</td>
-        <td>:arrow_double_up:</td>
+        <td>:arrow_upper_right:</td>
       </tr>
     </tbody>
     <tfoot>
       <tr>
         <td nowrap><strong>Whole group</strong></td>
         <td nowrap>115B (+14B / +13.86%)</td>
-        <td>:arrow_double_up:</td>
+        <td>:arrow_upper_right:</td>
       </tr>
     </tfoot>
   </table>
@@ -597,7 +597,7 @@
       <tr>
         <td nowrap><strong>Whole group</strong></td>
         <td nowrap>110B (+110B / +100%)</td>
-        <td>:arrow_double_up:</td>
+        <td>:arrow_upper_right:</td>
       </tr>
     </tfoot>
   </table>
@@ -629,7 +629,7 @@
       <tr>
         <td nowrap><strong>Whole group</strong></td>
         <td nowrap>0B (-110B / -100%)</td>
-        <td>:arrow_double_down:</td>
+        <td>:arrow_lower_right:</td>
       </tr>
     </tfoot>
   </table>
