@@ -145,12 +145,11 @@ const renderEmojiCellContent = (fileImpact) => {
     return ":ghost:"
   }
 
-  const isBig = Math.abs(delta) / beforeMergeSize > 0.05
   if (delta > 0) {
-    return isBig ? ":arrow_double_up:" : ":arrow_up_small:"
+    return ":arrow_upper_right:"
   }
 
-  return isBig ? ":arrow_double_down:" : ":arrow_down_small:"
+  return ":arrow_lower_right:"
 }
 
 const renderGroupEmojiCellContent = ({ groupSizeAfterMerge, groupSizeBeforeMerge }) => {
@@ -159,12 +158,11 @@ const renderGroupEmojiCellContent = ({ groupSizeAfterMerge, groupSizeBeforeMerge
     return ":ghost:"
   }
 
-  const isBig = Math.abs(delta) / groupSizeBeforeMerge > 0.05
   if (delta > 0) {
-    return isBig ? ":arrow_double_up:" : ":arrow_up_small:"
+    return ":arrow_upper_right:"
   }
 
-  return isBig ? ":arrow_double_down:" : ":arrow_down_small:"
+  return ":arrow_lower_right:"
 }
 
 const renderCacheEmojiCellContent = ({ totalBytesToDownload }) => {
@@ -172,7 +170,7 @@ const renderCacheEmojiCellContent = ({ totalBytesToDownload }) => {
     return ":ghost:"
   }
 
-  return ":arrow_up:"
+  return ":arrow_upper_right:"
 }
 
 const fileAbstractRelativeUrlFromFileImpact = ({ beforeMerge, afterMerge }) => {
