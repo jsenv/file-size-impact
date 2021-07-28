@@ -11,11 +11,12 @@ export const formatComment = ({
   beforeMergeSnapshot,
   afterMergeSnapshot,
 
+  sortByImpact,
+  maxRowsPerTable,
+  fileRelativeUrlMaxLength,
   formatGroupSummary,
   formatHiddenImpactSummary,
   formatFileRelativeUrl,
-  maxRowsPerTable,
-  fileRelativeUrlMaxLength,
   formatFileCell,
   formatFileSizeImpactCell,
   formatGroupSizeImpactCell,
@@ -39,10 +40,11 @@ export const formatComment = ({
     pullRequestHead,
     snapshotComparison,
 
+    sortByImpact,
+    maxRowsPerTable,
+    fileRelativeUrlMaxLength,
     formatGroupSummary,
     formatHiddenImpactSummary,
-    fileRelativeUrlMaxLength,
-    maxRowsPerTable,
     formatFileRelativeUrl,
     formatFileCell,
     formatFileSizeImpactCell,
@@ -64,10 +66,11 @@ const renderCommentBody = ({
   pullRequestHead,
   snapshotComparison,
 
-  formatGroupSummary,
-  formatHiddenImpactSummary,
+  sortByImpact,
   fileRelativeUrlMaxLength,
   maxRowsPerTable,
+  formatGroupSummary,
+  formatHiddenImpactSummary,
   formatFileRelativeUrl,
   formatFileCell,
   formatFileSizeImpactCell,
@@ -182,6 +185,11 @@ const renderCommentBody = ({
         })
       }
     })
+
+    if (sortByImpact) {
+      // sort the fileByFileImpact to have increase together
+      // and decrease together
+    }
 
     const groupImpactCount = Object.keys(fileByFileImpact).length
     const groupHiddenImpactCount = Object.keys(fileByFileImpactHidden).length
