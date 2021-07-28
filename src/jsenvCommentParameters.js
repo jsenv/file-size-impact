@@ -1,102 +1,73 @@
-import { createRequire } from "module"
+import { formatSize } from "./internal/formatSize.js"
 
-const require = createRequire(import.meta.url)
+const jsenvFormatGroupSummary = ({ groupName, groupImpactCount, groupFileCount }) => {
+  return `${groupName} (${groupImpactCount}/${groupFileCount})`
+}
 
-// https://github.com/visionmedia/bytes.js/
-const bytes = require("bytes")
+const jsenvFormatHiddenImpactSummary = ({ groupHiddenImpactCount }) => {
+  return `Hidden (${groupHiddenImpactCount})`
+}
 
-const enDecimalFormatter = new Intl.NumberFormat("en", { style: "decimal" })
+const jsenvFormatFileRelativeUrl = (fileRelativeUrl) => {
+  return fileRelativeUrl
+}
 
-export const jsenvCommentParameters = {
-  formatGroupSummary: ({ groupName, groupImpactCount, groupFileCount }) => {
-    return `${groupName} (${groupImpactCount}/${groupFileCount})`
-  },
-  formatHiddenImpactSummary: ({ groupHiddenImpactCount }) => {
-    return `Hidden (${groupHiddenImpactCount})`
-  },
-  formatFileRelativeUrl: (fileRelativeUrl) => fileRelativeUrl,
-  maxRowsPerTable: 600,
-  fileRelativeUrlMaxLength: 100,
-  formatFileCell: ({ fileRelativeUrlDisplayed, event }) => {
-    if (event === "deleted") {
-      return `<del>${fileRelativeUrlDisplayed}</del>`
-    }
-    return fileRelativeUrlDisplayed
-  },
-  /*
-  - when modified
-  623.43KB (+370B / +0.06%)
-  - when added
-  100b (+100b, +100%)
-  - when deleted
-  0 (-100b, -100%)
-  */
-  formatFileSizeImpactCell: (fileImpact, sizeName) => {
-    const { beforeMerge, afterMerge } = fileImpact
+const jsenvFormatFileCell = ({ fileRelativeUrlDisplayed, event }) => {
+  if (event === "deleted") {
+    return `<del>${fileRelativeUrlDisplayed}</del>`
+  }
+  return fileRelativeUrlDisplayed
+}
 
-    // added
-    if (!beforeMerge) {
-      const sizeBeforeMerge = 0
-      const sizeAfterMerge = afterMerge.sizeMap[sizeName]
-      return formatSizeImpact({
-        sizeBeforeMerge,
-        sizeAfterMerge,
-        // +100 % of something that was not here
-        // makes no sense
-        showDiff: false,
-      })
-    }
+/**
+ * - added
+ *   100b
+ * - modified
+ *   623.43KB (+370B / +0.06%)
+ * - deleted
+ *   0 (-100b)
+ */
+const jsenvFormatFileSizeImpactCell = (fileImpact, sizeName) => {
+  const { beforeMerge, afterMerge } = fileImpact
 
-    // deleted
-    if (!afterMerge) {
-      const sizeBeforeMerge = beforeMerge.sizeMap[sizeName]
-      const sizeAfterMerge = 0
-      return formatSizeImpact({
-        sizeBeforeMerge,
-        sizeAfterMerge,
-        // -100% of the file kinda makes sense
-        showDiffPercentage: false,
-      })
-    }
-
-    const sizeBeforeMerge = beforeMerge.sizeMap[sizeName]
+  // added
+  if (!beforeMerge) {
+    const sizeBeforeMerge = 0
     const sizeAfterMerge = afterMerge.sizeMap[sizeName]
     return formatSizeImpact({
       sizeBeforeMerge,
       sizeAfterMerge,
+      // +100 % of something that was not here
+      // makes no sense
+      showDiff: false,
     })
-  },
-  formatGroupSizeImpactCell: ({ groupSizeAfterMerge, groupSizeBeforeMerge }) => {
+  }
+
+  // deleted
+  if (!afterMerge) {
+    const sizeBeforeMerge = beforeMerge.sizeMap[sizeName]
+    const sizeAfterMerge = 0
     return formatSizeImpact({
-      sizeBeforeMerge: groupSizeBeforeMerge,
-      sizeAfterMerge: groupSizeAfterMerge,
+      sizeBeforeMerge,
+      sizeAfterMerge,
+      // -100% of the file kinda makes sense
+      showDiffPercentage: false,
     })
-  },
-  formatCacheImpactCell: ({ totalBytesToDownload }) => {
-    return formatSize(totalBytesToDownload, { unit: true })
-  },
-  shouldOpenGroupByDefault: () => false,
+  }
+
+  const sizeBeforeMerge = beforeMerge.sizeMap[sizeName]
+  const sizeAfterMerge = afterMerge.sizeMap[sizeName]
+  return formatSizeImpact({
+    sizeBeforeMerge,
+    sizeAfterMerge,
+  })
 }
 
-const formatSize = (sizeNumber, { diff = false, unit = false } = {}) => {
-  const sizeNumberAbsolute = Math.abs(sizeNumber)
-
-  let sizeString
-  if (unit) {
-    sizeString = bytes(sizeNumberAbsolute, { decimalPlaces: 2 })
-  } else {
-    sizeString = enDecimalFormatter.format(sizeNumberAbsolute)
-  }
-
-  if (diff) {
-    if (sizeNumber < 0) {
-      sizeString = `-${sizeString}`
-    } else if (sizeNumber > 0) {
-      sizeString = `+${sizeString}`
-    }
-  }
-
-  return sizeString
+const jsenvFormatGroupSizeImpactCell = ({ groupSizeAfterMerge, groupSizeBeforeMerge }) => {
+  return formatSizeImpact({
+    sizeBeforeMerge: groupSizeBeforeMerge,
+    sizeAfterMerge: groupSizeAfterMerge,
+  })
 }
 
 const formatSizeImpact = ({
@@ -105,13 +76,13 @@ const formatSizeImpact = ({
   showDiff = true,
   showDiffPercentage = true,
 }) => {
-  const sizeAfterMergeFormatted = formatSize(sizeAfterMerge, { unit: true })
+  const sizeAfterMergeFormatted = formatSize(sizeAfterMerge)
   if (!showDiff) {
     return sizeAfterMergeFormatted
   }
 
   const sizeDiff = sizeAfterMerge - sizeBeforeMerge
-  const sizeDiffFormatted = formatSize(sizeDiff, { diff: true, unit: true })
+  const sizeDiffFormatted = formatSize(sizeDiff, { diff: true })
 
   if (!showDiffPercentage) {
     return `${sizeAfterMergeFormatted} (${sizeDiffFormatted})`
@@ -130,4 +101,16 @@ const formatSizeImpact = ({
 const limitDecimals = (number, decimalCount = 2) => {
   const multiplier = Math.pow(10, decimalCount)
   return Math.round(number * multiplier) / multiplier
+}
+
+export const jsenvCommentParameters = {
+  formatGroupSummary: jsenvFormatGroupSummary,
+  formatHiddenImpactSummary: jsenvFormatHiddenImpactSummary,
+  formatFileRelativeUrl: jsenvFormatFileRelativeUrl,
+  maxRowsPerTable: 600,
+  fileRelativeUrlMaxLength: 100,
+  formatFileCell: jsenvFormatFileCell,
+  formatFileSizeImpactCell: jsenvFormatFileSizeImpactCell,
+  formatGroupSizeImpactCell: jsenvFormatGroupSizeImpactCell,
+  shouldOpenGroupByDefault: () => false,
 }

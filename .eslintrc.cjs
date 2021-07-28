@@ -31,8 +31,7 @@ const eslintConfig = composeEslintConfig(
   {
     rules: {
       ...jsenvEslintRules,
-      // Example of code changing the ESLint configuration to enable a rule:
-      // 'prefer-const':  ['error']
+      "valid-jsdoc": ["off"],
     },
   },
 
