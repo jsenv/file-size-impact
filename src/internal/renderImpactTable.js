@@ -9,8 +9,6 @@ export const renderImpactTable = (
     formatFileCell,
     formatFileSizeImpactCell,
     formatGroupSizeImpactCell,
-    cacheImpact,
-    formatCacheImpactCell,
   },
 ) => {
   const table = `<table>
@@ -32,8 +30,6 @@ export const renderImpactTable = (
         groupComparison,
         transformations,
         formatGroupSizeImpactCell,
-        cacheImpact,
-        formatCacheImpactCell,
       })}
     </tfoot>
   </table>`
@@ -165,14 +161,6 @@ const renderGroupEmojiCellContent = ({ groupSizeAfterMerge, groupSizeBeforeMerge
   return ":arrow_lower_right:"
 }
 
-const renderCacheEmojiCellContent = ({ totalBytesToDownload }) => {
-  if (totalBytesToDownload === 0) {
-    return ":ghost:"
-  }
-
-  return ":arrow_upper_right:"
-}
-
 const fileAbstractRelativeUrlFromFileImpact = ({ beforeMerge, afterMerge }) => {
   if (afterMerge) {
     return afterMerge.manifestKey || afterMerge.relativeUrl
@@ -182,13 +170,7 @@ const fileAbstractRelativeUrlFromFileImpact = ({ beforeMerge, afterMerge }) => {
 
 const renderSizeImpactTableFooter = (
   fileByFileImpact,
-  {
-    groupComparison,
-    transformations,
-    formatGroupSizeImpactCell,
-    cacheImpact,
-    formatCacheImpactCell,
-  },
+  { groupComparison, transformations, formatGroupSizeImpactCell },
 ) => {
   const footerLines = []
 
@@ -208,22 +190,6 @@ const renderSizeImpactTableFooter = (
     `<td>${renderGroupEmojiCellContent(groupImpacts[lastSizeName])}</td>`,
   ]
   footerLines.push(groupSizeImpactLine)
-
-  if (cacheImpact) {
-    const cacheImpacts = {}
-    sizeNames.forEach((sizeName) => {
-      cacheImpacts[sizeName] = computeCacheImpact(fileByFileImpact, sizeName)
-    })
-
-    const cacheImpactLine = [
-      `<td nowrap><strong>Cache impact</strong></td>`,
-      ...sizeNames.map(
-        (sizeName) => `<td nowrap>${formatCacheImpactCell(cacheImpacts[sizeName])}</td>`,
-      ),
-      `<td>${renderCacheEmojiCellContent(cacheImpacts[lastSizeName])}</td>`,
-    ]
-    footerLines.push(cacheImpactLine)
-  }
 
   return renderTableLines(footerLines)
 }
@@ -265,20 +231,6 @@ const computeGroupImpact = (groupComparison, sizeName) => {
     },
   )
   return groupImpact
-}
-
-const computeCacheImpact = (fileByFileImpact, sizeName) => {
-  // bytes to download is added file or modified file bytes
-  const totalBytesToDownload = Object.keys(fileByFileImpact).reduce((previous, fileRelativeUrl) => {
-    const fileImpact = fileByFileImpact[fileRelativeUrl]
-    const { afterMerge } = fileImpact
-    // removed
-    if (!afterMerge) {
-      return previous
-    }
-    return previous + afterMerge.sizeMap[sizeName]
-  }, 0)
-  return { totalBytesToDownload }
 }
 
 const truncateFileRelativeUrl = (fileRelativeUrl, fileRelativeUrlMaxLength) => {

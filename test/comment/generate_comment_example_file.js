@@ -10,7 +10,6 @@ const generateComment = (data) => {
     formatComment({
       pullRequestBase: "base",
       pullRequestHead: "head",
-      cacheImpact: false,
       transformations,
       ...jsenvCommentParameters,
       ...data,
@@ -442,81 +441,6 @@ const examples = {
           "dist/foo.js": {
             hash: "b",
             sizeMap: { raw: 2500 },
-            meta: true,
-          },
-        },
-      },
-    },
-  }),
-  "zero size impact and cacheImpact enabled": generateComment({
-    cacheImpact: true,
-    beforeMergeSnapshot: {
-      dist: {
-        fileMap: {
-          "dist/bar.js": {
-            hash: "a",
-            sizeMap: { raw: 300 },
-            meta: true,
-          },
-          "dist/foo.js": {
-            hash: "a",
-            sizeMap: { raw: 2500 },
-            meta: true,
-          },
-        },
-      },
-    },
-    afterMergeSnapshot: {
-      dist: {
-        fileMap: {
-          "dist/bar.js": {
-            hash: "b",
-            sizeMap: { raw: 315 },
-            meta: true,
-          },
-          "dist/foo.js": {
-            hash: "b",
-            sizeMap: { raw: 2500 },
-            meta: true,
-          },
-        },
-      },
-    },
-  }),
-  "cache impact + several cache impact": generateComment({
-    cacheImpact: true,
-    beforeMergeSnapshot: {
-      dist: {
-        fileMap: {
-          "dist/bar.js": {
-            hash: "a",
-            sizeMap: { raw: 100 },
-            meta: true,
-          },
-          "dist/hello.js": {
-            hash: "a",
-            sizeMap: { raw: 100 },
-            meta: true,
-          },
-        },
-      },
-    },
-    afterMergeSnapshot: {
-      dist: {
-        fileMap: {
-          "dist/foo.js": {
-            hash: "a",
-            sizeMap: { raw: 100 },
-            meta: true,
-          },
-          "dist/bar.js": {
-            hash: "b",
-            sizeMap: { raw: 110 },
-            meta: true,
-          },
-          "dist/hello.js": {
-            hash: "b",
-            sizeMap: { raw: 110 },
             meta: true,
           },
         },

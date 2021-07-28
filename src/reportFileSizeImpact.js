@@ -37,8 +37,6 @@ export const reportFileSizeImpact = async ({
   formatFileCell = jsenvCommentParameters.formatFileCell,
   formatFileSizeImpactCell = jsenvCommentParameters.formatFileSizeImpactCell,
   formatGroupSizeImpactCell = jsenvCommentParameters.formatGroupSizeImpactCell,
-  cacheImpact = false,
-  formatCacheImpactCell = jsenvCommentParameters.formatCacheImpactCell,
   shouldOpenGroupByDefault = jsenvCommentParameters.shouldOpenGroupByDefault,
 
   catchError,
@@ -114,8 +112,6 @@ export const reportFileSizeImpact = async ({
         formatFileCell,
         formatFileSizeImpactCell,
         formatGroupSizeImpactCell,
-        cacheImpact,
-        formatCacheImpactCell,
         shouldOpenGroupByDefault,
       })
     },

@@ -19,8 +19,6 @@ export const formatComment = ({
   formatFileCell,
   formatFileSizeImpactCell,
   formatGroupSizeImpactCell,
-  cacheImpact,
-  formatCacheImpactCell,
   shouldOpenGroupByDefault,
 }) => {
   const warnings = []
@@ -49,8 +47,6 @@ export const formatComment = ({
     formatFileCell,
     formatFileSizeImpactCell,
     formatGroupSizeImpactCell,
-    cacheImpact,
-    formatCacheImpactCell,
     shouldOpenGroupByDefault,
   })
 
@@ -76,8 +72,6 @@ const renderCommentBody = ({
   formatFileCell,
   formatFileSizeImpactCell,
   formatGroupSizeImpactCell,
-  cacheImpact,
-  formatCacheImpactCell,
   shouldOpenGroupByDefault,
 }) => {
   const overallImpactInfo = {}
@@ -215,8 +209,6 @@ const renderCommentBody = ({
               formatFileCell,
               formatFileSizeImpactCell,
               formatGroupSizeImpactCell,
-              cacheImpact,
-              formatCacheImpactCell,
             }),
           ]
         : []),
@@ -233,8 +225,6 @@ const renderCommentBody = ({
                 formatFileCell,
                 formatFileSizeImpactCell,
                 formatGroupSizeImpactCell,
-                cacheImpact,
-                formatCacheImpactCell,
               }),
             }),
           ]
