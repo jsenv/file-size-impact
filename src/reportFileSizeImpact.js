@@ -29,7 +29,7 @@ export const reportFileSizeImpact = async ({
 
   // We could just to ...jsenvCommentParameters but explicitely passing params
   // helps autocompletion in vscode for dev using the function.
-  sortByImpact = false,
+  filesOrdering = jsenvCommentParameters.filesOrdering,
   maxRowsPerTable = jsenvCommentParameters.maxRowsPerTable,
   fileRelativeUrlMaxLength = jsenvCommentParameters.fileRelativeUrlMaxLength,
   formatGroupSummary = jsenvCommentParameters.formatGroupSummary,
@@ -105,7 +105,7 @@ export const reportFileSizeImpact = async ({
         beforeMergeSnapshot: beforeMergeData,
         afterMergeSnapshot: afterMergeData,
 
-        sortByImpact,
+        filesOrdering,
         maxRowsPerTable,
         fileRelativeUrlMaxLength,
         formatGroupSummary,

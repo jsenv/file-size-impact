@@ -15,13 +15,13 @@
     </thead>
     <tbody>
       <tr>
-        <td nowrap>dist/bar.js</td>
-        <td nowrap>110 B (+10 B / +10%)</td>
+        <td nowrap>dist/foo.js</td>
+        <td nowrap>115 B (+15 B / +15%)</td>
         <td>:arrow_upper_right:</td>
       </tr>
       <tr>
-        <td nowrap>dist/foo.js</td>
-        <td nowrap>115 B (+15 B / +15%)</td>
+        <td nowrap>dist/bar.js</td>
+        <td nowrap>110 B (+10 B / +10%)</td>
         <td>:arrow_upper_right:</td>
       </tr>
     </tbody>
@@ -54,17 +54,17 @@
     </thead>
     <tbody>
       <tr>
-        <td nowrap>dist/bar.js</td>
-        <td nowrap>110 B (+10 B / +10%)</td>
-        <td nowrap>22 B (+2 B / +10%)</td>
-        <td nowrap>19 B (+1 B / +5.56%)</td>
-        <td>:arrow_upper_right:</td>
-      </tr>
-      <tr>
         <td nowrap>dist/foo.js</td>
         <td nowrap>115 B (+15 B / +15%)</td>
         <td nowrap>24 B (+4 B / +20%)</td>
         <td nowrap>21 B (+3 B / +16.67%)</td>
+        <td>:arrow_upper_right:</td>
+      </tr>
+      <tr>
+        <td nowrap>dist/bar.js</td>
+        <td nowrap>110 B (+10 B / +10%)</td>
+        <td nowrap>22 B (+2 B / +10%)</td>
+        <td nowrap>19 B (+1 B / +5.56%)</td>
         <td>:arrow_upper_right:</td>
       </tr>
     </tbody>
@@ -228,25 +228,25 @@
     </thead>
     <tbody>
       <tr>
-        <td nowrap><del>dist/commonjs/bar.js</del></td>
-        <td nowrap>0 B (-100 B)</td>
-        <td nowrap>0 B (-10 B)</td>
-        <td nowrap>0 B (-9 B)</td>
-        <td></td>
+        <td nowrap>dist/commonjs/hello.js</td>
+        <td nowrap>187 kB (+20 kB / +11.98%)</td>
+        <td nowrap>1.8 kB (+200 B / +12.5%)</td>
+        <td nowrap>1.7 kB (+200 B / +13.33%)</td>
+        <td>:arrow_upper_right:</td>
       </tr>
       <tr>
         <td nowrap>dist/commonjs/foo.js</td>
         <td nowrap>120 B</td>
         <td nowrap>12 B</td>
         <td nowrap>11 B</td>
-        <td>:new:</td>
+        <td>:baby:</td>
       </tr>
       <tr>
-        <td nowrap>dist/commonjs/hello.js</td>
-        <td nowrap>187 kB (+20 kB / +11.98%)</td>
-        <td nowrap>1.8 kB (+200 B / +12.5%)</td>
-        <td nowrap>1.7 kB (+200 B / +13.33%)</td>
-        <td>:arrow_upper_right:</td>
+        <td nowrap><del>dist/commonjs/bar.js</del></td>
+        <td nowrap>0 B (-100 B)</td>
+        <td nowrap>0 B (-10 B)</td>
+        <td nowrap>0 B (-9 B)</td>
+        <td></td>
       </tr>
     </tbody>
     <tfoot>
@@ -275,25 +275,25 @@
     </thead>
     <tbody>
       <tr>
-        <td nowrap><del>dist/systemjs/bar.js</del></td>
-        <td nowrap>0 B (-100 B)</td>
-        <td nowrap>0 B (-10 B)</td>
-        <td nowrap>0 B (-9 B)</td>
-        <td></td>
+        <td nowrap>dist/systemjs/hello.js</td>
+        <td nowrap>187 kB (+20 kB / +11.98%)</td>
+        <td nowrap>1.8 kB (+200 B / +12.5%)</td>
+        <td nowrap>1.7 kB (+200 B / +13.33%)</td>
+        <td>:arrow_upper_right:</td>
       </tr>
       <tr>
         <td nowrap>dist/systemjs/foo.js</td>
         <td nowrap>120 B</td>
         <td nowrap>12 B</td>
         <td nowrap>11 B</td>
-        <td>:new:</td>
+        <td>:baby:</td>
       </tr>
       <tr>
-        <td nowrap>dist/systemjs/hello.js</td>
-        <td nowrap>187 kB (+20 kB / +11.98%)</td>
-        <td nowrap>1.8 kB (+200 B / +12.5%)</td>
-        <td nowrap>1.7 kB (+200 B / +13.33%)</td>
-        <td>:arrow_upper_right:</td>
+        <td nowrap><del>dist/systemjs/bar.js</del></td>
+        <td nowrap>0 B (-100 B)</td>
+        <td nowrap>0 B (-10 B)</td>
+        <td nowrap>0 B (-9 B)</td>
+        <td></td>
       </tr>
     </tbody>
     <tfoot>
@@ -501,7 +501,7 @@
       <tr>
         <td nowrap>dist/foo.js</td>
         <td nowrap>110 B</td>
-        <td>:new:</td>
+        <td>:baby:</td>
       </tr>
     </tbody>
     <tfoot>

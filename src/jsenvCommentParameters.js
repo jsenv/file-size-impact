@@ -104,11 +104,13 @@ const limitDecimals = (number, decimalCount = 2) => {
 }
 
 export const jsenvCommentParameters = {
+  filesOrdering: "size_impact",
+  maxRowsPerTable: 600,
+  fileRelativeUrlMaxLength: 100,
   formatGroupSummary: jsenvFormatGroupSummary,
   formatHiddenImpactSummary: jsenvFormatHiddenImpactSummary,
   formatFileRelativeUrl: jsenvFormatFileRelativeUrl,
-  maxRowsPerTable: 600,
-  fileRelativeUrlMaxLength: 100,
+
   formatFileCell: jsenvFormatFileCell,
   formatFileSizeImpactCell: jsenvFormatFileSizeImpactCell,
   formatGroupSizeImpactCell: jsenvFormatGroupSizeImpactCell,

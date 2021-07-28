@@ -122,7 +122,7 @@ const renderEmojiCellContent = (fileImpact) => {
   const { event } = fileImpact
 
   if (event === "added") {
-    return ":new:"
+    return ":baby:"
   }
 
   if (event === "deleted") {

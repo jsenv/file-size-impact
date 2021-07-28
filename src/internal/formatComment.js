@@ -2,6 +2,7 @@ import { getSizeMaps } from "../getSizeMaps.js"
 import { compareTwoSnapshots } from "./compareTwoSnapshots.js"
 import { isAdded, isModified, isDeleted } from "./helper.js"
 import { renderImpactTable } from "./renderImpactTable.js"
+import { orderBySizeImpact } from "./orderBySizeImpact.js"
 
 export const formatComment = ({
   trackingConfig,
@@ -11,7 +12,7 @@ export const formatComment = ({
   beforeMergeSnapshot,
   afterMergeSnapshot,
 
-  sortByImpact,
+  filesOrdering,
   maxRowsPerTable,
   fileRelativeUrlMaxLength,
   formatGroupSummary,
@@ -40,7 +41,7 @@ export const formatComment = ({
     pullRequestHead,
     snapshotComparison,
 
-    sortByImpact,
+    filesOrdering,
     maxRowsPerTable,
     fileRelativeUrlMaxLength,
     formatGroupSummary,
@@ -66,7 +67,7 @@ const renderCommentBody = ({
   pullRequestHead,
   snapshotComparison,
 
-  sortByImpact,
+  filesOrdering,
   fileRelativeUrlMaxLength,
   maxRowsPerTable,
   formatGroupSummary,
@@ -116,8 +117,8 @@ const renderCommentBody = ({
   const groupMessages = Object.keys(snapshotComparison).map((groupName) => {
     const groupComparison = snapshotComparison[groupName]
     const groupFileCount = Object.keys(groupComparison).length
-    const fileByFileImpact = {}
-    const fileByFileImpactHidden = {}
+    let fileByFileImpact = {}
+    let fileByFileImpactHidden = {}
     if (groupFileCount === 0) {
       return renderGroup(
         formulateEmptyGroupContent({
@@ -186,9 +187,12 @@ const renderCommentBody = ({
       }
     })
 
-    if (sortByImpact) {
-      // sort the fileByFileImpact to have increase together
-      // and decrease together
+    if (filesOrdering === "size_impact") {
+      fileByFileImpact = orderBySizeImpact(fileByFileImpact, Object.keys(transformations))
+      fileByFileImpactHidden = orderBySizeImpact(
+        fileByFileImpactHidden,
+        Object.keys(transformations),
+      )
     }
 
     const groupImpactCount = Object.keys(fileByFileImpact).length

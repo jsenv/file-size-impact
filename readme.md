@@ -26,7 +26,7 @@ _Screenshot when comment is expanded:_
 
 ![screenshot of pull request comment expanded](./docs/comment-expanded.png)
 
-_Legend of the pull request comment:_
+## Pull request comment legend
 
 ![legend of pull request comment](./docs/comment-legend.png)
 
@@ -172,12 +172,14 @@ This section explains how integrate file size impact to pull requests on GitHub.
 import { reportFileSizeImpact, raw } from "@jsenv/file-size-impact"
 
 await reportFileSizeImpact({
-  projectDirectoryUrl: "file:///directory",
   logLevel: "info",
+
+  projectDirectoryUrl: "file:///directory",
   githubToken: "xxx",
   repositoryOwner: "jsenv",
   repositoryName: "file-size-impact",
   pullRequestNumber: 10,
+
   installCommand: "npm install",
   buildCommand: "npm run build",
   trackingConfig: {
@@ -189,31 +191,31 @@ await reportFileSizeImpact({
   manifestConfig: {
     "./dist/**/manifest.json": true,
   },
+
+  filesOrdering: "size_impact",
 })
 ```
 
 </details>
 
-### projectDirectoryUrl
-
-`projectDirectoryUrl` parameter is a string leading to your project root directory. This parameter is **required**.
-
 ### logLevel
 
-`logLevel` parameter controls verbosity of logs during the function execution. This parameters is optional with a default value of `"info"`.
+_logLevel_ parameter controls verbosity of logs during the function execution. This parameter is optional with a default value of `"info"`.
 
-You likely don't need to modify this parameter. Except eventually to pass `"debug"`: this will enable more verbose logs to follow closely what is hapenning during `reportFileSizeImpact` execution.
+You likely don't need to modify this parameter except to get verbose logs using `"debug"`. The list of available values for _logLevel_ can be found on [@jsenv/logger documentation](https://github.com/jsenv/jsenv-logger#loglevel).
 
-The list of available `logLevel` values can be found on [@jsenv/logger documentation](https://github.com/jsenv/jsenv-logger#loglevel).
+### projectDirectoryUrl
+
+_projectDirectoryUrl_ parameter is a string leading to your project root directory. This parameter is **required**.
 
 ### trackingConfig
 
-`trackingConfig` parameter is an object used to configure group of files you want to track. This parameter is optional with a default value exported in [src/jsenvTrackingConfig.js](./src/jsenvTrackingConfig.js)
+_trackingConfig_ parameter is an object used to configure group of files you want to track. This parameter is optional with a default value exported in [src/jsenvTrackingConfig.js](./src/jsenvTrackingConfig.js)
 
-`trackingConfig` keys are group names that will appear in the generated comment.
-`trackingConfig` values are objects associating a pattern to a value. This object is refered as `metaValueMap` in https://github.com/jsenv/jsenv-url-meta.
+_trackingConfig_ keys are group names that will appear in the generated comment.
+_trackingConfig_ values are objects associating a pattern to a value. This object is refered as _metaValueMap_ in [@jsenv/url-meta#structuredMetaMap](https://github.com/jsenv/jsenv-url-meta#structuredmetamap).
 
-For example you can create two groups named `critical files` and `remaining files` like this:
+For example you can create two groups named "critical files" and "remaining files" like this:
 
 ```js
 import { reportFileSizeImpact } from "@jsenv/file-size-impact"
@@ -238,7 +240,7 @@ reportFileSizeImpact({
 
 ### transformations
 
-`transformations` parameter is an object used to transform files content before computing their size. This parameter is optional with a default tracking file size without transformation called `raw`.
+_transformations_ parameter is an object used to transform files content before computing their size. This parameter is optional with a default tracking file size without transformation called _raw_.
 
 You can use this parameter to track file size after gzip compression.
 
@@ -252,7 +254,7 @@ reportFileSizeImpact({
 
 ![screenshot of pull request comment with gzip and brotli](./docs/comment-compression.png)
 
-`raw`, `gzip` and `brotli` compression can be enabled this way.
+_raw_, _gzip_ and _brotli_ compression can be enabled this way.
 
 It's also possible to control compression level.
 
@@ -268,7 +270,7 @@ reportFileSizeImpact({
 })
 ```
 
-Finally `transformations` can be used to add custom transformations.
+Finally _transformations_ can be used to add custom _transformations_.
 
 ```js
 import { reportFileSizeImpact, raw, gzip, brotli } from "@jsenv/file-size-impact"
@@ -283,17 +285,17 @@ reportFileSizeImpact({
 
 ### installCommand
 
-`installCommand` parameter is a string representing the command to run in order to install things just after a switching to a git branch. This parameter is optional with a default value of `"npm install"`.
+_installCommand_ parameter is a string representing the command to run in order to install things just after a switching to a git branch. This parameter is optional with a default value of `"npm install"`.
 
 ### buildCommand
 
-`buildCommand` parameter is a string representing the command to run in order to generate files. This parameter is optional with a default value of `"npm run-script build"`.
+_buildCommand_ parameter is a string representing the command to run in order to generate files. This parameter is optional with a default value of `"npm run-script build"`.
 
 ### manifestConfig
 
-`manifestConfig` parameter is an object used to configure the location of an optional manifest file. It is used to compare [files with dynamic names](#File-with-dynamic-names). This parameter is optional with a default considering `dist/**/manifest.json` as manifest files.
+_manifestConfig_ parameter is an object used to configure the location of an optional manifest file. It is used to compare [files with dynamic names](#File-with-dynamic-names). This parameter is optional with a default considering `"dist/**/manifest.json"` as manifest files.
 
-This parameter reuses the shape of `trackingConfig` (associating pattern + value).
+This parameter reuses the shape of [trackingConfig](#trackingConfig) (associating pattern + value).
 
 ```js
 import { reportFileSizeImpact } from "@jsenv/file-size-impact"
@@ -305,17 +307,38 @@ reportFileSizeImpact({
 })
 ```
 
-You can disable manifest file handling by passing `manifestConfig: null` (`manifest.json` will be handled as a regular file).
+You can disable manifest files handling by passing `null`.
+
+```js
+import { reportFileSizeImpact } from "@jsenv/file-size-impact"
+
+reportFileSizeImpact({
+  manifestConfig: {
+    "./dist/**/manifest.json": null,
+  },
+})
+```
+
+In that case _manifest.json_ will be handled as a regular file.
+
+### filesOrdering
+
+_filesOrdering_ parameter is a string used to decide the order of the files displayed in the comment. This parameter is optional with a default value of `"size_impact"`.
+
+| filesOrdering | Description                                        |
+| ------------- | -------------------------------------------------- |
+| "size_impact" | Files are ordered by size impact                   |
+| "filesystem"  | Files are ordered as they appear on the filesystem |
 
 ### runLink
 
-`runLink` parameter allow to put a link to the workflow run in the generated comment body. It is used to indicates where file size impact was runned.
+_runLink_ parameter allow to put a link to the workflow run in the generated comment body. It is used to indicates where file size impact was runned.
 
 ![screenshot of pull request comment where runlink is highlighted](./docs/runlink-highlighted.png)
 
 This parameter is returned by [readGitHubWorkflowEnv](#readGitHubWorkflowEnv) meaning it comes for free inside a GitHub workflow.
 
-Inside an other workflow, you can pass your own `runLink`. As in the example below where it is assumed that script is runned by jenkins.
+Inside an other workflow, you can pass your own _runLink_. As in the example below where it is assumed that script is runned by jenkins.
 
 ```js
 import { reportFileSizeImpact } from "@jsenv/file-size-impact"
@@ -330,9 +353,9 @@ reportFileSizeImpact({
 
 ### shouldOpenGroupByDefault
 
-`shouldOpenGroupByDefault` parameter is a function received named arguments and returning a boolean. When the returned boolean is true, the group is opened by default in the pull request comment.
+_shouldOpenGroupByDefault_ parameter is a function received named arguments and returning a boolean. When the returned boolean is true, the group is opened by default in the pull request comment.
 
-The following code would always open `critical files` group.
+The following code would always open "critical files" group.
 
 ```js
 import { reportFileSizeImpact } from "@jsenv/file-size-impact"
@@ -353,7 +376,7 @@ reportFileSizeImpact({
 
 ## readGitHubWorkflowEnv
 
-`readGitHubWorkflowEnv` is a function meant to be runned inside a GitHub workflow. It returns an object meant to be forwarded to [reportFileSizeImpact](#reportFileSizeImpact).
+_readGitHubWorkflowEnv_ is a function meant to be runned inside a GitHub workflow. It returns an object meant to be forwarded to [reportFileSizeImpact](#reportFileSizeImpact).
 
 ```js
 import { reportFileSizeImpact, readGitHubWorkflowEnv } from "@jsenv/file-size-impact"
@@ -361,12 +384,11 @@ import { reportFileSizeImpact, readGitHubWorkflowEnv } from "@jsenv/file-size-im
 const gitHubWorkflowEnv = readGitHubWorkflowEnv()
 
 reportFileSizeImpact({
-  projectDirectoryUrl: new URL("./", import.meta.url),
   ...gitHubWorkflowEnv,
 })
 ```
 
-`gitHubWorkflowEnv` object looks like this:
+_gitHubWorkflowEnv_ object looks like this:
 
 ```js
 const gitHubWorkflowEnv = {
@@ -410,7 +432,7 @@ Useful if you have several files always modified by the build but with a size im
 
 ## showSizeImpact
 
-`showSizeImpact` is a function receiving named parameters that should return a boolean. Boolean use to decide if size impact will be shown or hidden. `showSizeImpact` is part of `trackingConfig parameter` documented in [reportFileSizeImpact](#reportFileSizeImpact).
+_showSizeImpact_ is a function receiving named parameters that should return a boolean. Boolean use to decide if size impact will be shown or hidden.
 
 ```js
 import { reportFileSizeImpact, raw } from "@jsenv/file-size-impact"
@@ -433,7 +455,7 @@ The code above translates into the following sentence:
 
 ### showSizeImpact call example
 
-Code below illustrates the named parameter passed to `showSizeImpact`.
+Code below illustrates the named parameter passed to _showSizeImpact_.
 
 ```js
 showSizeImpact({
@@ -456,7 +478,7 @@ showSizeImpact({
 
 ### fileRelativeUrl
 
-A string representing the file url relative to [projectDirectoryUrl](#reportFileSizeImpact).
+A string representing the file url relative to [projectDirectoryUrl](#projectDirectoryUrl).
 
 ### event
 
