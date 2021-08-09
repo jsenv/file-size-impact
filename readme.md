@@ -10,9 +10,9 @@ Report pull request impacts on specific files size.
 
 `@jsenv/file-size-impact` analyses a pull request impact on specific files size. This analysis is posted in a comment of the pull request on GitHub.
 
-- Catch file size impacts before merging a pull request
-- Track compressed file size
-- Regroup file into groups to match your project needs
+- Helps you to catch size impacts before merging pull requests
+- Can be configured to track compressed file size
+- Create group of files to create meaningful reports
 - Can be added to any workflow like a GitHub workflow
 
 # Pull request comment
@@ -67,7 +67,7 @@ export const generateFileSizeReport = async () => {
 
 At this stage, you could generate a file size report on your machine. For an example, see `"generate-file-size-report"` in [package.json#L30](./package.json#L30) and [script/file_size/generate_file_size_report.mjs#L14](./script/file_size/generate_file_size_report.mjs#L14).
 
-All that's left is to configure a workflow to do generate a file size report before and after merging a pull request.
+All that's left is to configure a workflow to compare file size reports before and after merging a pull request.
 
 _.github/workflows/file_size_impact.yml_
 
@@ -165,7 +165,7 @@ reportFileSizeImpact({
 
 ### 3. Create a GitHub token
 
-In order to have `process.env.GITHUB_TOKEN` you need to create a GitHub token with `repo` scope at https://github.com/settings/tokens/new. After that you need to setup this environment variable. The exact way to do this is specific to your project and tools. Applied to Travis you could add it to your environment variables as documented in https://docs.travis-ci.com/user/environment-variables/#defining-variables-in-repository-settings.
+The GitHub token is required to be able to post a commment in the pull request. You need to create a GitHub token with `repo` scope at https://github.com/settings/tokens/new. Finally you need to setup this environment variable. The exact way to do this is specific to the tools your are using.
 
 # getFileSizeReport
 
