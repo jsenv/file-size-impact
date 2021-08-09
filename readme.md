@@ -47,13 +47,13 @@ The first thing you need is a script capable to generate a file size report.
 npm install --save-dev @jsenv/file-size-impact
 ```
 
-_generate_file_size_report.mjs_
+_generate_size_report.mjs_
 
 ```js
 import { getFileSizeReport } from "@jsenv/file-size-impact"
 
-export const generateFileSizeReport = async () => {
-  return collectFileSizeReport({
+export const generateSizeReport = async () => {
+  return getFileSizeReport({
     projectDirectoryUrl: new URL("./", import.meta.url),
     trackingConfig: {
       dist: {
