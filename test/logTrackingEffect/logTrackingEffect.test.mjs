@@ -1,5 +1,6 @@
 import { resolveUrl } from "@jsenv/util"
-import { logTrackingEffect } from "../../index.js"
+
+import { logTrackingEffect } from "@jsenv/file-size-impact"
 
 const directoryUrl = resolveUrl("./", import.meta.url)
 

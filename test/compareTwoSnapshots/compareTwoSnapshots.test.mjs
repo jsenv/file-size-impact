@@ -1,6 +1,6 @@
 import { assert } from "@jsenv/assert"
 
-import { compareTwoSnapshots } from "../../src/internal/compareTwoSnapshots.js"
+import { compareTwoSnapshots } from "@jsenv/file-size-impact/src/internal/compareTwoSnapshots.js"
 
 {
   const actual = compareTwoSnapshots(

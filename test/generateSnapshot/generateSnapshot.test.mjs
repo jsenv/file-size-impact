@@ -2,8 +2,8 @@ import { assert } from "@jsenv/assert"
 import { resolveUrl, ensureEmptyDirectory, writeFile, writeDirectory } from "@jsenv/util"
 import { createCancellationToken } from "@jsenv/cancellation"
 
-import { generateSnapshot } from "../../src/internal/generateSnapshot.js"
-import { raw } from "../../index.js"
+import { raw } from "@jsenv/file-size-impact"
+import { generateSnapshot } from "@jsenv/file-size-impact/src/internal/generateSnapshot.js"
 
 const transformations = { raw }
 const tempDirectoryUrl = resolveUrl("./temp/", import.meta.url)
