@@ -13,10 +13,6 @@ export const generateFileSizeReport = async () => {
 
 const executeAndLog = process.argv.includes("--local")
 if (executeAndLog) {
-  const fileSizeReport = await generateFileSizeReport({
-    runCount: 1,
-    jsonFile: true,
-    htmlFile: true,
-  })
+  const fileSizeReport = await generateFileSizeReport()
   logFileSizeReport(fileSizeReport)
 }

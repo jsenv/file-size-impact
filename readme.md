@@ -52,7 +52,7 @@ _generate_file_size_report.mjs_
 ```js
 import { getFileSizeReport } from "@jsenv/file-size-impact"
 
-export const generateSizeReport = async () => {
+export const generateFileSizeReport = async () => {
   return getFileSizeReport({
     projectDirectoryUrl: new URL("./", import.meta.url),
     trackingConfig: {
@@ -65,7 +65,7 @@ export const generateSizeReport = async () => {
 }
 ```
 
-At this stage, you could generate a file size report on your machine. For an example, see `"generate-file-size-report"` in [package.json#L42](./package.json#L42) and [script/file_size/generate_file_size_report.mjs#L32](./script/size/generate_file_size_report.mjs#L32).
+At this stage, you could generate a file size report on your machine. For an example, see `"generate-file-size-report"` in [package.json#L30](./package.json#L30) and [script/file_size/generate_file_size_report.mjs#L14](./script/file_size/generate_file_size_report.mjs#L14).
 
 All that's left is to configure a workflow to do generate a file size report before and after merging a pull request.
 
@@ -116,6 +116,7 @@ import { reportFileSizeImpact, readGitHubWorkflowEnv } from "@jsenv/file-size-im
 
 reportFileSizeImpact({
   ...readGitHubWorkflowEnv(),
+  buildCommand: "npm run dist",
   moduleGeneratingFileSizeReportRelativeUrl: "./generate_file_size_report.mjs",
 })
 ```
@@ -146,17 +147,17 @@ node ./report_file_size_impact.mjs
 When outside a GitHub workflow, you cannot use _readGitHubWorkflowEnv()_. It means you must pass several parameters to _reportFileSizeImpact_. The example below assume code is executed by Travis.
 
 ```diff
-- import { _reportFileSizeImpact_, readGitHubWorkflowEnv } from "@jsenv/lighthouse-impact"
-+ import { _reportFileSizeImpact_ } from "@jsenv/lighthouse-impact"
+- import { reportFileSizeImpact, readGitHubWorkflowEnv } from "@jsenv/file-size-impact"
++ import { reportFileSizeImpact } from "@jsenv/file-size-impact"
 
-_reportFileSizeImpact_({
--  ...readGitHubWorkflowEnv(),
-+  projectDirectoryUrl: process.env.TRAVIS_BUILD_DIR,
-+  repositoryOwner: process.env.TRAVIS_REPO_SLUG.split("/")[0],
-+  repositoryName: process.env.TRAVIS_REPO_SLUG.split("/")[1],
-+  pullRequestNumber: process.env.TRAVIS_PULL_REQUEST,
-+  githubToken: process.env.GITHUB_TOKEN, // see next step
-  moduleGeneratingFileSizeReportRelativeUrl: "./generate_file_size_report.mjs",
+reportFileSizeImpact({
+- ...readGitHubWorkflowEnv(),
++ projectDirectoryUrl: process.env.TRAVIS_BUILD_DIR,
++ repositoryOwner: process.env.TRAVIS_REPO_SLUG.split("/")[0],
++ repositoryName: process.env.TRAVIS_REPO_SLUG.split("/")[1],
++ pullRequestNumber: process.env.TRAVIS_PULL_REQUEST,
++ githubToken: process.env.GITHUB_TOKEN, // see next step
+  buildCommand: "npm run dist",
 })
 ```
 
