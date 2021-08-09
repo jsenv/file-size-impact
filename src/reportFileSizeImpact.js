@@ -42,23 +42,14 @@ export const reportFileSizeImpact = async ({
 
   catchError,
   runLink,
+  commitInGeneratedByInfo,
 }) => {
   projectDirectoryUrl = assertAndNormalizeDirectoryUrl(projectDirectoryUrl)
-  if (typeof githubToken !== "string") {
-    throw new TypeError(`githubToken must be a string but received ${githubToken}`)
-  }
-  if (typeof repositoryOwner !== "string") {
-    throw new TypeError(`repositoryOwner must be a string but received ${repositoryOwner}`)
-  }
-  if (typeof repositoryName !== "string") {
-    throw new TypeError(`repositoryName must be a string but received ${repositoryName}`)
-  }
-  pullRequestNumber = String(pullRequestNumber)
-  if (typeof pullRequestNumber !== "string") {
-    throw new TypeError(`pullRequestNumber must be a string but received ${pullRequestNumber}`)
-  }
   if (typeof installCommand !== "string") {
     throw new TypeError(`installCommand must be a string but received ${installCommand}`)
+  }
+  if (typeof buildCommand !== "string") {
+    throw new TypeError(`buildCommand must be a string but received ${buildCommand}`)
   }
 
   return commentGitHubPullRequestImpact({
@@ -72,7 +63,6 @@ export const reportFileSizeImpact = async ({
     repositoryOwner,
     repositoryName,
     pullRequestNumber,
-    runLink,
 
     collectInfo: async ({ cancellationToken, execCommandInProjectDirectory }) => {
       await execCommandInProjectDirectory(installCommand)
@@ -121,6 +111,8 @@ export const reportFileSizeImpact = async ({
       url: "https://github.com/jsenv/file-size-impact",
       text: "@jsenv/file-size-impact",
     },
+    runLink,
+    commitInGeneratedByInfo,
     catchError,
   })
 }
