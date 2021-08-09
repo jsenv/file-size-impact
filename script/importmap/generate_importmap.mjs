@@ -10,8 +10,9 @@ to resolve imports.
 
 */
 
-import { getImportMapFromProjectFiles, writeImportMapFile } from "@jsenv/node-module-import-map"
-import { projectDirectoryUrl } from "../../jsenv.config.js"
+import { getImportMapFromProjectFiles, writeImportMapFile } from "@jsenv/importmap-node-module"
+
+import { projectDirectoryUrl } from "../../jsenv.config.mjs"
 
 await writeImportMapFile(
   [
