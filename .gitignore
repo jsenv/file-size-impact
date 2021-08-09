@@ -1,7 +1,6 @@
 /.jsenv/
 /.vscode/settings.json
 /coverage/
-/dist/
 /dist/**/manifest.json
 /node_modules/
 /test/**/temp/

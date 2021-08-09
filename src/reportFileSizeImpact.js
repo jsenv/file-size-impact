@@ -36,10 +36,15 @@ export const reportFileSizeImpact = async ({
   runLink,
   commitInGeneratedByInfo,
 }) => {
-  if (typeof installCommand !== "string") {
+  if (installCommand === null) {
+    // a null installCommand means there is no need to install anything
+  } else if (typeof installCommand !== "string") {
     throw new TypeError(`installCommand must be a string but received ${installCommand}`)
   }
-  if (typeof buildCommand !== "string") {
+
+  if (buildCommand === null) {
+    // a null buildCommand means there is no need to build anything
+  } else if (typeof buildCommand !== "string") {
     throw new TypeError(`buildCommand must be a string but received ${buildCommand}`)
   }
   projectDirectoryUrl = assertAndNormalizeDirectoryUrl(projectDirectoryUrl)
@@ -61,8 +66,8 @@ export const reportFileSizeImpact = async ({
     pullRequestNumber,
 
     collectInfo: async ({ execCommandInProjectDirectory }) => {
-      await execCommandInProjectDirectory(installCommand)
-      await execCommandInProjectDirectory(buildCommand)
+      if (installCommand) await execCommandInProjectDirectory(installCommand)
+      if (buildCommand) await execCommandInProjectDirectory(buildCommand)
 
       const { generateFileSizeReport } = await import(
         `${moduleGeneratingFileSizeReportUrl}?cache_busting=${Date.now()}`

@@ -2,10 +2,10 @@ import { getFileSizeReport, logFileSizeReport } from "@jsenv/file-size-impact"
 
 export const generateFileSizeReport = async () => {
   return getFileSizeReport({
-    projectDirectoryUrl: new URL("./", import.meta.url),
+    projectDirectoryUrl: new URL("../../", import.meta.url),
     trackingConfig: {
-      "npm tarball": {
-        "./jsenv-file-size-impact-*.tgz": true,
+      dist: {
+        "./dist/**/*.js": true,
       },
     },
   })
