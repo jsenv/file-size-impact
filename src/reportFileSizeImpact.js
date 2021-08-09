@@ -47,6 +47,12 @@ export const reportFileSizeImpact = async ({
   } else if (typeof buildCommand !== "string") {
     throw new TypeError(`buildCommand must be a string but received ${buildCommand}`)
   }
+
+  if (typeof moduleGeneratingFileSizeReportRelativeUrl !== "string") {
+    throw new TypeError(
+      `moduleGeneratingFileSizeReportRelativeUrl must be a string but received ${moduleGeneratingFileSizeReportRelativeUrl}`,
+    )
+  }
   projectDirectoryUrl = assertAndNormalizeDirectoryUrl(projectDirectoryUrl)
   const moduleGeneratingFileSizeReportUrl = resolveUrl(
     moduleGeneratingFileSizeReportRelativeUrl,
