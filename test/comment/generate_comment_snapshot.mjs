@@ -4,39 +4,34 @@ import { createGitHubPullRequestCommentText } from "@jsenv/github-pull-request-i
 import { jsenvCommentParameters } from "@jsenv/file-size-impact/src/internal/jsenvCommentParameters.js"
 import { formatComment } from "@jsenv/file-size-impact/src/internal/formatComment.js"
 
-const generateComment = (data) => {
-  const transformationKeys = deduceTransformationKeys(data)
-  return createGitHubPullRequestCommentText(
-    formatComment({
-      pullRequestBase: "base",
-      pullRequestHead: "head",
-      transformationKeys,
-      ...jsenvCommentParameters,
-      ...data,
-    }),
-  )
+const generateComment = ({ beforeMergeFileSizeReport, afterMergeFileSizeReport, ...rest }) => {
+  const formatCommentParams = {
+    pullRequestBase: "base",
+    pullRequestHead: "head",
+    ...jsenvCommentParameters,
+    beforeMergeFileSizeReport: {
+      transformationKeys: deduceTransformationKeys(beforeMergeFileSizeReport),
+      ...beforeMergeFileSizeReport,
+    },
+    afterMergeFileSizeReport: {
+      transformationKeys: deduceTransformationKeys(afterMergeFileSizeReport),
+      ...afterMergeFileSizeReport,
+    },
+    ...rest,
+  }
+  const prComment = formatComment(formatCommentParams)
+  return createGitHubPullRequestCommentText(prComment)
 }
 
-const deduceTransformationKeys = ({ beforeMergeFileSizeReport, afterMergeFileSizeReport }) => {
-  const afterMergeGroups = afterMergeFileSizeReport.groups
-  const afterMergeKeys = Object.keys(afterMergeGroups)
-  if (afterMergeKeys.length) {
-    const afterMergeFirstGroup = afterMergeGroups[afterMergeKeys[0]]
-    const afterMergeFileMap = afterMergeFirstGroup.fileMap
-    const files = Object.keys(afterMergeFileMap)
+const deduceTransformationKeys = (fileSizeReport) => {
+  const groups = fileSizeReport.groups
+  const groupNames = Object.keys(groups)
+  if (groupNames.length) {
+    const firstGroup = groups[groupNames[0]]
+    const fileMap = firstGroup.fileMap
+    const files = Object.keys(fileMap)
     if (files.length) {
-      return Object.keys(afterMergeFileMap[files[0]].sizeMap)
-    }
-  }
-
-  const beforeMergeGroups = beforeMergeFileSizeReport.groups
-  const beforeMergeKeys = Object.keys(beforeMergeFileSizeReport)
-  if (beforeMergeKeys.length) {
-    const beforeMergeFirstGroup = beforeMergeGroups[beforeMergeKeys[0]]
-    const beforeMergeFileMap = beforeMergeFirstGroup.fileMap
-    const files = Object.keys(beforeMergeFileMap)
-    if (files.length) {
-      return Object.keys(beforeMergeFileMap[files[0]].sizeMap)
+      return Object.keys(fileMap[files[0]].sizeMap)
     }
   }
 
@@ -531,19 +526,21 @@ const examples = {
       },
     },
     afterMergeFileSizeReport: {
-      dist: {
-        fileMap: {
-          "dist/bar.js": {
-            hash: "b",
-            sizeMap: { raw: 101 },
-            meta: {
-              showSizeImpact: ({ sizeImpactMap }) => Math.abs(sizeImpactMap.raw) > 10,
+      groups: {
+        dist: {
+          fileMap: {
+            "dist/bar.js": {
+              hash: "b",
+              sizeMap: { raw: 101 },
+              meta: {
+                showSizeImpact: ({ sizeImpactMap }) => Math.abs(sizeImpactMap.raw) > 10,
+              },
             },
-          },
-          "dist/foo.js": {
-            hash: "b",
-            sizeMap: { raw: 115 },
-            meta: true,
+            "dist/foo.js": {
+              hash: "b",
+              sizeMap: { raw: 115 },
+              meta: true,
+            },
           },
         },
       },
@@ -580,8 +577,12 @@ const examples = {
     },
   }),
   "empty warning": generateComment({
-    beforeMergeFileSizeReport: {},
-    afterMergeFileSizeReport: {},
+    beforeMergeFileSizeReport: {
+      groups: {},
+    },
+    afterMergeFileSizeReport: {
+      groups: {},
+    },
   }),
   "new file + showSizeImpact": generateComment({
     beforeMergeFileSizeReport: {
@@ -624,6 +625,7 @@ const examples = {
       },
     },
     afterMergeFileSizeReport: {
+      transformationKeys: ["raw"],
       groups: {
         dist: {
           fileMap: {},

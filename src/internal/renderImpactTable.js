@@ -1,7 +1,7 @@
 export const renderImpactTable = (
   fileByFileImpact,
   {
-    groupComparison,
+    groupFileImpactMap,
     transformationKeys,
     fileRelativeUrlMaxLength,
     maxRowsPerTable,
@@ -27,7 +27,7 @@ export const renderImpactTable = (
     </tbody>
     <tfoot>
       ${renderSizeImpactTableFooter(fileByFileImpact, {
-        groupComparison,
+        groupFileImpactMap,
         transformationKeys,
         formatGroupSizeImpactCell,
       })}
@@ -170,7 +170,7 @@ const fileAbstractRelativeUrlFromFileImpact = ({ beforeMerge, afterMerge }) => {
 
 const renderSizeImpactTableFooter = (
   fileByFileImpact,
-  { groupComparison, transformationKeys, formatGroupSizeImpactCell },
+  { groupFileMap, transformationKeys, formatGroupSizeImpactCell },
 ) => {
   const footerLines = []
 
@@ -179,7 +179,7 @@ const renderSizeImpactTableFooter = (
 
   const groupImpacts = {}
   sizeNames.forEach((sizeName) => {
-    groupImpacts[sizeName] = computeGroupImpact(groupComparison, sizeName)
+    groupImpacts[sizeName] = computeGroupImpact(groupFileMap, sizeName)
   })
 
   const groupSizeImpactLine = [
@@ -194,10 +194,10 @@ const renderSizeImpactTableFooter = (
   return renderTableLines(footerLines)
 }
 
-const computeGroupImpact = (groupComparison, sizeName) => {
-  const groupImpact = Object.keys(groupComparison).reduce(
+const computeGroupImpact = (groupFileImpactMap, sizeName) => {
+  const groupImpact = Object.keys(groupFileImpactMap).reduce(
     (previous, fileRelativeUrl) => {
-      const fileImpact = groupComparison[fileRelativeUrl]
+      const fileImpact = groupFileImpactMap[fileRelativeUrl]
       const { beforeMerge, afterMerge } = fileImpact
       // added
       if (!beforeMerge) {

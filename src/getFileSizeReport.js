@@ -39,12 +39,13 @@ export const getFileSizeReport = async ({
   await Promise.all(
     groupNames.map(async (groupName) => {
       const groupTrackingResult = groupTrackingResults[groupName]
-      const groupFiles = await groupTrackingResultToGroupSnapshot(groupTrackingResult, {
+      const groupReport = await groupTrackingResultToGroupReport(groupTrackingResult, {
         logger,
         projectDirectoryUrl,
+        tracking: trackingConfig[groupName],
         transformations,
       })
-      groups[groupName] = groupFiles
+      groups[groupName] = groupReport
     }),
   )
 
@@ -56,9 +57,9 @@ export const getFileSizeReport = async ({
   return fileSizeReport
 }
 
-const groupTrackingResultToGroupSnapshot = async (
+const groupTrackingResultToGroupReport = async (
   groupTrackingResult,
-  { logger, projectDirectoryUrl, transformations },
+  { logger, projectDirectoryUrl, tracking, transformations },
 ) => {
   const manifestMap = {}
   const { manifestMetaMap } = groupTrackingResult
@@ -90,6 +91,7 @@ const groupTrackingResultToGroupSnapshot = async (
   }, Promise.resolve())
 
   return {
+    tracking,
     manifestMap,
     fileMap,
   }
