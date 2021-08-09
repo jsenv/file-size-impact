@@ -1,472 +1,510 @@
 import { writeFile, resolveUrl } from "@jsenv/util"
 import { createGitHubPullRequestCommentText } from "@jsenv/github-pull-request-impact"
 
-import { jsenvCommentParameters } from "@jsenv/file-size-impact/src/jsenvCommentParameters.js"
+import { jsenvCommentParameters } from "@jsenv/file-size-impact/src/internal/jsenvCommentParameters.js"
 import { formatComment } from "@jsenv/file-size-impact/src/internal/formatComment.js"
 
 const generateComment = (data) => {
-  const transformations = deduceTransformations(data)
+  const transformationKeys = deduceTransformationKeys(data)
   return createGitHubPullRequestCommentText(
     formatComment({
       pullRequestBase: "base",
       pullRequestHead: "head",
-      transformations,
+      transformationKeys,
       ...jsenvCommentParameters,
       ...data,
     }),
   )
 }
 
-const deduceTransformations = ({ beforeMergeSnapshot, afterMergeSnapshot }) => {
-  const beforeMergeKeys = Object.keys(beforeMergeSnapshot)
-  if (beforeMergeKeys.length) {
-    const beforeMergeFirstGroup = beforeMergeSnapshot[beforeMergeKeys[0]]
-    const beforeMergeFileMap = beforeMergeFirstGroup.fileMap
-    const files = Object.keys(beforeMergeFileMap)
-    if (files.length) {
-      return beforeMergeFileMap[files[0]].sizeMap
-    }
-  }
-
-  const afterMergeKeys = Object.keys(afterMergeSnapshot)
+const deduceTransformationKeys = ({ beforeMergeFileSizeReport, afterMergeFileSizeReport }) => {
+  const afterMergeGroups = afterMergeFileSizeReport.groups
+  const afterMergeKeys = Object.keys(afterMergeGroups)
   if (afterMergeKeys.length) {
-    const afterMergeFirstGroup = afterMergeSnapshot[afterMergeKeys[0]]
+    const afterMergeFirstGroup = afterMergeGroups[afterMergeKeys[0]]
     const afterMergeFileMap = afterMergeFirstGroup.fileMap
     const files = Object.keys(afterMergeFileMap)
     if (files.length) {
-      return afterMergeFileMap[files[0]].sizeMap
+      return Object.keys(afterMergeFileMap[files[0]].sizeMap)
     }
   }
 
-  return {}
+  const beforeMergeGroups = beforeMergeFileSizeReport.groups
+  const beforeMergeKeys = Object.keys(beforeMergeFileSizeReport)
+  if (beforeMergeKeys.length) {
+    const beforeMergeFirstGroup = beforeMergeGroups[beforeMergeKeys[0]]
+    const beforeMergeFileMap = beforeMergeFirstGroup.fileMap
+    const files = Object.keys(beforeMergeFileMap)
+    if (files.length) {
+      return Object.keys(beforeMergeFileMap[files[0]].sizeMap)
+    }
+  }
+
+  return []
 }
 
 const examples = {
   "basic example": generateComment({
-    beforeMergeSnapshot: {
-      dist: {
-        fileMap: {
-          "dist/bar.js": {
-            hash: "a",
-            sizeMap: { raw: 100 },
-            meta: true,
-          },
-          "dist/foo.js": {
-            hash: "a",
-            sizeMap: { raw: 100 },
-            meta: true,
+    beforeMergeFileSizeReport: {
+      groups: {
+        dist: {
+          fileMap: {
+            "dist/bar.js": {
+              hash: "a",
+              sizeMap: { raw: 100 },
+              meta: true,
+            },
+            "dist/foo.js": {
+              hash: "a",
+              sizeMap: { raw: 100 },
+              meta: true,
+            },
           },
         },
       },
     },
-    afterMergeSnapshot: {
-      dist: {
-        fileMap: {
-          "dist/bar.js": {
-            hash: "b",
-            sizeMap: { raw: 110 },
-            meta: true,
-          },
-          "dist/foo.js": {
-            hash: "b",
-            sizeMap: { raw: 115 },
-            meta: true,
+    afterMergeFileSizeReport: {
+      groups: {
+        dist: {
+          fileMap: {
+            "dist/bar.js": {
+              hash: "b",
+              sizeMap: { raw: 110 },
+              meta: true,
+            },
+            "dist/foo.js": {
+              hash: "b",
+              sizeMap: { raw: 115 },
+              meta: true,
+            },
           },
         },
       },
     },
   }),
   "basic example + gzip + brotli": generateComment({
-    beforeMergeSnapshot: {
-      dist: {
-        fileMap: {
-          "dist/bar.js": {
-            hash: "a",
-            sizeMap: { raw: 100, gzip: 20, brotli: 18 },
-            meta: true,
-          },
-          "dist/foo.js": {
-            hash: "a",
-            sizeMap: { raw: 100, gzip: 20, brotli: 18 },
-            meta: true,
+    beforeMergeFileSizeReport: {
+      groups: {
+        dist: {
+          fileMap: {
+            "dist/bar.js": {
+              hash: "a",
+              sizeMap: { raw: 100, gzip: 20, brotli: 18 },
+              meta: true,
+            },
+            "dist/foo.js": {
+              hash: "a",
+              sizeMap: { raw: 100, gzip: 20, brotli: 18 },
+              meta: true,
+            },
           },
         },
       },
     },
-    afterMergeSnapshot: {
-      dist: {
-        fileMap: {
-          "dist/bar.js": {
-            hash: "b",
-            sizeMap: { raw: 110, gzip: 22, brotli: 19 },
-            meta: true,
-          },
-          "dist/foo.js": {
-            hash: "b",
-            sizeMap: { raw: 115, gzip: 24, brotli: 21 },
-            meta: true,
+    afterMergeFileSizeReport: {
+      groups: {
+        dist: {
+          fileMap: {
+            "dist/bar.js": {
+              hash: "b",
+              sizeMap: { raw: 110, gzip: 22, brotli: 19 },
+              meta: true,
+            },
+            "dist/foo.js": {
+              hash: "b",
+              sizeMap: { raw: 115, gzip: 24, brotli: 21 },
+              meta: true,
+            },
           },
         },
       },
     },
   }),
   "no changes": generateComment({
-    beforeMergeSnapshot: {
-      dist: {
-        fileMap: {
-          "dist/bar.js": {
-            hash: "a",
-            sizeMap: { raw: 110 },
-            meta: true,
+    beforeMergeFileSizeReport: {
+      groups: {
+        dist: {
+          fileMap: {
+            "dist/bar.js": {
+              hash: "a",
+              sizeMap: { raw: 110 },
+              meta: true,
+            },
           },
         },
       },
     },
-    afterMergeSnapshot: {
-      dist: {
-        fileMap: {
-          "dist/bar.js": {
-            hash: "a",
-            sizeMap: { raw: 110 },
-            meta: true,
+    afterMergeFileSizeReport: {
+      groups: {
+        dist: {
+          fileMap: {
+            "dist/bar.js": {
+              hash: "a",
+              sizeMap: { raw: 110 },
+              meta: true,
+            },
           },
         },
       },
     },
   }),
   "no files": generateComment({
-    trackingConfig: {
-      dist: {
-        "*/**": false,
+    beforeMergeFileSizeReport: {
+      groups: {
+        dist: {
+          fileMap: {},
+        },
       },
     },
-    beforeMergeSnapshot: {
-      dist: {
-        fileMap: {},
+    afterMergeFileSizeReport: {
+      trackingConfig: {
+        dist: {
+          "*/**": false,
+        },
       },
-    },
-    afterMergeSnapshot: {
-      dist: {
-        fileMap: {},
+      groups: {
+        dist: {
+          fileMap: {},
+        },
       },
     },
   }),
   "changes cancels each other": generateComment({
-    beforeMergeSnapshot: {
-      dist: {
-        fileMap: {
-          "dist/file-a.js": {
-            hash: "hash1",
-            sizeMap: { raw: 10 },
-            meta: true,
-          },
-          "dist/file-b.js": {
-            hash: "hash3",
-            sizeMap: { raw: 15 },
-            meta: true,
+    beforeMergeFileSizeReport: {
+      groups: {
+        dist: {
+          fileMap: {
+            "dist/file-a.js": {
+              hash: "hash1",
+              sizeMap: { raw: 10 },
+              meta: true,
+            },
+            "dist/file-b.js": {
+              hash: "hash3",
+              sizeMap: { raw: 15 },
+              meta: true,
+            },
           },
         },
       },
     },
-    afterMergeSnapshot: {
-      dist: {
-        fileMap: {
-          "dist/file-a.js": {
-            hash: "hash2",
-            sizeMap: { raw: 15 },
-            meta: true,
-          },
-          "dist/file-b.js": {
-            hash: "hash4",
-            sizeMap: { raw: 10 },
-            meta: true,
+    afterMergeFileSizeReport: {
+      groups: {
+        dist: {
+          fileMap: {
+            "dist/file-a.js": {
+              hash: "hash2",
+              sizeMap: { raw: 15 },
+              meta: true,
+            },
+            "dist/file-b.js": {
+              hash: "hash4",
+              sizeMap: { raw: 10 },
+              meta: true,
+            },
           },
         },
       },
     },
   }),
   "realist (two groups + gzip + partial)": generateComment({
-    beforeMergeSnapshot: {
-      "critical files": {
-        fileMap: {
-          "dist/foo.js": {
-            hash: "a",
-            sizeMap: {
-              raw: 78450,
-              gzip: 32569,
+    beforeMergeFileSizeReport: {
+      groups: {
+        "critical files": {
+          fileMap: {
+            "dist/foo.js": {
+              hash: "a",
+              sizeMap: {
+                raw: 78450,
+                gzip: 32569,
+              },
+              meta: true,
             },
-            meta: true,
-          },
-          "dist/bar.js": {
-            hash: "a",
-            sizeMap: {
-              raw: 45450,
-              gzip: 23532,
+            "dist/bar.js": {
+              hash: "a",
+              sizeMap: {
+                raw: 45450,
+                gzip: 23532,
+              },
+              meta: true,
             },
-            meta: true,
           },
         },
-      },
-      "remaining files": {
-        fileMap: {
-          "dist/feature.js": {
-            hash: "a",
-            sizeMap: {
-              raw: 17450,
-              gzip: 9532,
+        "remaining files": {
+          fileMap: {
+            "dist/feature.js": {
+              hash: "a",
+              sizeMap: {
+                raw: 17450,
+                gzip: 9532,
+              },
+              meta: true,
             },
-            meta: true,
-          },
-          "dist/a.js": {
-            hash: "a",
-            sizeMap: {
-              raw: 17450,
-              gzip: 9532,
+            "dist/a.js": {
+              hash: "a",
+              sizeMap: {
+                raw: 17450,
+                gzip: 9532,
+              },
+              meta: true,
             },
-            meta: true,
-          },
-          "dist/b.js": {
-            hash: "a",
-            sizeMap: {
-              raw: 17450,
-              gzip: 9532,
+            "dist/b.js": {
+              hash: "a",
+              sizeMap: {
+                raw: 17450,
+                gzip: 9532,
+              },
+              meta: true,
             },
-            meta: true,
-          },
-          "dist/c.js": {
-            hash: "a",
-            sizeMap: {
-              raw: 17450,
-              gzip: 9532,
+            "dist/c.js": {
+              hash: "a",
+              sizeMap: {
+                raw: 17450,
+                gzip: 9532,
+              },
+              meta: true,
             },
-            meta: true,
-          },
-          "dist/d.js": {
-            hash: "a",
-            sizeMap: {
-              raw: 17450,
-              gzip: 9532,
+            "dist/d.js": {
+              hash: "a",
+              sizeMap: {
+                raw: 17450,
+                gzip: 9532,
+              },
+              meta: true,
             },
-            meta: true,
           },
         },
       },
     },
-    afterMergeSnapshot: {
-      "critical files": {
-        fileMap: {
-          "dist/foo.js": {
-            hash: "b",
-            sizeMap: {
-              raw: 85450,
-              gzip: 36569,
+    afterMergeFileSizeReport: {
+      groups: {
+        "critical files": {
+          fileMap: {
+            "dist/foo.js": {
+              hash: "b",
+              sizeMap: {
+                raw: 85450,
+                gzip: 36569,
+              },
+              meta: true,
             },
-            meta: true,
-          },
-          "dist/bar.js": {
-            hash: "a",
-            sizeMap: {
-              raw: 45450,
-              gzip: 23532,
+            "dist/bar.js": {
+              hash: "a",
+              sizeMap: {
+                raw: 45450,
+                gzip: 23532,
+              },
+              meta: true,
             },
-            meta: true,
           },
         },
-      },
-      "remaining files": {
-        fileMap: {
-          "dist/feature.js": {
-            hash: "b",
-            sizeMap: {
-              raw: 21560,
-              gzip: 12472,
+        "remaining files": {
+          fileMap: {
+            "dist/feature.js": {
+              hash: "b",
+              sizeMap: {
+                raw: 21560,
+                gzip: 12472,
+              },
+              meta: true,
             },
-            meta: true,
-          },
-          "dist/a.js": {
-            hash: "a",
-            sizeMap: {
-              raw: 17450,
-              gzip: 9532,
+            "dist/a.js": {
+              hash: "a",
+              sizeMap: {
+                raw: 17450,
+                gzip: 9532,
+              },
+              meta: true,
             },
-            meta: true,
-          },
-          "dist/b.js": {
-            hash: "a",
-            sizeMap: {
-              raw: 17450,
-              gzip: 9532,
+            "dist/b.js": {
+              hash: "a",
+              sizeMap: {
+                raw: 17450,
+                gzip: 9532,
+              },
+              meta: true,
             },
-            meta: true,
-          },
-          "dist/c.js": {
-            hash: "a",
-            sizeMap: {
-              raw: 17450,
-              gzip: 9532,
+            "dist/c.js": {
+              hash: "a",
+              sizeMap: {
+                raw: 17450,
+                gzip: 9532,
+              },
+              meta: true,
             },
-            meta: true,
-          },
-          "dist/d.js": {
-            hash: "a",
-            sizeMap: {
-              raw: 17450,
-              gzip: 9532,
+            "dist/d.js": {
+              hash: "a",
+              sizeMap: {
+                raw: 17450,
+                gzip: 9532,
+              },
+              meta: true,
             },
-            meta: true,
           },
         },
       },
     },
   }),
   "two groups + gzip + brotli": generateComment({
-    beforeMergeSnapshot: {
-      "dist/commonjs": {
-        fileMap: {
-          "dist/commonjs/bar.js": {
-            hash: "a",
-            sizeMap: {
-              raw: 100,
-              gzip: 10,
-              brotli: 9,
+    beforeMergeFileSizeReport: {
+      groups: {
+        "dist/commonjs": {
+          fileMap: {
+            "dist/commonjs/bar.js": {
+              hash: "a",
+              sizeMap: {
+                raw: 100,
+                gzip: 10,
+                brotli: 9,
+              },
+              meta: true,
             },
-            meta: true,
-          },
-          "dist/commonjs/hello.js": {
-            hash: "a",
-            sizeMap: {
-              raw: 167000,
-              gzip: 1600,
-              brotli: 1500,
+            "dist/commonjs/hello.js": {
+              hash: "a",
+              sizeMap: {
+                raw: 167000,
+                gzip: 1600,
+                brotli: 1500,
+              },
+              meta: true,
             },
-            meta: true,
           },
         },
-      },
-      "dist/systemjs": {
-        fileMap: {
-          "dist/systemjs/bar.js": {
-            hash: "a",
-            sizeMap: {
-              raw: 100,
-              gzip: 10,
-              brotli: 9,
+        "dist/systemjs": {
+          fileMap: {
+            "dist/systemjs/bar.js": {
+              hash: "a",
+              sizeMap: {
+                raw: 100,
+                gzip: 10,
+                brotli: 9,
+              },
+              meta: true,
             },
-            meta: true,
-          },
-          "dist/systemjs/hello.js": {
-            hash: "a",
-            sizeMap: {
-              raw: 167000,
-              gzip: 1600,
-              brotli: 1500,
+            "dist/systemjs/hello.js": {
+              hash: "a",
+              sizeMap: {
+                raw: 167000,
+                gzip: 1600,
+                brotli: 1500,
+              },
+              meta: true,
             },
-            meta: true,
           },
         },
       },
     },
-    afterMergeSnapshot: {
-      "dist/commonjs": {
-        fileMap: {
-          "dist/commonjs/foo.js": {
-            hash: "a",
-            sizeMap: {
-              raw: 120,
-              gzip: 12,
-              brotli: 11,
+    afterMergeFileSizeReport: {
+      groups: {
+        "dist/commonjs": {
+          fileMap: {
+            "dist/commonjs/foo.js": {
+              hash: "a",
+              sizeMap: {
+                raw: 120,
+                gzip: 12,
+                brotli: 11,
+              },
+              meta: true,
             },
-            meta: true,
-          },
-          "dist/commonjs/hello.js": {
-            hash: "b",
-            sizeMap: {
-              raw: 187000,
-              gzip: 1800,
-              brotli: 1700,
+            "dist/commonjs/hello.js": {
+              hash: "b",
+              sizeMap: {
+                raw: 187000,
+                gzip: 1800,
+                brotli: 1700,
+              },
+              meta: true,
             },
-            meta: true,
           },
         },
-      },
-      "dist/systemjs": {
-        fileMap: {
-          "dist/systemjs/foo.js": {
-            hash: "a",
-            sizeMap: {
-              raw: 120,
-              gzip: 12,
-              brotli: 11,
+        "dist/systemjs": {
+          fileMap: {
+            "dist/systemjs/foo.js": {
+              hash: "a",
+              sizeMap: {
+                raw: 120,
+                gzip: 12,
+                brotli: 11,
+              },
+              meta: true,
             },
-            meta: true,
-          },
-          "dist/systemjs/hello.js": {
-            hash: "b",
-            sizeMap: {
-              raw: 187000,
-              gzip: 1800,
-              brotli: 1700,
+            "dist/systemjs/hello.js": {
+              hash: "b",
+              sizeMap: {
+                raw: 187000,
+                gzip: 1800,
+                brotli: 1700,
+              },
+              meta: true,
             },
-            meta: true,
           },
         },
       },
     },
   }),
   "zero size impact": generateComment({
-    beforeMergeSnapshot: {
-      dist: {
-        fileMap: {
-          "dist/bar.js": {
-            hash: "a",
-            sizeMap: { raw: 300 },
-            meta: true,
-          },
-          "dist/foo.js": {
-            hash: "a",
-            sizeMap: { raw: 2500 },
-            meta: true,
+    beforeMergeFileSizeReport: {
+      groups: {
+        dist: {
+          fileMap: {
+            "dist/bar.js": {
+              hash: "a",
+              sizeMap: { raw: 300 },
+              meta: true,
+            },
+            "dist/foo.js": {
+              hash: "a",
+              sizeMap: { raw: 2500 },
+              meta: true,
+            },
           },
         },
       },
     },
-    afterMergeSnapshot: {
-      dist: {
-        fileMap: {
-          "dist/bar.js": {
-            hash: "b",
-            sizeMap: { raw: 315 },
-            meta: true,
-          },
-          "dist/foo.js": {
-            hash: "b",
-            sizeMap: { raw: 2500 },
-            meta: true,
+    afterMergeFileSizeReport: {
+      groups: {
+        dist: {
+          fileMap: {
+            "dist/bar.js": {
+              hash: "b",
+              sizeMap: { raw: 315 },
+              meta: true,
+            },
+            "dist/foo.js": {
+              hash: "b",
+              sizeMap: { raw: 2500 },
+              meta: true,
+            },
           },
         },
       },
     },
   }),
   "size impact 0/1": generateComment({
-    beforeMergeSnapshot: {
-      dist: {
-        fileMap: {
-          "dist/bar.js": {
-            hash: "a",
-            sizeMap: { raw: 100 },
-            meta: true,
+    beforeMergeFileSizeReport: {
+      groups: {
+        dist: {
+          fileMap: {
+            "dist/bar.js": {
+              hash: "a",
+              sizeMap: { raw: 100 },
+              meta: true,
+            },
           },
         },
       },
     },
-    afterMergeSnapshot: {
-      dist: {
-        fileMap: {
-          "dist/bar.js": {
-            hash: "b",
-            sizeMap: { raw: 101 },
-            meta: {
-              showSizeImpact: ({ sizeImpactMap }) => Math.abs(sizeImpactMap.raw) > 10,
+    afterMergeFileSizeReport: {
+      groups: {
+        dist: {
+          fileMap: {
+            "dist/bar.js": {
+              hash: "b",
+              sizeMap: { raw: 101 },
+              meta: {
+                showSizeImpact: ({ sizeImpactMap }) => Math.abs(sizeImpactMap.raw) > 10,
+              },
             },
           },
         },
@@ -474,23 +512,25 @@ const examples = {
     },
   }),
   "size impact 1/2": generateComment({
-    beforeMergeSnapshot: {
-      dist: {
-        fileMap: {
-          "dist/bar.js": {
-            hash: "a",
-            sizeMap: { raw: 100 },
-            meta: true,
-          },
-          "dist/foo.js": {
-            hash: "a",
-            sizeMap: { raw: 101 },
-            meta: true,
+    beforeMergeFileSizeReport: {
+      groups: {
+        dist: {
+          fileMap: {
+            "dist/bar.js": {
+              hash: "a",
+              sizeMap: { raw: 100 },
+              meta: true,
+            },
+            "dist/foo.js": {
+              hash: "a",
+              sizeMap: { raw: 101 },
+              meta: true,
+            },
           },
         },
       },
     },
-    afterMergeSnapshot: {
+    afterMergeFileSizeReport: {
       dist: {
         fileMap: {
           "dist/bar.js": {
@@ -510,25 +550,29 @@ const examples = {
     },
   }),
   "formating file relative url": generateComment({
-    beforeMergeSnapshot: {
-      dist: {
-        fileMap: {
-          "dist/foo.js": {
-            hash: "a",
-            sizeMap: { raw: 101 },
-            meta: true,
+    beforeMergeFileSizeReport: {
+      groups: {
+        dist: {
+          fileMap: {
+            "dist/foo.js": {
+              hash: "a",
+              sizeMap: { raw: 101 },
+              meta: true,
+            },
           },
         },
       },
     },
-    afterMergeSnapshot: {
-      dist: {
-        fileMap: {
-          "dist/foo.js": {
-            hash: "b",
-            sizeMap: { raw: 115 },
-            meta: {
-              formatFileRelativeUrl: (relativeUrl) => relativeUrl.slice("dist/".length),
+    afterMergeFileSizeReport: {
+      groups: {
+        dist: {
+          fileMap: {
+            "dist/foo.js": {
+              hash: "b",
+              sizeMap: { raw: 115 },
+              meta: {
+                formatFileRelativeUrl: (relativeUrl) => relativeUrl.slice("dist/".length),
+              },
             },
           },
         },
@@ -536,23 +580,27 @@ const examples = {
     },
   }),
   "empty warning": generateComment({
-    beforeMergeSnapshot: {},
-    afterMergeSnapshot: {},
+    beforeMergeFileSizeReport: {},
+    afterMergeFileSizeReport: {},
   }),
   "new file + showSizeImpact": generateComment({
-    beforeMergeSnapshot: {
-      dist: {
-        fileMap: {},
+    beforeMergeFileSizeReport: {
+      groups: {
+        dist: {
+          fileMap: {},
+        },
       },
     },
-    afterMergeSnapshot: {
-      dist: {
-        fileMap: {
-          "dist/foo.js": {
-            hash: "a",
-            sizeMap: { raw: 110 },
-            meta: {
-              showSizeImpact: () => true,
+    afterMergeFileSizeReport: {
+      groups: {
+        dist: {
+          fileMap: {
+            "dist/foo.js": {
+              hash: "a",
+              sizeMap: { raw: 110 },
+              meta: {
+                showSizeImpact: () => true,
+              },
             },
           },
         },
@@ -560,22 +608,26 @@ const examples = {
     },
   }),
   "deleted file + showSizeImpact": generateComment({
-    beforeMergeSnapshot: {
-      dist: {
-        fileMap: {
-          "dist/foo.js": {
-            hash: "a",
-            sizeMap: { raw: 110 },
-            meta: {
-              showSizeImpact: () => true,
+    beforeMergeFileSizeReport: {
+      groups: {
+        dist: {
+          fileMap: {
+            "dist/foo.js": {
+              hash: "a",
+              sizeMap: { raw: 110 },
+              meta: {
+                showSizeImpact: () => true,
+              },
             },
           },
         },
       },
     },
-    afterMergeSnapshot: {
-      dist: {
-        fileMap: {},
+    afterMergeFileSizeReport: {
+      groups: {
+        dist: {
+          fileMap: {},
+        },
       },
     },
   }),

@@ -1,15 +1,24 @@
 import { resolveUrl, comparePathnames, urlToRelativeUrl } from "@jsenv/util"
 
-export const compareTwoSnapshots = (beforeMergeSnapshot, afterMergeSnapshot) => {
-  const comparison = {}
-  Object.keys(afterMergeSnapshot).forEach((group) => {
+export const compareTwoFileSizeReports = (beforeMergeFileSizeReport, afterMergeFileSizeReport) => {
+  const groupComparison = {}
+  const afterMergeGroups = beforeMergeFileSizeReport.groups
+  const beforeMergeGroups = afterMergeFileSizeReport.groups
+  Object.keys(afterMergeGroups).forEach((group) => {
     // || {} exists in case group was not tracked in base branch
     // and is now tracked in head branch.
     // compareTwoGroups will handle the empty object and consider everything as added
-    const beforeMergeGroup = beforeMergeSnapshot[group] || {}
-    const afterMergeGroup = afterMergeSnapshot[group]
-    comparison[group] = compareTwoGroups(beforeMergeGroup, afterMergeGroup)
+    const beforeMergeGroup = beforeMergeGroups[group] || {}
+    const afterMergeGroup = afterMergeGroups[group]
+    groupComparison[group] = compareTwoGroups(beforeMergeGroup, afterMergeGroup)
   })
+
+  const comparison = {
+    trackingConfig: afterMergeFileSizeReport.trackingConfig,
+    transformationKeys: afterMergeFileSizeReport.transformationKeys,
+    groups: groupComparison,
+  }
+
   return comparison
 }
 

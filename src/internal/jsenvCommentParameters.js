@@ -1,4 +1,4 @@
-import { formatSize } from "./internal/formatSize.js"
+import { formatSize } from "./formatSize.js"
 
 const jsenvFormatGroupSummary = ({ groupName, groupImpactCount, groupFileCount }) => {
   return `${groupName} (${groupImpactCount}/${groupFileCount})`

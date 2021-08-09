@@ -26,14 +26,15 @@
   ],
   "scripts": {
     "eslint-check": "node ./node_modules/eslint/bin/eslint.js .",
+    "generate-importmap": "node ./script/importmap/generate_importmap.mjs",
+    "generate-file-size-report": "node ./script/file_size/generate_file_size_report.mjs --local",
+    "generate-comment-snapshot": "node ./test/comment/generate_comment_snapshot.mjs",
     "test": "node ./script/test/test.mjs",
     "test-with-coverage": "npm run test -- --coverage",
     "prettier-format": "node ./script/prettier/prettier_format.mjs",
     "prettier-format-stage": "npm run prettier-format -- --staged",
     "prettier-check": "npm run prettier-format -- --dry-run",
     "upload-coverage": "node ./script/test/upload_coverage.mjs",
-    "generate-comment-snapshot": "node ./test/comment/generate_comment_snapshot.mjs",
-    "generate-importmap": "node ./script/importmap/generate_importmap.mjs",
     "postinstall": "npm run generate-importmap",
     "prepublishOnly": "node ./script/publish/remove_postinstall.mjs",
     "postpublish": "node ./script/publish/restore_postinstall.mjs"

@@ -47,7 +47,7 @@ The first thing you need is a script capable to generate a file size report.
 npm install --save-dev @jsenv/file-size-impact
 ```
 
-_generate_size_report.mjs_
+_generate_file_size_report.mjs_
 
 ```js
 import { getFileSizeReport } from "@jsenv/file-size-impact"
@@ -65,11 +65,11 @@ export const generateSizeReport = async () => {
 }
 ```
 
-At this stage, you could generate a file size report on your machine. For an example, see `"generate-size-report"` in [package.json#L42](./package.json#L42) and [script/size/generate_size_report.mjs#L32](./script/size/generate_size_report.mjs#L32).
+At this stage, you could generate a file size report on your machine. For an example, see `"generate-file-size-report"` in [package.json#L42](./package.json#L42) and [script/file_size/generate_file_size_report.mjs#L32](./script/size/generate_file_size_report.mjs#L32).
 
 All that's left is to configure a workflow to do generate a file size report before and after merging a pull request.
 
-_.github/workflows/size_impact.yml_
+_.github/workflows/file_size_impact.yml_
 
 ```yml
 # This is a GitHub workflow YAML file
@@ -81,14 +81,14 @@ _.github/workflows/size_impact.yml_
 # - install node, install npm deps
 # - Executes report_lighthouse_impact.mjs
 
-name: size impact
+name: file size impact
 
 on: pull_request_target
 
 jobs:
-  lighthouse_impact:
+  file_size_impact:
     runs-on: ubuntu-latest
-    name: size impact
+    name: file size impact
     steps:
       - name: Setup git
         uses: actions/checkout@v2
@@ -99,14 +99,14 @@ jobs:
       - name: Setup npm
         run: npm install
       - name: Report file size impact
-        run: node ./report_size_impact.mjs
+        run: node ./report_file_size_impact.mjs
 ```
 
-_report_size_impact.mjs_
+_report_file_size_impact.mjs_
 
 ```js
 /*
- * This file is executed by size_impact.yml GitHub workflow.
+ * This file is executed by file_size_impact.yml GitHub workflow.
  * - it generates file size report before and after merging a pull request
  * - Then, it creates or updates a comment in the pull request
  * See https://github.com/jsenv/file-size-impact#how-it-works
@@ -114,9 +114,9 @@ _report_size_impact.mjs_
 
 import { reportFileSizeImpact, readGitHubWorkflowEnv } from "@jsenv/file-size-impact"
 
-reportLighthouseImpact({
+reportFileSizeImpact({
   ...readGitHubWorkflowEnv(),
-  generateSizeReportFileRelativeUrl: "./generate_size_report.mjs",
+  moduleGeneratingFileSizeReportRelativeUrl: "./generate_file_size_report.mjs",
 })
 ```
 
@@ -124,11 +124,11 @@ reportLighthouseImpact({
 
 For a workflow different from GitHub workflow, there is a few things to do:
 
-1. Replicate _size_impact.yml_
-2. Adjust _report_size_impact.mjs_
+1. Replicate _file_size_impact.yml_
+2. Adjust _report_file_size_impact.mjs_
 3. Create a GitHub token
 
-### 1. Replicate _size_impact.yml_
+### 1. Replicate _file_size_impact.yml_
 
 Your workflow must reproduce the state where your git repository has been cloned and you are currently on the pull request branch. The corresponding commands looks as below:
 
@@ -138,10 +138,10 @@ git remote add origin $GITHUB_REPOSITORY_URL
 git fetch --no-tags --prune origin $PULL_REQUEST_HEAD_REF
 git checkout origin/$PULL_REQUEST_HEAD_REF
 npm install
-node ./report_size_impact.mjs
+node ./report_file_size_impact.mjs
 ```
 
-### 2. Adjust _report_size_impact.mjs_
+### 2. Adjust _report_file_size_impact.mjs_
 
 When outside a GitHub workflow, you cannot use _readGitHubWorkflowEnv()_. It means you must pass several parameters to _reportFileSizeImpact_. The example below assume code is executed by Travis.
 
@@ -156,8 +156,7 @@ _reportFileSizeImpact_({
 +  repositoryName: process.env.TRAVIS_REPO_SLUG.split("/")[1],
 +  pullRequestNumber: process.env.TRAVIS_PULL_REQUEST,
 +  githubToken: process.env.GITHUB_TOKEN, // see next step
-
-  generateFileSizeReportFileRelativeUrl: "./generate_size_report.mjs",
+  moduleGeneratingFileSizeReportRelativeUrl: "./generate_file_size_report.mjs",
 })
 ```
 
