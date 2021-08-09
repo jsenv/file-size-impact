@@ -32,7 +32,7 @@
     "prettier-format-stage": "npm run prettier-format -- --staged",
     "prettier-check": "npm run prettier-format -- --dry-run",
     "upload-coverage": "node ./script/test/upload_coverage.mjs",
-    "generate-comment-example": "node --experimental-top-level-await ./test/comment/generate_comment_example_file.js",
+    "generate-comment-snapshot": "node ./test/comment/generate_comment_snapshot.mjs",
     "generate-importmap": "node ./script/importmap/generate_importmap.mjs",
     "postinstall": "npm run generate-importmap",
     "prepublishOnly": "node ./script/publish/remove_postinstall.mjs",

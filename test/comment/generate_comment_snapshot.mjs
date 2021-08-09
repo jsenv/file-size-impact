@@ -581,8 +581,8 @@ const examples = {
   }),
 }
 
-const exampleFileUrl = resolveUrl("../../docs/comment_example.md", import.meta.url)
-const exampleFileContent = Object.keys(examples).map((exampleName) => {
+const snapshotFileUrl = resolveUrl("./comment_snapshot.md", import.meta.url)
+const snapshotFileContent = Object.keys(examples).map((exampleName) => {
   return `# ${exampleName}
 
 ${examples[exampleName]}`
@@ -591,7 +591,7 @@ ${examples[exampleName]}`
 `)
 
 await writeFile(
-  exampleFileUrl,
-  `${exampleFileContent}
+  snapshotFileUrl,
+  `${snapshotFileContent}
 `,
 )
