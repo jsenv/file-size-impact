@@ -1,5 +1,11 @@
 import { createDetailedMessage, createLogger } from "@jsenv/logger"
-import { assertAndNormalizeDirectoryUrl, bufferToEtag, resolveUrl, readFile } from "@jsenv/util"
+import {
+  assertAndNormalizeDirectoryUrl,
+  bufferToEtag,
+  resolveUrl,
+  readFile,
+  urlToFileSystemPath,
+} from "@jsenv/util"
 
 import { transform as rawTransform } from "./rawTransformation.js"
 import { jsenvTrackingConfig } from "./jsenvTrackingConfig.js"
@@ -67,7 +73,23 @@ const groupTrackingResultToGroupReport = async (
   await Promise.all(
     manifestRelativeUrls.map(async (manifestRelativeUrl) => {
       const manifestFileUrl = resolveUrl(manifestRelativeUrl, projectDirectoryUrl)
-      manifestMap[manifestRelativeUrl] = await readManifest(manifestFileUrl)
+      const manifestFileContent = readFile(manifestFileUrl, { as: "string" })
+      let manifest
+      try {
+        manifest = JSON.parse(manifestFileContent)
+      } catch (e) {
+        if (e.name === "SyntaxError") {
+          logger.error(
+            createDetailedMessage(`JSON.parse error while trying to parse a manifest file`, {
+              "error stack": e.stack,
+              "manifest file": urlToFileSystemPath(manifestFileUrl),
+            }),
+          )
+          return
+        }
+        throw e
+      }
+      manifestMap[manifestRelativeUrl] = manifest
     }),
   )
 
@@ -115,9 +137,4 @@ const getFileSizeMap = async (fileBuffer, { transformations, logger, fileUrl }) 
     }
   }, Promise.resolve())
   return sizeMap
-}
-
-const readManifest = async (manifestFileUrl) => {
-  const manifestFileContent = await readFile(manifestFileUrl)
-  return JSON.parse(manifestFileContent)
 }
