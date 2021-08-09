@@ -73,7 +73,7 @@ const groupTrackingResultToGroupReport = async (
   await Promise.all(
     manifestRelativeUrls.map(async (manifestRelativeUrl) => {
       const manifestFileUrl = resolveUrl(manifestRelativeUrl, projectDirectoryUrl)
-      const manifestFileContent = readFile(manifestFileUrl, { as: "string" })
+      const manifestFileContent = await readFile(manifestFileUrl, { as: "string" })
       let manifest
       try {
         manifest = JSON.parse(manifestFileContent)
