@@ -21,9 +21,8 @@ jobs:
       - name: Setup git
         # "checkout@v2" documentation available at https://github.com/actions/checkout
         uses: actions/checkout@v2
-      - name:
-          Setup node
-          # "setup-node@v1" documentation available at https://github.com/actions/setup-node
+      - name: Setup node
+        # "setup-node@v1" documentation available at https://github.com/actions/setup-node
         uses: actions/setup-node@v1
         with:
           # Explicit node version ("16.6.1" instead of "lts")
