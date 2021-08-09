@@ -2,13 +2,12 @@ import { assert } from "@jsenv/assert"
 import { resolveUrl, ensureEmptyDirectory, writeFile, writeDirectory } from "@jsenv/util"
 import { createCancellationToken } from "@jsenv/cancellation"
 
-import { raw } from "@jsenv/file-size-impact"
-import { generateSnapshot } from "@jsenv/file-size-impact/src/internal/generateSnapshot.js"
+import { getFileSizeReport, raw } from "@jsenv/file-size-impact"
 
 const transformations = { raw }
 const tempDirectoryUrl = resolveUrl("./temp/", import.meta.url)
 const test = (params) => {
-  return generateSnapshot({
+  return getFileSizeReport({
     cancellationToken: createCancellationToken(),
     ...params,
   })
@@ -33,13 +32,19 @@ const test = (params) => {
     transformations,
   })
   const expected = {
-    dist: {
-      manifestMap: {},
-      fileMap: {
-        "dist/file.js": {
-          sizeMap: { raw: 20 },
-          hash: '"14-qK8urhYN/nZoik6niqmvkolkCK0"',
-          meta: true,
+    transformationKeys: ["raw"],
+    groups: {
+      dist: {
+        tracking: {
+          "./dist/**/*.js": true,
+        },
+        manifestMap: {},
+        fileMap: {
+          "dist/file.js": {
+            sizeMap: { raw: 20 },
+            hash: '"14-qK8urhYN/nZoik6niqmvkolkCK0"',
+            meta: true,
+          },
         },
       },
     },
@@ -55,14 +60,15 @@ const test = (params) => {
   await writeFile(fileUrl, `console.log("hello")`)
   await writeFile(manifestUrl, `{ "file.js": "file.hash.js" }`)
 
+  const meta = {
+    showSizeImpact: () => true,
+  }
   const actual = await test({
     logLevel: "warn",
     projectDirectoryUrl: tempDirectoryUrl,
     trackingConfig: {
       dist: {
-        "./dist/**/*": {
-          showSizeImpact: () => true,
-        },
+        "./dist/**/*": meta,
       },
     },
     transformations,
@@ -71,18 +77,22 @@ const test = (params) => {
     },
   })
   const expected = {
-    dist: {
-      manifestMap: {
-        "dist/manifest.json": {
-          "file.js": "file.hash.js",
+    transformationKeys: ["raw"],
+    groups: {
+      dist: {
+        tracking: {
+          "./dist/**/*": meta,
         },
-      },
-      fileMap: {
-        "dist/file.hash.js": {
-          sizeMap: { raw: 20 },
-          hash: '"14-qK8urhYN/nZoik6niqmvkolkCK0"',
-          meta: {
-            showSizeImpact: () => true,
+        manifestMap: {
+          "dist/manifest.json": {
+            "file.js": "file.hash.js",
+          },
+        },
+        fileMap: {
+          "dist/file.hash.js": {
+            sizeMap: { raw: 20 },
+            hash: '"14-qK8urhYN/nZoik6niqmvkolkCK0"',
+            meta,
           },
         },
       },
@@ -108,9 +118,15 @@ const test = (params) => {
     transformations,
   })
   const expected = {
-    dist: {
-      manifestMap: {},
-      fileMap: {},
+    transformationKeys: ["raw"],
+    groups: {
+      dist: {
+        tracking: {
+          "./dist/**/*.js": true,
+        },
+        manifestMap: {},
+        fileMap: {},
+      },
     },
   }
   assert({ actual, expected })
