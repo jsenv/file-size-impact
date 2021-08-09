@@ -1,16 +1,14 @@
-import { getSizeMaps } from "../getSizeMaps.js"
-import { compareTwoSnapshots } from "./compareTwoSnapshots.js"
+import { compareTwoFileSizeReports } from "./compareTwoFileSizeReports.js"
+import { getSizeMaps } from "./getSizeMaps.js"
 import { isAdded, isModified, isDeleted } from "./helper.js"
 import { renderImpactTable } from "./renderImpactTable.js"
 import { orderBySizeImpact } from "./orderBySizeImpact.js"
 
 export const formatComment = ({
-  trackingConfig,
-  transformations,
   pullRequestBase,
   pullRequestHead,
-  beforeMergeSnapshot,
-  afterMergeSnapshot,
+  beforeMergeFileSizeReport,
+  afterMergeFileSizeReport,
 
   filesOrdering,
   maxRowsPerTable,
@@ -24,9 +22,11 @@ export const formatComment = ({
   shouldOpenGroupByDefault,
 }) => {
   const warnings = []
-  const snapshotComparison = compareTwoSnapshots(beforeMergeSnapshot, afterMergeSnapshot)
-  const groups = Object.keys(snapshotComparison)
-  const groupCount = groups.length
+  const reportComparison = compareTwoFileSizeReports({
+    afterMergeFileSizeReport,
+    beforeMergeFileSizeReport,
+  })
+  const groupCount = Object.keys(reportComparison.groups).length
 
   if (groupCount === 0) {
     warnings.push(
@@ -35,11 +35,9 @@ export const formatComment = ({
   }
 
   let body = renderCommentBody({
-    trackingConfig,
-    transformations,
     pullRequestBase,
     pullRequestHead,
-    snapshotComparison,
+    reportComparison,
 
     filesOrdering,
     maxRowsPerTable,
@@ -61,11 +59,9 @@ ${body}`
 }
 
 const renderCommentBody = ({
-  trackingConfig,
-  transformations,
   pullRequestBase,
   pullRequestHead,
-  snapshotComparison,
+  reportComparison,
 
   filesOrdering,
   fileRelativeUrlMaxLength,
@@ -114,16 +110,18 @@ const renderCommentBody = ({
     })
   }
 
-  const groupMessages = Object.keys(snapshotComparison).map((groupName) => {
-    const groupComparison = snapshotComparison[groupName]
-    const groupFileCount = Object.keys(groupComparison).length
+  const { transformationKeys } = reportComparison
+  const groupMessages = Object.keys(reportComparison.groups).map((groupName) => {
+    const groupComparison = reportComparison.groups[groupName]
+    const groupFileImpactMap = groupComparison.fileImpactMap
+    const groupFileCount = Object.keys(groupFileImpactMap).length
     let fileByFileImpact = {}
     let fileByFileImpactHidden = {}
     if (groupFileCount === 0) {
       return renderGroup(
         formulateEmptyGroupContent({
           groupName,
-          groupConfig: trackingConfig[groupName],
+          groupConfig: groupComparison.tracking,
         }),
         {
           groupName,
@@ -157,8 +155,8 @@ const renderCommentBody = ({
       }
     }
 
-    Object.keys(groupComparison).forEach((fileRelativeUrl) => {
-      const { beforeMerge, afterMerge } = groupComparison[fileRelativeUrl]
+    Object.keys(groupFileImpactMap).forEach((fileRelativeUrl) => {
+      const { beforeMerge, afterMerge } = groupFileImpactMap[fileRelativeUrl]
 
       if (isAdded({ beforeMerge, afterMerge })) {
         addImpact(fileRelativeUrl, {
@@ -188,10 +186,10 @@ const renderCommentBody = ({
     })
 
     if (filesOrdering === "size_impact") {
-      fileByFileImpact = orderBySizeImpact(fileByFileImpact, Object.keys(transformations))
+      fileByFileImpact = orderBySizeImpact(fileByFileImpact, reportComparison.transformationKeys)
       fileByFileImpactHidden = orderBySizeImpact(
         fileByFileImpactHidden,
-        Object.keys(transformations),
+        reportComparison.transformationKeys,
       )
     }
 
@@ -213,8 +211,8 @@ const renderCommentBody = ({
       ...(groupImpactCount > 0
         ? [
             renderImpactTable(fileByFileImpact, {
-              groupComparison,
-              transformations,
+              groupFileImpactMap,
+              transformationKeys,
               fileRelativeUrlMaxLength,
               maxRowsPerTable,
               formatFileRelativeUrl,
@@ -229,8 +227,8 @@ const renderCommentBody = ({
             renderDetails({
               summary: formatHiddenImpactSummary({ groupName, groupHiddenImpactCount }),
               content: renderImpactTable(fileByFileImpactHidden, {
-                groupComparison,
-                transformations,
+                groupFileImpactMap,
+                transformationKeys,
                 fileRelativeUrlMaxLength,
                 maxRowsPerTable,
                 formatFileRelativeUrl,

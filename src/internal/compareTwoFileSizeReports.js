@@ -1,15 +1,26 @@
 import { resolveUrl, comparePathnames, urlToRelativeUrl } from "@jsenv/util"
 
-export const compareTwoSnapshots = (beforeMergeSnapshot, afterMergeSnapshot) => {
-  const comparison = {}
-  Object.keys(afterMergeSnapshot).forEach((group) => {
+export const compareTwoFileSizeReports = ({
+  afterMergeFileSizeReport,
+  beforeMergeFileSizeReport,
+}) => {
+  const groupComparison = {}
+  const afterMergeGroups = afterMergeFileSizeReport.groups
+  const beforeMergeGroups = beforeMergeFileSizeReport.groups
+  Object.keys(afterMergeGroups).forEach((group) => {
     // || {} exists in case group was not tracked in base branch
     // and is now tracked in head branch.
     // compareTwoGroups will handle the empty object and consider everything as added
-    const beforeMergeGroup = beforeMergeSnapshot[group] || {}
-    const afterMergeGroup = afterMergeSnapshot[group]
-    comparison[group] = compareTwoGroups(beforeMergeGroup, afterMergeGroup)
+    const beforeMergeGroup = beforeMergeGroups[group] || {}
+    const afterMergeGroup = afterMergeGroups[group]
+    groupComparison[group] = compareTwoGroups(beforeMergeGroup, afterMergeGroup)
   })
+
+  const comparison = {
+    transformationKeys: afterMergeFileSizeReport.transformationKeys,
+    groups: groupComparison,
+  }
+
   return comparison
 }
 
@@ -127,7 +138,12 @@ const compareTwoGroups = (beforeMergeGroup, afterMergeGroup) => {
     groupComparison[beforeMergeRelativeUrl] = getRemoveInfo({ beforeMergeRelativeUrl })
   })
 
-  return sortFileStructure(groupComparison)
+  const fileImpactMap = sortFileStructure(groupComparison)
+
+  return {
+    tracking: afterMergeGroup.tracking,
+    fileImpactMap,
+  }
 }
 
 const ABSTRACT_DIRECTORY_URL = "file:///directory/"
