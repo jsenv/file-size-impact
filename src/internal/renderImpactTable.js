@@ -170,7 +170,7 @@ const fileAbstractRelativeUrlFromFileImpact = ({ beforeMerge, afterMerge }) => {
 
 const renderSizeImpactTableFooter = (
   fileByFileImpact,
-  { groupFileMap, transformationKeys, formatGroupSizeImpactCell },
+  { groupFileImpactMap, transformationKeys, formatGroupSizeImpactCell },
 ) => {
   const footerLines = []
 
@@ -179,7 +179,7 @@ const renderSizeImpactTableFooter = (
 
   const groupImpacts = {}
   sizeNames.forEach((sizeName) => {
-    groupImpacts[sizeName] = computeGroupImpact(groupFileMap, sizeName)
+    groupImpacts[sizeName] = computeGroupImpact(groupFileImpactMap, sizeName)
   })
 
   const groupSizeImpactLine = [

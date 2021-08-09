@@ -4,7 +4,7 @@ export const generateFileSizeReport = async () => {
   return getFileSizeReport({
     projectDirectoryUrl: new URL("../../", import.meta.url),
     trackingConfig: {
-      dist: {
+      "example files": {
         "./dist/**/*.js": true,
       },
     },

@@ -152,13 +152,11 @@ const examples = {
       },
     },
     afterMergeFileSizeReport: {
-      trackingConfig: {
-        dist: {
-          "*/**": false,
-        },
-      },
       groups: {
         dist: {
+          tracking: {
+            "*/**": false,
+          },
           fileMap: {},
         },
       },
