@@ -69,6 +69,8 @@ At this stage, you could generate a file size report on your machine. For an exa
 
 Now it's time to configure a workflow to compare file size reports before and after merging a pull request.
 
+## GitHub workflow
+
 _.github/workflows/file_size_impact.yml_
 
 ```yml
@@ -123,7 +125,7 @@ reportFileSizeImpact({
 })
 ```
 
-## Other worklow
+## Other tools
 
 If you want to use an other tool than GitHub worflow to run the pull request comparison, like Jenkins, there is a few things to do:
 
