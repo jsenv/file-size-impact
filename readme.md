@@ -65,9 +65,9 @@ export const generateFileSizeReport = async () => {
 }
 ```
 
-At this stage, you could generate a file size report on your machine. For an example, see `"generate-file-size-report"` in [package.json#L30](./package.json#L30) and [script/file_size/generate_file_size_report.mjs#L14](./script/file_size/generate_file_size_report.mjs#L14).
+At this stage, you could generate a file size report on your machine. For an example, see [package.json#L30](./package.json#L30) and [script/file_size/generate_file_size_report.mjs#L14](./script/file_size/generate_file_size_report.mjs#L14).
 
-All that's left is to configure a workflow to compare file size reports before and after merging a pull request.
+Now it's time to configure a workflow to compare file size reports before and after merging a pull request.
 
 _.github/workflows/file_size_impact.yml_
 
@@ -125,15 +125,15 @@ reportFileSizeImpact({
 
 ## Other worklow
 
-For a workflow different from GitHub workflow, there is a few things to do:
+If you want to use an other tool than GitHub worflow to run the pull request comparison, like Jenkins, there is a few things to do:
 
 1. Replicate _file_size_impact.yml_
 2. Adjust _report_file_size_impact.mjs_
-3. Create a GitHub token
+3. Create a GitHub token (required to post comment on GitHub)
 
 ### 1. Replicate _file_size_impact.yml_
 
-Your workflow must reproduce the state where your git repository has been cloned and you are currently on the pull request branch. The corresponding commands looks as below:
+Your workflow must reproduce the state where your git repository has been cloned and you are currently on the pull request branch. Something like the commands below.
 
 ```console
 git init
