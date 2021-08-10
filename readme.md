@@ -13,7 +13,7 @@ Report pull request impacts on specific files size.
 - Helps you to catch size impacts before merging pull requests
 - Can be configured to track compressed file size
 - Create group of files to create meaningful reports
-- Can be added to any workflow like a GitHub workflow
+- Can be added to any automated process (GitHub workflow, Jenkins, ...)
 
 # Pull request comment
 
