@@ -1,12 +1,4 @@
-# File size impact
-
-Report pull request impacts on specific files size.
-
-[![npm package](https://img.shields.io/npm/v/@jsenv/file-size-impact.svg?logo=npm&label=package)](https://www.npmjs.com/package/@jsenv/file-size-impact)
-[![workflow status](https://github.com/jsenv/file-size-impact/workflows/main/badge.svg)](https://github.com/jsenv/file-size-impact/actions?workflow=main)
-[![codecov](https://codecov.io/gh/jsenv/file-size-impact/branch/master/graph/badge.svg)](https://codecov.io/gh/jsenv/file-size-impact)
-
-# Presentation
+# File size impact [![npm package](https://img.shields.io/npm/v/@jsenv/file-size-impact.svg?logo=npm&label=package)](https://www.npmjs.com/package/@jsenv/file-size-impact) [![workflow status](https://github.com/jsenv/file-size-impact/workflows/main/badge.svg)](https://github.com/jsenv/file-size-impact/actions?workflow=main) [![codecov](https://codecov.io/gh/jsenv/file-size-impact/branch/master/graph/badge.svg)](https://codecov.io/gh/jsenv/file-size-impact)
 
 `@jsenv/file-size-impact` analyses a pull request impact on specific files size. This analysis is posted in a comment of the pull request on GitHub.
 
@@ -65,7 +57,7 @@ export const generateFileSizeReport = async () => {
 }
 ```
 
-At this stage, you could generate a file size report on your machine. For an example, see [package.json#L30](./package.json#L30) and [script/file_size/generate_file_size_report.mjs#L14](./script/file_size/generate_file_size_report.mjs#L14).
+At this stage, you could generate a file size report on your machine. For an example, see [script/file_size/generate_file_size_report.mjs#L14](./script/file_size/generate_file_size_report.mjs#L14).
 
 Now it's time to configure a workflow to compare file size reports before and after merging a pull request.
 
@@ -418,13 +410,12 @@ In order to analyse the impact of a pull request on file size the following step
 
 1. Checkout pull request base branch
 2. Execute an install command (_npm install_ by default)
-3. Execute a build command to generate files (_npm run-script build_ by default)
-4. Take a snapshot of generated files
-5. Merge pull request into its base
-6. Execute command to generate files again
-7. Take a second snapshot of generated files
-8. Analyse differences between the two snapshots
-9. Post or update comment in the pull request
+3. Get a file size report (dynamic import of a js module exporting `generateFileSizeReport`)
+4. Merge pull request into its base
+5. Execute command to generate files again
+6. Get a second file size report
+7. Analyse differences between the two file size reports
+8. Post or update comment in the pull request
 
 # See also
 
