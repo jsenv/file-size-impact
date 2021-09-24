@@ -49,7 +49,7 @@ const compareTwoGroups = (beforeMergeGroup, afterMergeGroup) => {
         relativeUrl: beforeMergeRelativeUrl,
         manifestKey:
           manifestKeyFromRelativeUrl(beforeMergeRelativeUrl, beforeMergeMappings) || null,
-        ...beforeMergeFileMap[afterMergeRelativeUrl],
+        ...beforeMergeFileMap[beforeMergeRelativeUrl],
       },
       afterMerge: {
         relativeUrl: afterMergeRelativeUrl,

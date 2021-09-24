@@ -7,13 +7,8 @@
       "request": "launch",
       "protocol": "inspector",
       "program": "${file}",
-      "runtimeArgs": [
-        "--unhandled-rejections=strict",
-        "--experimental-json-modules",
-        "--experimental-top-level-await",
-        // this is to disable experimental warning
-        "--no-warnings"
-      ],
+      "runtimeArgs": ["--unhandled-rejections=strict", "--experimental-json-modules"],
+      "console": "integratedTerminal",
       "autoAttachChildProcesses": true,
       "sourceMaps": true,
       "smartStep": true,

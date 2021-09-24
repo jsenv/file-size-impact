@@ -8,6 +8,71 @@ import { compareTwoFileSizeReports } from "@jsenv/file-size-impact/src/internal/
       groups: {
         dist: {
           tracking: {
+            "foo.js": true,
+          },
+          manifestMap: {
+            "manifest.json": {
+              "foo.js": "foo-hash.js",
+            },
+          },
+          fileMap: {
+            "foo-hash.js": { hash: "hash" },
+          },
+        },
+      },
+    },
+    afterMergeFileSizeReport: {
+      transformationKeys: ["raw"],
+      groups: {
+        dist: {
+          tracking: {
+            "foo.js": true,
+          },
+          manifestMap: {
+            "manifest.json": {
+              "foo.js": "foo-hash2.js",
+            },
+          },
+          fileMap: {
+            "foo-hash2.js": { hash: "hash2" },
+          },
+        },
+      },
+    },
+  })
+  const expected = {
+    transformationKeys: ["raw"],
+    groups: {
+      dist: {
+        tracking: {
+          "foo.js": true,
+        },
+        fileImpactMap: {
+          "foo-hash2.js": {
+            beforeMerge: {
+              relativeUrl: "foo-hash.js",
+              manifestKey: "foo.js",
+              hash: "hash",
+            },
+            afterMerge: {
+              relativeUrl: "foo-hash2.js",
+              manifestKey: "foo.js",
+              hash: "hash2",
+            },
+          },
+        },
+      },
+    },
+  }
+  assert({ actual, expected })
+}
+
+{
+  const actual = compareTwoFileSizeReports({
+    beforeMergeFileSizeReport: {
+      groups: {
+        dist: {
+          tracking: {
             "**/*": true,
           },
           manifestMap: {
