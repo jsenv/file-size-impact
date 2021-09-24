@@ -123,6 +123,7 @@ import { compareTwoFileSizeReports } from "@jsenv/file-size-impact/src/internal/
             beforeMerge: {
               relativeUrl: "dir/file.beforeMerge.js",
               manifestKey: "dir/file.js",
+              hash: "hash1",
             },
             afterMerge: {
               relativeUrl: "dir/file.afterMerge.js",
