@@ -46,7 +46,7 @@ export const renderImpactTable = ({
 const renderSizeImpactTableHeader = (transformationKeys) => {
   const lines = []
   const headerLine = [
-    `<th nowrap>File</th>`,
+    `<th nowrap>Files</th>`,
     ...transformationKeys.map(
       (sizeName) => `<th nowrap>${sizeName === "raw" ? `new size` : `new ${sizeName} size`}</th>`,
     ),
@@ -65,7 +65,7 @@ const renderSizeImpactTableBody = ({
   formatFileRelativeUrl,
   formatFileCell,
   formatFileSizeImpactCell,
-  formatEmojiCellContent,
+  formatEmojiCell,
 }) => {
   const lines = []
   const sizeNames = transformationKeys
@@ -113,9 +113,9 @@ const renderSizeImpactTableBody = ({
           sizeName,
         })}</td>`
       }),
-      ...(formatEmojiCellContent
+      ...(formatEmojiCell
         ? [
-            `<td>${formatEmojiCellContent({
+            `<td>${formatEmojiCell({
               sizeBeforeMerge: sizeMapBeforeMerge[firstSizeName],
               sizeAfterMerge: sizeMapAfterMerge[firstSizeName],
             })}</td>`,
@@ -141,9 +141,9 @@ const renderSizeImpactTableBody = ({
           sizeName,
         })}</td>`
       }),
-      ...(formatEmojiCellContent
+      ...(formatEmojiCell
         ? [
-            `<td>${formatEmojiCellContent({
+            `<td>${formatEmojiCell({
               sizeBeforeMerge: sizeMapBeforeMerge[firstSizeName],
               sizeAfterMerge: sizeMapAfterMerge[firstSizeName],
             })}</td>`,
@@ -161,7 +161,7 @@ const renderSizeImpactTableBody = ({
       files: unmodifieds,
     })
     const lineForUnmodifiedFiles = [
-      `<td nowrap><i>Unmodified (${truncatedCount})</i></td>`,
+      `<td nowrap><i>Unmodified (${unmodifiedCount})</i></td>`,
       ...sizeNames.map((sizeName) => {
         return `<td nowrap>${formatFileSizeImpactCell({
           sizeBeforeMerge: sizeMapBeforeMerge[sizeName],
@@ -169,9 +169,9 @@ const renderSizeImpactTableBody = ({
           sizeName,
         })}</td>`
       }),
-      ...(formatEmojiCellContent
+      ...(formatEmojiCell
         ? [
-            `<td>${formatEmojiCellContent({
+            `<td>${formatEmojiCell({
               sizeBeforeMerge: sizeMapBeforeMerge[firstSizeName],
               sizeAfterMerge: sizeMapAfterMerge[firstSizeName],
             })}</td>`,

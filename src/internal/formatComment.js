@@ -102,6 +102,7 @@ const renderCommentBody = ({
         sizeImpactMap,
       })
       fileByFileImpact[fileRelativeUrl] = {
+        event,
         manifestKeyBeforeMerge: beforeMerge ? beforeMerge.manifestKey : undefined,
         manifestKeyAfterMerge: afterMerge ? afterMerge.manifestKey : undefined,
         relativeUrlBeforeMerge: beforeMerge ? beforeMerge.relativeUrl : undefined,
@@ -184,7 +185,7 @@ ${JSON.stringify(groupConfig, null, "  ")}
 }
 
 const formulateMergeImpact = ({ pullRequestBase, pullRequestHead }) => {
-  return `<p>Merging <em>${pullRequestHead}</em> into <em>${pullRequestBase}</em> impact file as follow:</p>`
+  return `<p>Merging <em>${pullRequestHead}</em> into <em>${pullRequestBase}</em> impact files as follow:</p>`
 }
 
 const metaToData = (meta, { fileRelativeUrl, sizeBeforeMerge, sizeAfterMerge, sizeImpactMap }) => {

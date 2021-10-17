@@ -582,11 +582,27 @@ const examples = {
       groups: {},
     },
   }),
-  "new file + showSizeImpact": generateComment({
+}
+
+{
+  const fileMap = {}
+  new Array(100).fill("").forEach((_, index) => {
+    const fileName = `${index}.js`
+    fileMap[fileName] = {
+      hash: index,
+      sizeMap: {
+        raw: index * 100,
+        gzip: index * 20,
+      },
+      meta: true,
+    }
+  })
+
+  examples["lot of files"] = generateComment({
     beforeMergeFileSizeReport: {
       groups: {
         dist: {
-          fileMap: {},
+          fileMap,
         },
       },
     },
@@ -594,43 +610,36 @@ const examples = {
       groups: {
         dist: {
           fileMap: {
-            "dist/foo.js": {
-              hash: "a",
-              sizeMap: { raw: 110 },
-              meta: {
-                showSizeImpact: () => true,
+            ...fileMap,
+            "0.js": {
+              hash: "toto",
+              sizeMap: {
+                raw: 0,
+                gzip: 0,
               },
+              meta: true,
+            },
+            "1.js": {
+              hash: "toto",
+              sizeMap: {
+                raw: 2000,
+                gzip: 200,
+              },
+              meta: true,
+            },
+            "2.js": {
+              hash: "toto",
+              sizeMap: {
+                raw: 20,
+                gzip: 10,
+              },
+              meta: true,
             },
           },
         },
       },
     },
-  }),
-  "deleted file + showSizeImpact": generateComment({
-    beforeMergeFileSizeReport: {
-      groups: {
-        dist: {
-          fileMap: {
-            "dist/foo.js": {
-              hash: "a",
-              sizeMap: { raw: 110 },
-              meta: {
-                showSizeImpact: () => true,
-              },
-            },
-          },
-        },
-      },
-    },
-    afterMergeFileSizeReport: {
-      transformationKeys: ["raw"],
-      groups: {
-        dist: {
-          fileMap: {},
-        },
-      },
-    },
-  }),
+  })
 }
 
 const snapshotFileUrl = resolveUrl("./comment_snapshot.md", import.meta.url)
