@@ -1,19 +1,31 @@
 import { formatSize } from "./formatSize.js"
 
-const jsenvFormatGroupSummary = ({ groupName, groupImpactCount, groupFileCount }) => {
-  return `${groupName} (${groupImpactCount}/${groupFileCount})`
-}
+const jsenvFormatGroupSummary = ({
+  groupName,
+  groupSizeMapBeforeMerge,
+  groupSizeMapAfterMerge,
+  sizeNames,
+}) => {
+  const firstSizeName = sizeNames[0]
+  const groupSizeBeforeMerge = groupSizeMapBeforeMerge[firstSizeName]
+  const groupSizeAfterMerge = groupSizeMapAfterMerge[firstSizeName]
 
-const jsenvFormatHiddenImpactSummary = ({ groupHiddenImpactCount }) => {
-  return `Hidden (${groupHiddenImpactCount})`
+  if (groupSizeBeforeMerge === groupSizeAfterMerge) {
+    return `${groupName} (no impact)`
+  }
+
+  return `${groupName} (${formatSizeImpactAsPercentage({
+    sizeBeforeMerge: groupSizeBeforeMerge,
+    sizeAfterMerge: groupSizeAfterMerge,
+  })})`
 }
 
 const jsenvFormatFileRelativeUrl = (fileRelativeUrl) => {
   return fileRelativeUrl
 }
 
-const jsenvFormatFileCell = ({ fileRelativeUrlDisplayed, event }) => {
-  if (event === "deleted") {
+const jsenvFormatFileCell = ({ fileRelativeUrlDisplayed, sizeAfterMerge }) => {
+  if (sizeAfterMerge === undefined) {
     return `<del>${fileRelativeUrlDisplayed}</del>`
   }
   return fileRelativeUrlDisplayed
@@ -27,92 +39,85 @@ const jsenvFormatFileCell = ({ fileRelativeUrlDisplayed, event }) => {
  * - deleted
  *   0 (-100b)
  */
-const jsenvFormatFileSizeImpactCell = (fileImpact, sizeName) => {
-  const { beforeMerge, afterMerge } = fileImpact
-
-  // added
-  if (!beforeMerge) {
-    const sizeBeforeMerge = 0
-    const sizeAfterMerge = afterMerge.sizeMap[sizeName]
-    return formatSizeImpact({
-      sizeBeforeMerge,
-      sizeAfterMerge,
-      // +100 % of something that was not here
-      // makes no sense
-      showDiff: false,
-    })
-  }
-
-  // deleted
-  if (!afterMerge) {
-    const sizeBeforeMerge = beforeMerge.sizeMap[sizeName]
-    const sizeAfterMerge = 0
-    return formatSizeImpact({
-      sizeBeforeMerge,
-      sizeAfterMerge,
-      // -100% of the file kinda makes sense
-      showDiffPercentage: false,
-    })
-  }
-
-  const sizeBeforeMerge = beforeMerge.sizeMap[sizeName]
-  const sizeAfterMerge = afterMerge.sizeMap[sizeName]
-  return formatSizeImpact({
-    sizeBeforeMerge,
-    sizeAfterMerge,
-  })
-}
-
-const jsenvFormatGroupSizeImpactCell = ({ groupSizeAfterMerge, groupSizeBeforeMerge }) => {
-  return formatSizeImpact({
-    sizeBeforeMerge: groupSizeBeforeMerge,
-    sizeAfterMerge: groupSizeAfterMerge,
-  })
-}
-
-const formatSizeImpact = ({
-  sizeBeforeMerge,
-  sizeAfterMerge,
-  showDiff = true,
-  showDiffPercentage = true,
-}) => {
-  const sizeAfterMergeFormatted = formatSize(sizeAfterMerge)
-  if (!showDiff) {
+const jsenvFormatFileSizeImpactCell = ({ sizeBeforeMerge, sizeAfterMerge }) => {
+  // The file is new
+  // it makes sense to display
+  // "100B"
+  // but it would make no sense to compare with something that does not exists like
+  // "100 B (+100B / +100%)
+  if (sizeBeforeMerge === undefined) {
+    const sizeAfterMergeFormatted = formatSize(sizeAfterMerge)
     return sizeAfterMergeFormatted
   }
 
-  const sizeDiff = sizeAfterMerge - sizeBeforeMerge
-  const sizeDiffFormatted = formatSize(sizeDiff, { diff: true })
-
-  if (!showDiffPercentage) {
+  // The file is deleted, it makes sense to display
+  // "0 B (-100 B)"
+  // to indicate the new file size is 0 and was 100 bytes
+  // but it would be redundant to add the percentage
+  // "0 B (-100 B / -100%)"
+  if (sizeAfterMerge === undefined) {
+    const sizeAfterMergeFormatted = formatSize(0)
+    const sizeDiff = sizeAfterMerge - sizeBeforeMerge
+    const sizeDiffFormatted = formatSize(sizeDiff, { diff: true })
     return `${sizeAfterMergeFormatted} (${sizeDiffFormatted})`
   }
 
+  const sizeAfterMergeFormatted = formatSize(sizeAfterMerge)
+  const sizeDiff = sizeAfterMerge - sizeBeforeMerge
+  const sizeDiffFormatted = formatSize(sizeDiff, { diff: true })
+  const sizeDiffAsPercentageFormatted = formatSizeImpactAsPercentage({
+    sizeBeforeMerge,
+    sizeAfterMerge,
+  })
+  return `${sizeAfterMergeFormatted} (${sizeDiffFormatted} / ${sizeDiffAsPercentageFormatted})`
+}
+
+export const jsenvFormatEmojiCell = ({ sizeBeforeMerge, sizeAfterMerge }) => {
+  if (sizeBeforeMerge === undefined) {
+    return ":baby:"
+  }
+
+  if (sizeAfterMerge === undefined) {
+    return ""
+  }
+
+  const delta = sizeAfterMerge - sizeBeforeMerge
+  if (delta === 0) {
+    return ":ghost:"
+  }
+
+  if (delta > 0) {
+    return ":arrow_upper_right:"
+  }
+
+  return ":arrow_lower_right:"
+}
+
+export const jsenvCommentParameters = {
+  filesOrdering: "size_impact",
+  maxFilesPerGroup: 600,
+  fileRelativeUrlMaxLength: 100,
+  formatGroupSummary: jsenvFormatGroupSummary,
+  formatFileRelativeUrl: jsenvFormatFileRelativeUrl,
+
+  formatFileCell: jsenvFormatFileCell,
+  formatFileSizeImpactCell: jsenvFormatFileSizeImpactCell,
+  formatEmojiCell: jsenvFormatEmojiCell,
+  shouldOpenGroupByDefault: () => false,
+}
+
+const formatSizeImpactAsPercentage = ({ sizeBeforeMerge, sizeAfterMerge }) => {
+  const sizeDiff = sizeAfterMerge - sizeBeforeMerge
   const sizeDiffRatio =
     sizeBeforeMerge === 0 ? 1 : sizeAfterMerge === 0 ? -1 : sizeDiff / sizeBeforeMerge
   const sizeDiffAsPercentage = sizeDiffRatio * 100
   const sizeDiffAsPercentageFormatted = `${sizeDiffAsPercentage < 0 ? `-` : "+"}${Math.abs(
     limitDecimals(sizeDiffAsPercentage, 2),
   )}%`
-
-  return `${sizeAfterMergeFormatted} (${sizeDiffFormatted} / ${sizeDiffAsPercentageFormatted})`
+  return sizeDiffAsPercentageFormatted
 }
 
 const limitDecimals = (number, decimalCount = 2) => {
   const multiplier = Math.pow(10, decimalCount)
   return Math.round(number * multiplier) / multiplier
-}
-
-export const jsenvCommentParameters = {
-  filesOrdering: "size_impact",
-  maxRowsPerTable: 600,
-  fileRelativeUrlMaxLength: 100,
-  formatGroupSummary: jsenvFormatGroupSummary,
-  formatHiddenImpactSummary: jsenvFormatHiddenImpactSummary,
-  formatFileRelativeUrl: jsenvFormatFileRelativeUrl,
-
-  formatFileCell: jsenvFormatFileCell,
-  formatFileSizeImpactCell: jsenvFormatFileSizeImpactCell,
-  formatGroupSizeImpactCell: jsenvFormatGroupSizeImpactCell,
-  shouldOpenGroupByDefault: () => false,
 }

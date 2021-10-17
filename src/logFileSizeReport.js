@@ -17,7 +17,7 @@ export const logFileSizeReport = (fileSizeReport) => {
       const sizesFormatted = sizeNames.map((sizeName) => {
         return `${sizeName}: ${formatSize(sizeMap[sizeName])}`
       })
-      return `${fileRelativeUrl}: { ${sizesFormatted.join(`,`)} }`
+      return `${fileRelativeUrl}: { ${sizesFormatted.join(`, `)} }`
     })
 
     return `${groupName}
