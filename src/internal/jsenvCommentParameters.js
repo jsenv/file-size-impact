@@ -51,15 +51,14 @@ const jsenvFormatFileSizeImpactCell = ({ sizeBeforeMerge, sizeAfterMerge }) => {
   }
 
   // The file is deleted, it makes sense to display
-  // "0 B (-100 B)"
+  // "deleted (-100 B)"
   // to indicate the new file size is 0 and was 100 bytes
   // but it would be redundant to add the percentage
-  // "0 B (-100 B / -100%)"
+  // "deleted (-100 B / -100%)"
   if (sizeAfterMerge === undefined) {
-    const sizeAfterMergeFormatted = formatSize(0)
     const sizeDiff = sizeAfterMerge - sizeBeforeMerge
     const sizeDiffFormatted = formatSize(sizeDiff, { diff: true })
-    return `${sizeAfterMergeFormatted} (${sizeDiffFormatted})`
+    return `deleted (${sizeDiffFormatted})`
   }
 
   const sizeAfterMergeFormatted = formatSize(sizeAfterMerge)
