@@ -1,10 +1,10 @@
 export const orderBySizeImpact = (fileByFileImpact, sizeNames) => {
   const impactOrderedBySizeImpact = {}
   const files = Object.keys(fileByFileImpact)
-  const lastSizeName = sizeNames[sizeNames.length - 1]
+  const firstSizeName = sizeNames[0]
   files.sort((leftFile, rightFile) => {
-    const leftFileSizeImpact = sizeImpactFromFileImpact(fileByFileImpact[leftFile], lastSizeName)
-    const rightFileSizeImpact = sizeImpactFromFileImpact(fileByFileImpact[rightFile], lastSizeName)
+    const leftFileSizeImpact = fileByFileImpact[leftFile].sizeImpactMap[firstSizeName]
+    const rightFileSizeImpact = fileByFileImpact[rightFile].sizeImpactMap[firstSizeName]
     if (leftFileSizeImpact === 0) {
       return 1
     }
@@ -23,17 +23,4 @@ export const orderBySizeImpact = (fileByFileImpact, sizeNames) => {
     impactOrderedBySizeImpact[file] = fileByFileImpact[file]
   })
   return impactOrderedBySizeImpact
-}
-
-const sizeImpactFromFileImpact = (fileImpact, sizeName) => {
-  const { sizeMapBeforeMerge, sizeMapAfterMerge } = fileImpact
-  const sizeBeforeMerge = sizeMapBeforeMerge[sizeName]
-  const sizeAfterMerge = sizeMapAfterMerge[sizeName]
-  if (sizeBeforeMerge === undefined) {
-    return sizeAfterMerge
-  }
-  if (sizeAfterMerge === undefined) {
-    return -sizeBeforeMerge
-  }
-  return sizeAfterMerge - sizeBeforeMerge
 }

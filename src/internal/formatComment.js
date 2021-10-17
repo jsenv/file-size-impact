@@ -109,6 +109,7 @@ const renderCommentBody = ({
         relativeUrlAfterMerge: afterMerge ? afterMerge.relativeUrl : undefined,
         sizeMapBeforeMerge,
         sizeMapAfterMerge,
+        sizeImpactMap,
         showSizeImpact,
         formatFileRelativeUrl,
       }

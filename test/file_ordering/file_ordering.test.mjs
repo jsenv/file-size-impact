@@ -5,31 +5,13 @@ import { orderBySizeImpact } from "@jsenv/file-size-impact/src/internal/orderByS
 {
   const fileByFileImpact = {
     "size_same.js": {
-      event: "modified",
-      beforeMerge: {
-        sizeMap: { raw: 100 },
-      },
-      afterMerge: {
-        sizeMap: { raw: 100 },
-      },
+      sizeImpactMap: { raw: 0 },
     },
     "size_decreases.js": {
-      event: "modified",
-      beforeMerge: {
-        sizeMap: { raw: 100 },
-      },
-      afterMerge: {
-        sizeMap: { raw: 90 },
-      },
+      sizeImpactMap: { raw: -10 },
     },
     "size_increases.js": {
-      event: "modified",
-      beforeMerge: {
-        sizeMap: { raw: 100 },
-      },
-      afterMerge: {
-        sizeMap: { raw: 110 },
-      },
+      sizeImpactMap: { raw: +10 },
     },
   }
   const fileByFileImpactOrdered = orderBySizeImpact(fileByFileImpact, ["raw"])
