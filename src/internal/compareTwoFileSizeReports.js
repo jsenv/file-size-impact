@@ -1,4 +1,4 @@
-import { resolveUrl, comparePathnames, urlToRelativeUrl } from "@jsenv/util"
+import { resolveUrl, comparePathnames, urlToRelativeUrl } from "@jsenv/filesystem"
 
 export const compareTwoFileSizeReports = ({
   afterMergeFileSizeReport,

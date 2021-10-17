@@ -1,35 +1,41 @@
-export const renderImpactTable = (
+import { getSizeMapsForManyFiles } from "./size_map.js"
+
+export const renderImpactTable = ({
   fileByFileImpact,
-  {
-    groupFileImpactMap,
-    transformationKeys,
-    fileRelativeUrlMaxLength,
-    maxRowsPerTable,
-    formatFileRelativeUrl,
-    formatFileCell,
-    formatFileSizeImpactCell,
-    formatGroupSizeImpactCell,
-  },
-) => {
+  transformationKeys,
+  fileRelativeUrlMaxLength,
+  maxFilesPerGroup,
+  formatFileRelativeUrl,
+  formatFileCell,
+  formatFileSizeImpactCell,
+  formatEmojiCell,
+  groupSizeMapBeforeMerge,
+  groupSizeMapAfterMerge,
+}) => {
   const table = `<table>
     <thead>
       ${renderSizeImpactTableHeader(transformationKeys)}
     </thead>
     <tbody>
-      ${renderSizeImpactTableBody(fileByFileImpact, {
+      ${renderSizeImpactTableBody({
+        fileByFileImpact,
         transformationKeys,
-        maxRowsPerTable,
+        maxFilesPerGroup,
         fileRelativeUrlMaxLength,
         formatFileRelativeUrl,
         formatFileCell,
         formatFileSizeImpactCell,
+        formatEmojiCell,
       })}
     </tbody>
     <tfoot>
-      ${renderSizeImpactTableFooter(fileByFileImpact, {
-        groupFileImpactMap,
+      ${renderSizeImpactTableFooter({
+        fileByFileImpact,
         transformationKeys,
-        formatGroupSizeImpactCell,
+        formatFileSizeImpactCell,
+        formatEmojiCell,
+        groupSizeMapBeforeMerge,
+        groupSizeMapAfterMerge,
       })}
     </tfoot>
   </table>`
@@ -40,7 +46,7 @@ export const renderImpactTable = (
 const renderSizeImpactTableHeader = (transformationKeys) => {
   const lines = []
   const headerLine = [
-    `<th nowrap>File</th>`,
+    `<th nowrap>Files</th>`,
     ...transformationKeys.map(
       (sizeName) => `<th nowrap>${sizeName === "raw" ? `new size` : `new ${sizeName} size`}</th>`,
     ),
@@ -51,35 +57,37 @@ const renderSizeImpactTableHeader = (transformationKeys) => {
   return renderTableLines(lines)
 }
 
-const renderSizeImpactTableBody = (
+const renderSizeImpactTableBody = ({
   fileByFileImpact,
-  {
-    transformationKeys,
-    maxRowsPerTable,
-    fileRelativeUrlMaxLength,
-    formatFileRelativeUrl,
-    formatFileCell,
-    formatFileSizeImpactCell,
-  },
-) => {
+  transformationKeys,
+  maxFilesPerGroup,
+  fileRelativeUrlMaxLength,
+  formatFileRelativeUrl,
+  formatFileCell,
+  formatFileSizeImpactCell,
+  formatEmojiCell,
+}) => {
   const lines = []
   const sizeNames = transformationKeys
+  const firstSizeName = sizeNames[0]
 
-  const renderDiffCell = (fileImpact, sizeName) => {
-    const fileSizeImpactCellFormatted = formatFileSizeImpactCell(fileImpact, sizeName)
-    return fileSizeImpactCellFormatted
-  }
-
-  const files = Object.keys(fileByFileImpact)
-  const fileCount = files.length
-  let filesShown
-  if (fileCount > maxRowsPerTable) {
-    filesShown = files.slice(0, maxRowsPerTable)
-  } else {
-    filesShown = files
-  }
-  filesShown.forEach((fileRelativeUrl) => {
+  let remainingFilesToDisplay = maxFilesPerGroup
+  const truncateds = []
+  const unmodifieds = []
+  Object.keys(fileByFileImpact).forEach((fileRelativeUrl) => {
     const fileImpact = fileByFileImpact[fileRelativeUrl]
+
+    if (fileImpact.event === "none") {
+      unmodifieds.push(fileRelativeUrl)
+      return
+    }
+
+    if (remainingFilesToDisplay === 0) {
+      truncateds.push(fileRelativeUrl)
+      return
+    }
+
+    remainingFilesToDisplay--
     const fileAbstractRelativeUrl = fileAbstractRelativeUrlFromFileImpact(fileImpact)
     const fileRelativeUrlFormatted = (fileImpact.formatFileRelativeUrl || formatFileRelativeUrl)(
       fileAbstractRelativeUrl,
@@ -88,149 +96,144 @@ const renderSizeImpactTableBody = (
       fileRelativeUrlFormatted,
       fileRelativeUrlMaxLength,
     )
+    const { sizeMapBeforeMerge, sizeMapAfterMerge } = fileByFileImpact[fileRelativeUrl]
     const fileCellFormatted = formatFileCell({
       fileRelativeUrl,
       fileRelativeUrlDisplayed,
-      ...fileImpact,
+      sizeBeforeMerge: sizeMapBeforeMerge[firstSizeName],
+      sizeAfterMerge: sizeMapAfterMerge[firstSizeName],
     })
+
     const line = [
       `<td nowrap>${fileCellFormatted}</td>`,
-      ...sizeNames.map((sizeName) => `<td nowrap>${renderDiffCell(fileImpact, sizeName)}</td>`),
-      `<td>${renderEmojiCellContent(fileImpact)}</td>`,
+      ...sizeNames.map((sizeName) => {
+        return `<td nowrap>${formatFileSizeImpactCell({
+          sizeBeforeMerge: sizeMapBeforeMerge[sizeName],
+          sizeAfterMerge: sizeMapAfterMerge[sizeName],
+          sizeName,
+        })}</td>`
+      }),
+      ...(formatEmojiCell
+        ? [
+            `<td>${formatEmojiCell({
+              sizeBeforeMerge: sizeMapBeforeMerge[firstSizeName],
+              sizeAfterMerge: sizeMapAfterMerge[firstSizeName],
+            })}</td>`,
+          ]
+        : []),
     ]
     lines.push(line)
   })
-  if (filesShown !== files) {
-    const columnCount =
-      // file name
-      1 +
-      // all sizes
-      sizeNames.length +
-      // emoji column
-      1
-    lines.push([
-      `<td colspan="${columnCount}" align="center">... ${
-        fileCount - maxRowsPerTable
-      } more ...</td>`,
-    ])
+
+  const truncatedCount = truncateds.length
+  if (truncatedCount > 0) {
+    const { sizeMapBeforeMerge, sizeMapAfterMerge } = getSizeMapsForManyFiles({
+      sizeNames,
+      fileByFileImpact,
+      files: truncateds,
+    })
+    const lineForTruncatedFiles = [
+      `<td nowrap><i>Truncated (${truncatedCount})</i></td>`,
+      ...sizeNames.map((sizeName) => {
+        return `<td nowrap>${formatFileSizeImpactCell({
+          sizeBeforeMerge: sizeMapBeforeMerge[sizeName],
+          sizeAfterMerge: sizeMapAfterMerge[sizeName],
+          sizeName,
+        })}</td>`
+      }),
+      ...(formatEmojiCell
+        ? [
+            `<td>${formatEmojiCell({
+              sizeBeforeMerge: sizeMapBeforeMerge[firstSizeName],
+              sizeAfterMerge: sizeMapAfterMerge[firstSizeName],
+            })}</td>`,
+          ]
+        : []),
+    ]
+    lines.push(lineForTruncatedFiles)
+  }
+
+  const unmodifiedCount = unmodifieds.length
+  if (unmodifiedCount > 0) {
+    const { sizeMapBeforeMerge, sizeMapAfterMerge } = getSizeMapsForManyFiles({
+      sizeNames,
+      fileByFileImpact,
+      files: unmodifieds,
+    })
+    const lineForUnmodifiedFiles = [
+      `<td nowrap><i>Unmodified (${unmodifiedCount})</i></td>`,
+      ...sizeNames.map((sizeName) => {
+        return `<td nowrap>${formatFileSizeImpactCell({
+          sizeBeforeMerge: sizeMapBeforeMerge[sizeName],
+          sizeAfterMerge: sizeMapAfterMerge[sizeName],
+          sizeName,
+        })}</td>`
+      }),
+      ...(formatEmojiCell
+        ? [
+            `<td>${formatEmojiCell({
+              sizeBeforeMerge: sizeMapBeforeMerge[firstSizeName],
+              sizeAfterMerge: sizeMapAfterMerge[firstSizeName],
+            })}</td>`,
+          ]
+        : []),
+    ]
+    lines.push(lineForUnmodifiedFiles)
   }
 
   return renderTableLines(lines)
 }
 
-const renderEmojiCellContent = (fileImpact) => {
-  const { event } = fileImpact
-
-  if (event === "added") {
-    return ":baby:"
-  }
-
-  if (event === "deleted") {
-    return ""
-  }
-
-  const { afterMerge, beforeMerge } = fileImpact
-  const afterMergeSizeMap = afterMerge.sizeMap
-  const beforeMergeSizeMap = beforeMerge.sizeMap
-  const sizeNames = Object.keys(afterMergeSizeMap)
-  const sizeName = sizeNames[sizeNames.length - 1]
-  const afterMergeSize = afterMergeSizeMap[sizeName]
-  const beforeMergeSize = beforeMergeSizeMap[sizeName]
-  const delta = afterMergeSize - beforeMergeSize
-  if (delta === 0) {
-    return ":ghost:"
-  }
-
-  if (delta > 0) {
-    return ":arrow_upper_right:"
-  }
-
-  return ":arrow_lower_right:"
+const fileAbstractRelativeUrlFromFileImpact = ({
+  manifestKeyBeforeMerge,
+  relativeUrlBeforeMerge,
+  manifestKeyAfterMerge,
+  relativeUrlAfterMerge,
+}) => {
+  return (
+    manifestKeyAfterMerge ||
+    relativeUrlAfterMerge ||
+    manifestKeyBeforeMerge ||
+    relativeUrlBeforeMerge
+  )
 }
 
-const renderGroupEmojiCellContent = ({ groupSizeAfterMerge, groupSizeBeforeMerge }) => {
-  const delta = groupSizeAfterMerge - groupSizeBeforeMerge
-  if (delta === 0) {
-    return ":ghost:"
-  }
-
-  if (delta > 0) {
-    return ":arrow_upper_right:"
-  }
-
-  return ":arrow_lower_right:"
-}
-
-const fileAbstractRelativeUrlFromFileImpact = ({ beforeMerge, afterMerge }) => {
-  if (afterMerge) {
-    return afterMerge.manifestKey || afterMerge.relativeUrl
-  }
-  return beforeMerge.manifestKey || beforeMerge.relativeUrl
-}
-
-const renderSizeImpactTableFooter = (
+const renderSizeImpactTableFooter = ({
   fileByFileImpact,
-  { groupFileImpactMap, transformationKeys, formatGroupSizeImpactCell },
-) => {
+  transformationKeys,
+  formatFileSizeImpactCell,
+  formatEmojiCell,
+  groupSizeMapBeforeMerge,
+  groupSizeMapAfterMerge,
+}) => {
   const footerLines = []
 
+  const fileCount = Object.keys(fileByFileImpact).length
   const sizeNames = transformationKeys
-  const lastSizeName = sizeNames[sizeNames.length - 1]
-
-  const groupImpacts = {}
-  sizeNames.forEach((sizeName) => {
-    groupImpacts[sizeName] = computeGroupImpact(groupFileImpactMap, sizeName)
-  })
+  const firstSizeName = sizeNames[0]
 
   const groupSizeImpactLine = [
-    `<td nowrap><strong>Whole group</strong></td>`,
+    `<td nowrap><strong>Total (${fileCount})</strong></td>`,
     ...sizeNames.map(
-      (sizeName) => `<td nowrap>${formatGroupSizeImpactCell(groupImpacts[sizeName])}</td>`,
+      (sizeName) =>
+        `<td nowrap>${formatFileSizeImpactCell({
+          sizeBeforeMerge: groupSizeMapBeforeMerge[sizeName],
+          sizeAfterMerge: groupSizeMapAfterMerge[sizeName],
+          sizeName,
+        })}</td>`,
     ),
-    `<td>${renderGroupEmojiCellContent(groupImpacts[lastSizeName])}</td>`,
+    ...(formatEmojiCell
+      ? [
+          `<td>${formatEmojiCell({
+            sizeBeforeMerge: groupSizeMapBeforeMerge[firstSizeName],
+            sizeAfterMerge: groupSizeMapAfterMerge[firstSizeName],
+          })}</td>`,
+        ]
+      : []),
   ]
   footerLines.push(groupSizeImpactLine)
 
   return renderTableLines(footerLines)
-}
-
-const computeGroupImpact = (groupFileImpactMap, sizeName) => {
-  const groupImpact = Object.keys(groupFileImpactMap).reduce(
-    (previous, fileRelativeUrl) => {
-      const fileImpact = groupFileImpactMap[fileRelativeUrl]
-      const { beforeMerge, afterMerge } = fileImpact
-      // added
-      if (!beforeMerge) {
-        const sizeAfterMerge = afterMerge.sizeMap[sizeName]
-        return {
-          groupSizeBeforeMerge: previous.groupSizeBeforeMerge,
-          groupSizeAfterMerge: previous.groupSizeAfterMerge + sizeAfterMerge,
-        }
-      }
-
-      // removed
-      if (!afterMerge) {
-        const sizeBeforeMerge = beforeMerge.sizeMap[sizeName]
-        return {
-          groupSizeBeforeMerge: previous.groupSizeBeforeMerge + sizeBeforeMerge,
-          groupSizeAfterMerge: previous.groupSizeAfterMerge,
-        }
-      }
-
-      // modified or not, does not matter
-      const sizeBeforeMerge = beforeMerge.sizeMap[sizeName]
-      const sizeAfterMerge = afterMerge.sizeMap[sizeName]
-      return {
-        groupSizeBeforeMerge: previous.groupSizeBeforeMerge + sizeBeforeMerge,
-        groupSizeAfterMerge: previous.groupSizeAfterMerge + sizeAfterMerge,
-      }
-    },
-    {
-      groupSizeBeforeMerge: 0,
-      groupSizeAfterMerge: 0,
-    },
-  )
-  return groupImpact
 }
 
 const truncateFileRelativeUrl = (fileRelativeUrl, fileRelativeUrlMaxLength) => {

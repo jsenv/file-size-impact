@@ -1,8 +1,20 @@
-import { assertAndNormalizeDirectoryUrl, resolveUrl } from "@jsenv/util"
+import { Worker } from "node:worker_threads"
+import {
+  assertAndNormalizeDirectoryUrl,
+  fileSystemPathToUrl,
+  isFileSystemPath,
+  resolveUrl,
+  urlToFileSystemPath,
+} from "@jsenv/filesystem"
 import { commentGitHubPullRequestImpact } from "@jsenv/github-pull-request-impact"
 
 import { formatComment } from "./internal/formatComment.js"
 import { jsenvCommentParameters } from "./internal/jsenvCommentParameters.js"
+
+const workerFileUrl = resolveUrl(
+  "./internal/worker_generating_file_size_report.js",
+  import.meta.url,
+)
 
 export const reportFileSizeImpact = async ({
   logLevel,
@@ -17,19 +29,18 @@ export const reportFileSizeImpact = async ({
   pullRequestNumber,
   installCommand = "npm install",
   buildCommand = "npm run-script build",
-  moduleGeneratingFileSizeReportRelativeUrl,
+  fileSizeModulePath,
 
   // We could just to ...jsenvCommentParameters but explicitely passing params
   // helps autocompletion in vscode for dev using the function.
   filesOrdering = jsenvCommentParameters.filesOrdering,
-  maxRowsPerTable = jsenvCommentParameters.maxRowsPerTable,
+  maxFilesPerGroup = jsenvCommentParameters.maxFilesPerGroup,
   fileRelativeUrlMaxLength = jsenvCommentParameters.fileRelativeUrlMaxLength,
   formatGroupSummary = jsenvCommentParameters.formatGroupSummary,
-  formatHiddenImpactSummary = jsenvCommentParameters.formatHiddenImpactSummary,
   formatFileRelativeUrl = jsenvCommentParameters.formatFileRelativeUrl,
   formatFileCell = jsenvCommentParameters.formatFileCell,
   formatFileSizeImpactCell = jsenvCommentParameters.formatFileSizeImpactCell,
-  formatGroupSizeImpactCell = jsenvCommentParameters.formatGroupSizeImpactCell,
+  formatEmojiCell = jsenvCommentParameters.formatEmojiCell,
   shouldOpenGroupByDefault = jsenvCommentParameters.shouldOpenGroupByDefault,
 
   catchError,
@@ -48,16 +59,14 @@ export const reportFileSizeImpact = async ({
     throw new TypeError(`buildCommand must be a string but received ${buildCommand}`)
   }
 
-  if (typeof moduleGeneratingFileSizeReportRelativeUrl !== "string") {
-    throw new TypeError(
-      `moduleGeneratingFileSizeReportRelativeUrl must be a string but received ${moduleGeneratingFileSizeReportRelativeUrl}`,
-    )
+  if (typeof fileSizeModulePath !== "string") {
+    throw new TypeError(`fileSizeModulePath must be a string but received ${fileSizeModulePath}`)
   }
   projectDirectoryUrl = assertAndNormalizeDirectoryUrl(projectDirectoryUrl)
-  const moduleGeneratingFileSizeReportUrl = resolveUrl(
-    moduleGeneratingFileSizeReportRelativeUrl,
-    projectDirectoryUrl,
-  )
+  const fileSizeModuleUrl = isFileSystemPath(fileSizeModulePath)
+    ? fileSystemPathToUrl(fileSizeModulePath)
+    : resolveUrl(fileSizeModulePath, projectDirectoryUrl)
+  const workerFilePath = urlToFileSystemPath(workerFileUrl)
 
   return commentGitHubPullRequestImpact({
     logLevel,
@@ -75,15 +84,12 @@ export const reportFileSizeImpact = async ({
       if (installCommand) await execCommandInProjectDirectory(installCommand)
       if (buildCommand) await execCommandInProjectDirectory(buildCommand)
 
-      const { generateFileSizeReport } = await import(
-        `${moduleGeneratingFileSizeReportUrl}?cache_busting=${Date.now()}`
-      )
-      if (typeof generateFileSizeReport !== "function") {
-        throw new TypeError(
-          `generateFileSizeReport export must be a function, got ${generateFileSizeReport}`,
-        )
-      }
-      const fileSizeReport = await generateFileSizeReport()
+      const worker = new Worker(workerFilePath)
+      const { fileSizeReport } = await new Promise((resolve, reject) => {
+        worker.postMessage({ fileSizeModuleUrl })
+        worker.on("message", resolve)
+        worker.on("error", reject)
+      })
 
       return { version: 1, data: fileSizeReport }
     },
@@ -102,14 +108,13 @@ export const reportFileSizeImpact = async ({
         afterMergeFileSizeReport: afterMergeData,
 
         filesOrdering,
-        maxRowsPerTable,
+        maxFilesPerGroup,
         fileRelativeUrlMaxLength,
         formatGroupSummary,
-        formatHiddenImpactSummary,
         formatFileRelativeUrl,
         formatFileCell,
         formatFileSizeImpactCell,
-        formatGroupSizeImpactCell,
+        formatEmojiCell,
         shouldOpenGroupByDefault,
       })
     },

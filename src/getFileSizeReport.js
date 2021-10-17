@@ -5,7 +5,7 @@ import {
   resolveUrl,
   readFile,
   urlToFileSystemPath,
-} from "@jsenv/util"
+} from "@jsenv/filesystem"
 
 import { transform as rawTransform } from "./rawTransformation.js"
 import { jsenvTrackingConfig } from "./jsenvTrackingConfig.js"

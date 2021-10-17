@@ -9,7 +9,7 @@ The goal is to force user to regenerate comment_snapshot.md and ensure it looks 
 
 */
 
-import { readFile, resolveUrl } from "@jsenv/util"
+import { readFile, resolveUrl } from "@jsenv/filesystem"
 import { assert } from "@jsenv/assert"
 
 const commentSnapshotFileUrl = resolveUrl("./comment_snapshot.md", import.meta.url)

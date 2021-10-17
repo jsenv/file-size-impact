@@ -1,8 +1,8 @@
 import { reportFileSizeImpact, readGitHubWorkflowEnv } from "@jsenv/file-size-impact"
 
-reportFileSizeImpact({
+await reportFileSizeImpact({
   ...readGitHubWorkflowEnv(),
   logLevel: "debug",
   buildCommand: null,
-  moduleGeneratingFileSizeReportRelativeUrl: "./script/file_size/generate_file_size_report.mjs",
+  fileSizeModulePath: "./script/file_size/generate_file_size_report.mjs",
 })

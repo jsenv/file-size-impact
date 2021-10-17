@@ -11,16 +11,6 @@
 
 This section shows pull request comment and how to read _group summary_ and _size impact_ sections.
 
-_Screenshot of a pull request comment_
-
-![screenshot of pull request comment](./docs/comment-collapsed.png)
-
-_Screenshot when comment is expanded_
-
-![screenshot of pull request comment expanded](./docs/comment-expanded.png)
-
-## Pull request comment legend
-
 ![legend of pull request comment](./docs/comment-legend.png)
 
 "_critical files (1/2)_" is a group summary, it translates into the following sentence:
@@ -110,10 +100,10 @@ _report_file_size_impact.mjs_
 
 import { reportFileSizeImpact, readGitHubWorkflowEnv } from "@jsenv/file-size-impact"
 
-reportFileSizeImpact({
+await reportFileSizeImpact({
   ...readGitHubWorkflowEnv(),
   buildCommand: "npm run dist",
-  moduleGeneratingFileSizeReportRelativeUrl: "./generate_file_size_report.mjs",
+  fileSizeModulePath: "./generate_file_size_report.mjs",
 })
 ```
 
@@ -204,7 +194,7 @@ For example you can create two groups named _"critical files"_ and _"remaining f
 ```js
 import { getFileSizeReport } from "@jsenv/file-size-impact"
 
-getFileSizeReport({
+await getFileSizeReport({
   trackingConfig: {
     "critical files": {
       "./dist/main.js": true,
@@ -231,7 +221,7 @@ You can use this parameter to track file size after gzip compression.
 ```js
 import { getFileSizeReport, raw, gzip, brotli } from "@jsenv/file-size-impact"
 
-getFileSizeReport({
+await getFileSizeReport({
   transformations: { raw, gzip, brotli },
 })
 ```
@@ -245,7 +235,7 @@ It's also possible to control compression level.
 ```js
 import { getFileSizeReport, raw, gzip } from "@jsenv/file-size-impact"
 
-getFileSizeReport({
+await getFileSizeReport({
   transformations: {
     raw,
     gzip7: (buffer) => gzip(buffer, { level: 7 }),
@@ -259,7 +249,7 @@ Finally _transformations_ can be used to add custom _transformations_.
 ```js
 import { getFileSizeReport, raw, gzip, brotli } from "@jsenv/file-size-impact"
 
-getFileSizeReport({
+await getFileSizeReport({
   transformations: {
     raw,
     trim: (buffer) => String(buffer).trim(),
@@ -276,7 +266,7 @@ This parameter reuses the shape of [trackingConfig](#trackingConfig) (associatin
 ```js
 import { reportFileSizeImpact } from "@jsenv/file-size-impact"
 
-reportFileSizeImpact({
+await reportFileSizeImpact({
   manifestConfig: {
     "./dist/**/manifest.json": true,
   },
@@ -288,7 +278,7 @@ You can disable manifest files handling by passing `null`.
 ```js
 import { reportFileSizeImpact } from "@jsenv/file-size-impact"
 
-reportFileSizeImpact({
+await reportFileSizeImpact({
   manifestConfig: {
     "./dist/**/manifest.json": null,
   },
@@ -315,7 +305,7 @@ await reportFileSizeImpact({
 
   installCommand: "npm install",
   buildCommand: "npm run build",
-  moduleGeneratingFileSizeReportRelativeUrl: "./generate_file_size_report.mjs",
+  fileSizeModulePath: "./generate_file_size_report.mjs",
 
   filesOrdering: "size_impact",
 })
@@ -339,9 +329,9 @@ _installCommand_ parameter is a string representing the command to run in order 
 
 _buildCommand_ parameter is a string representing the command to run in order to generate files. This parameter is optional with a default value of `"npm run-script build"`. You can pass `null` if you don't need to run a build command before computing file sizes.
 
-## moduleGeneratingFileSizeReportRelativeUrl
+## fileSizeModulePath
 
-_moduleGeneratingFileSizeReportRelativeUrl_ is a string parameter representing an url relative to [projectDirectoryUrl](#projectDirectoryUrl) leading a module file. This file must contain a _generateFileSizeReport_ export.
+_fileSizeModulePath_ is a string parameter representing an url relative to [projectDirectoryUrl](#projectDirectoryUrl) leading a module file. This file must contain a _generateFileSizeReport_ export.
 
 ## filesOrdering
 
@@ -365,7 +355,7 @@ Inside an other workflow, you can pass your own _runLink_. As in the example bel
 ```js
 import { reportFileSizeImpact } from "@jsenv/file-size-impact"
 
-reportFileSizeImpact({
+await reportFileSizeImpact({
   runLink: {
     url: process.env.BUILD_URL,
     text: `${process.env.JOB_NAME}#${process.env.BUILD_ID}`,
@@ -382,7 +372,7 @@ import { reportFileSizeImpact, readGitHubWorkflowEnv } from "@jsenv/file-size-im
 
 const gitHubWorkflowEnv = readGitHubWorkflowEnv()
 
-reportFileSizeImpact({
+await reportFileSizeImpact({
   ...gitHubWorkflowEnv,
 })
 ```
