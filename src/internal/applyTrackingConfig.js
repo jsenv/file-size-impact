@@ -1,4 +1,4 @@
-import { urlToFileSystemPath, collectDirectoryMatchReport } from "@jsenv/util"
+import { urlToFileSystemPath, collectDirectoryMatchReport } from "@jsenv/filesystem"
 import { createCancellationToken } from "@jsenv/cancellation"
 
 export const applyTrackingConfig = async (

@@ -41,7 +41,7 @@
   "dependencies": {
     "@jsenv/github-pull-request-impact": "1.6.4",
     "@jsenv/logger": "4.0.1",
-    "@jsenv/util": "4.1.1",
+    "@jsenv/filesystem": "2.2.0",
     "pretty-bytes": "5.6.0"
   },
   "devDependencies": {

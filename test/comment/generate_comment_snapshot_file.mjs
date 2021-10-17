@@ -1,4 +1,4 @@
-import { writeFile, resolveUrl } from "@jsenv/util"
+import { writeFile, resolveUrl } from "@jsenv/filesystem"
 import { createGitHubPullRequestCommentText } from "@jsenv/github-pull-request-impact"
 
 import { jsenvCommentParameters } from "@jsenv/file-size-impact/src/internal/jsenvCommentParameters.js"
