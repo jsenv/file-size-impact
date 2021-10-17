@@ -1,6 +1,6 @@
 import { parentPort } from "node:worker_threads"
 
-parentPort.on("message", async ({ fileSizeModuleUrl }) => {
+parentPort.once("message", async ({ fileSizeModuleUrl }) => {
   const { generateFileSizeReport } = await import(fileSizeModuleUrl)
 
   if (typeof generateFileSizeReport !== "function") {
