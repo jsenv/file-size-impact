@@ -9,17 +9,29 @@
 
 # Pull request comment
 
-This section shows pull request comment and how to read _group summary_ and _size impact_ sections.
+This section shows pull request comment and how to read it. Especially _group summary_ and _size impact_ sections.
 
-![legend of pull request comment](./docs/comment-legend.png)
+![legend of pull request comment](./docs/comment_legend.png)
 
-"_critical files (1/2)_" is a group summary, it translates into the following sentence:
+## group summary
 
-> "There is a group of files named **critical files** and pull request impacts **1** out of **2** files in this group."
+"_remaining files (+4.71%)_" is a group summary, it translates into the following sentence:
 
-"_127.83KB (+6.84KB / +5.65%)_" is a size impact, it translates into the following sentence:
+> "There is a group of files named **remaining files** and pull request has an overall impact of +4.71% on these files."
 
-> "The size after merge is **127.83KB** and pull request adds **6.84KB** representing an increase of **5.65%** of the size before merge."
+## size impact
+
+"_21.6 kB (+4.11 kB / +23.55%)_" is a size impact, it translates into the following sentence:
+
+> "The size after merge is **21.6 kB**. Pull request adds **4.11 kB** representing an increase of **23.55%** of the size before merge."
+
+## Unmodified row
+
+Unmodified row is the sum of all files in a group that are not impacted by changes in the pull request.
+
+## Total row
+
+Total row is the sum of all files in a group.
 
 # Installation
 
@@ -210,7 +222,7 @@ await getFileSizeReport({
 })
 ```
 
-![screenshot of pull request comment where groups are highlighted](./docs/group-highlighted.png)
+![screenshot of pull request comment where groups are highlighted](./docs/comment_group_highlighted.png)
 
 ## transformations
 
@@ -226,7 +238,7 @@ await getFileSizeReport({
 })
 ```
 
-![screenshot of pull request comment with gzip and brotli](./docs/comment-compression.png)
+![screenshot of pull request comment with gzip and brotli](./docs/comment_compression.png)
 
 _raw_, _gzip_ and _brotli_ compression can be enabled this way.
 
@@ -346,7 +358,7 @@ _filesOrdering_ parameter is a string used to decide the order of the files disp
 
 _runLink_ parameter allow to put a link to the workflow run in the generated comment body. It is used to indicates where file size impact was runned.
 
-![screenshot of pull request comment where runlink is highlighted](./docs/runlink-highlighted.png)
+![screenshot of pull request comment where runlink is highlighted](./docs/comment_run_link_highlighted.png)
 
 This parameter is returned by [readGitHubWorkflowEnv](#readGitHubWorkflowEnv) meaning it comes for free inside a GitHub workflow.
 
@@ -362,6 +374,12 @@ await reportFileSizeImpact({
   },
 })
 ```
+
+# commitInGeneratedByInfo
+
+_commitInGeneratedByInfo_ parameter is a boolean controlling if a link to the commit where size impact was performed appears in the comment. This parameter is optional and enabled by default.
+
+![screenshot of pull request comment where link to commit is highlighted](./docs/comment_commit_link_highlighted.png)
 
 # readGitHubWorkflowEnv
 
