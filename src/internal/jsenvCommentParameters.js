@@ -56,7 +56,7 @@ const jsenvFormatFileSizeImpactCell = ({ sizeBeforeMerge, sizeAfterMerge }) => {
   // but it would be redundant to add the percentage
   // "deleted (-100 B / -100%)"
   if (sizeAfterMerge === undefined) {
-    const sizeDiff = sizeAfterMerge - sizeBeforeMerge
+    const sizeDiff = -sizeBeforeMerge
     const sizeDiffFormatted = formatSize(sizeDiff, { diff: true })
     return `deleted (${sizeDiffFormatted})`
   }

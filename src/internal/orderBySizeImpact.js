@@ -26,12 +26,14 @@ export const orderBySizeImpact = (fileByFileImpact, sizeNames) => {
 }
 
 const sizeImpactFromFileImpact = (fileImpact, sizeName) => {
-  const { event } = fileImpact
-  if (event === "added") {
-    return fileImpact.afterMerge.sizeMap[sizeName]
+  const { sizeMapBeforeMerge, sizeMapAfterMerge } = fileImpact
+  const sizeBeforeMerge = sizeMapBeforeMerge[sizeName]
+  const sizeAfterMerge = sizeMapAfterMerge[sizeName]
+  if (sizeBeforeMerge === undefined) {
+    return sizeAfterMerge
   }
-  if (event === "modified") {
-    return fileImpact.afterMerge.sizeMap[sizeName] - fileImpact.beforeMerge.sizeMap[sizeName]
+  if (sizeAfterMerge === undefined) {
+    return -sizeBeforeMerge
   }
-  return -fileImpact.beforeMerge.sizeMap[sizeName]
+  return sizeAfterMerge - sizeBeforeMerge
 }

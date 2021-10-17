@@ -1,23 +1,28 @@
 export const getSizeMapsOneFile = ({ sizeNames, beforeMerge, afterMerge }) => {
   const sizeMapBeforeMerge = {}
   const sizeMapAfterMerge = {}
+  const sizeImpactMap = {}
 
   sizeNames.forEach((sizeName) => {
-    if (beforeMerge === undefined) {
+    if (beforeMerge === null) {
       sizeMapBeforeMerge[sizeName] = undefined
       sizeMapAfterMerge[sizeName] = afterMerge.sizeMap[sizeName]
-    } else if (afterMerge === undefined) {
+      sizeImpactMap[sizeName] = afterMerge.sizeMap[sizeName]
+    } else if (afterMerge === null) {
       sizeMapBeforeMerge[sizeName] = beforeMerge.sizeMap[sizeName]
       sizeMapAfterMerge[sizeName] = undefined
+      sizeImpactMap[sizeName] = -beforeMerge.sizeMap[sizeName]
     } else {
       sizeMapBeforeMerge[sizeName] = beforeMerge.sizeMap[sizeName]
       sizeMapAfterMerge[sizeName] = afterMerge.sizeMap[sizeName]
+      sizeImpactMap[sizeName] = afterMerge.sizeMap[sizeName] - beforeMerge.sizeMap[sizeName]
     }
   })
 
   return {
     sizeMapBeforeMerge,
     sizeMapAfterMerge,
+    sizeImpactMap,
   }
 }
 

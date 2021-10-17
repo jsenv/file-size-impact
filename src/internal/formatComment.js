@@ -90,20 +90,26 @@ const renderCommentBody = ({
         : "none"
       const meta = event === "deleted" ? beforeMerge.meta : afterMerge.meta
 
-      const { sizeMapBeforeMerge, sizeMapAfterMerge } = getSizeMapsOneFile({
+      const { sizeMapBeforeMerge, sizeMapAfterMerge, sizeImpactMap } = getSizeMapsOneFile({
         sizeNames: transformationKeys,
         beforeMerge,
         afterMerge,
       })
-      const data = metaToData(meta, {
+      const { showSizeImpact, formatFileRelativeUrl } = metaToData(meta, {
         fileRelativeUrl,
         sizeBeforeMerge: sizeMapBeforeMerge[0],
         sizeAfterMerge: sizeMapAfterMerge[0],
+        sizeImpactMap,
       })
       fileByFileImpact[fileRelativeUrl] = {
+        manifestKeyBeforeMerge: beforeMerge ? beforeMerge.manifestKey : undefined,
+        manifestKeyAfterMerge: afterMerge ? afterMerge.manifestKey : undefined,
+        relativeUrlBeforeMerge: beforeMerge ? beforeMerge.relativeUrl : undefined,
+        relativeUrlAfterMerge: afterMerge ? afterMerge.relativeUrl : undefined,
         sizeMapBeforeMerge,
         sizeMapAfterMerge,
-        ...data,
+        showSizeImpact,
+        formatFileRelativeUrl,
       }
     })
     if (filesOrdering === "size_impact") {
@@ -123,14 +129,14 @@ const renderCommentBody = ({
       groupName,
       groupSizeMapBeforeMerge,
       groupSizeMapAfterMerge,
-      transformationKeys,
+      sizeNames: transformationKeys,
       fileByFileImpact,
     })
     const groupShouldBeOpenByDefault = shouldOpenGroupByDefault({
       groupName,
       groupSizeMapBeforeMerge,
       groupSizeMapAfterMerge,
-      transformationKeys,
+      sizeNames: transformationKeys,
       fileByFileImpact,
     })
 
@@ -181,7 +187,7 @@ const formulateMergeImpact = ({ pullRequestBase, pullRequestHead }) => {
   return `<p>Merging <em>${pullRequestHead}</em> into <em>${pullRequestBase}</em> impact file as follow:</p>`
 }
 
-const metaToData = (meta, { fileRelativeUrl, sizeBeforeMerge, sizeAfterMerge }) => {
+const metaToData = (meta, { fileRelativeUrl, sizeBeforeMerge, sizeAfterMerge, sizeImpactMap }) => {
   if (typeof meta === "boolean") {
     return {
       showSizeImpact: true,
@@ -193,6 +199,7 @@ const metaToData = (meta, { fileRelativeUrl, sizeBeforeMerge, sizeAfterMerge }) 
       fileRelativeUrl,
       sizeBeforeMerge,
       sizeAfterMerge,
+      sizeImpactMap,
     })
     const { formatFileRelativeUrl } = meta
     return {
@@ -207,7 +214,10 @@ const metaToData = (meta, { fileRelativeUrl, sizeBeforeMerge, sizeAfterMerge }) 
   }
 }
 
-const showSizeImpactGetter = (meta, { fileRelativeUrl, sizeBeforeMerge, sizeAfterMerge }) => {
+const showSizeImpactGetter = (
+  meta,
+  { fileRelativeUrl, sizeBeforeMerge, sizeAfterMerge, sizeImpactMap },
+) => {
   const { showSizeImpact } = meta
 
   if (typeof showSizeImpact === "undefined") {
@@ -223,6 +233,7 @@ const showSizeImpactGetter = (meta, { fileRelativeUrl, sizeBeforeMerge, sizeAfte
       fileRelativeUrl,
       sizeBeforeMerge,
       sizeAfterMerge,
+      sizeImpactMap,
     })
   }
 

@@ -25,7 +25,7 @@
     "/index.js"
   ],
   "scripts": {
-    "eslint-check": "node ./node_modules/eslint/bin/eslint.js .",
+    "eslint-check": "node ./node_modules/eslint/bin/eslint.js . --ext=.js,.mjs",
     "generate-importmap": "node ./script/importmap/generate_importmap.mjs",
     "generate-file-size-report": "node ./script/file_size/generate_file_size_report.mjs --local",
     "generate-comment-snapshot-file": "node ./test/comment/generate_comment_snapshot_file.mjs",

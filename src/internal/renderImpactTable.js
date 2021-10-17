@@ -184,23 +184,28 @@ const renderSizeImpactTableBody = ({
   return renderTableLines(lines)
 }
 
-const fileAbstractRelativeUrlFromFileImpact = ({ beforeMerge, afterMerge }) => {
-  if (afterMerge) {
-    return afterMerge.manifestKey || afterMerge.relativeUrl
-  }
-  return beforeMerge.manifestKey || beforeMerge.relativeUrl
+const fileAbstractRelativeUrlFromFileImpact = ({
+  manifestKeyBeforeMerge,
+  relativeUrlBeforeMerge,
+  manifestKeyAfterMerge,
+  relativeUrlAfterMerge,
+}) => {
+  return (
+    manifestKeyAfterMerge ||
+    relativeUrlAfterMerge ||
+    manifestKeyBeforeMerge ||
+    relativeUrlBeforeMerge
+  )
 }
 
-const renderSizeImpactTableFooter = (
+const renderSizeImpactTableFooter = ({
   fileByFileImpact,
-  {
-    transformationKeys,
-    formatFileSizeImpactCell,
-    formatEmojiCell,
-    groupSizeMapBeforeMerge,
-    groupSizeMapAfterMerge,
-  },
-) => {
+  transformationKeys,
+  formatFileSizeImpactCell,
+  formatEmojiCell,
+  groupSizeMapBeforeMerge,
+  groupSizeMapAfterMerge,
+}) => {
   const footerLines = []
 
   const fileCount = Object.keys(fileByFileImpact).length
