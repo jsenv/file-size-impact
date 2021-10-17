@@ -1,21 +1,17 @@
 import { parentPort } from "node:worker_threads"
-import { memoryUsage } from "node:process"
 
-global.gc()
-const beforeHeapUsed = memoryUsage().heapUsed
-const beforeMs = Date.now()
+parentPort.on("message", async ({ fileSizeModuleUrl }) => {
+  const { generateFileSizeReport } = await import(fileSizeModuleUrl)
 
-let namespace = await import(`../../../main.js`)
+  if (typeof generateFileSizeReport !== "function") {
+    throw new TypeError(
+      `generateFileSizeReport export must be a function, got ${generateFileSizeReport}`,
+    )
+  }
 
-const afterMs = Date.now()
-const afterHeapUsed = memoryUsage().heapUsed
-// eslint-disable-next-line no-unused-vars
-namespace = null
-global.gc()
+  const fileSizeReport = await generateFileSizeReport()
 
-const msEllapsed = afterMs - beforeMs
-const heapUsed = afterHeapUsed - beforeHeapUsed
-parentPort.postMessage({
-  msEllapsed,
-  heapUsed,
+  parentPort.postMessage({
+    fileSizeReport,
+  })
 })
