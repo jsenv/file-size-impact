@@ -11,16 +11,6 @@
 
 This section shows pull request comment and how to read _group summary_ and _size impact_ sections.
 
-_Screenshot of a pull request comment_
-
-![screenshot of pull request comment](./docs/comment-collapsed.png)
-
-_Screenshot when comment is expanded_
-
-![screenshot of pull request comment expanded](./docs/comment-expanded.png)
-
-## Pull request comment legend
-
 ![legend of pull request comment](./docs/comment-legend.png)
 
 "_critical files (1/2)_" is a group summary, it translates into the following sentence:
