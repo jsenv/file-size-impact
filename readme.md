@@ -9,7 +9,7 @@
 
 # Pull request comment
 
-This section shows pull request comment and how to read it. Especially _group summary_ and _size impact_ sections.
+This section shows pull request comment and how to read it.
 
 ![legend of pull request comment](./docs/comment_legend.png)
 
