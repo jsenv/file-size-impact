@@ -1,8 +1,6 @@
-/**
- *
+/*
  * This file uses "@jsenv/eslint-config" to configure ESLint
- * https://github.com/jsenv/jsenv-eslint-config#eslint-config
- *
+ * See https://github.com/jsenv/eslint-config#eslint-config----
  */
 
 const {
@@ -17,10 +15,18 @@ const {
 const eslintConfig = composeEslintConfig(
   eslintConfigBase,
 
+  // use "@babel/eslint-parser" until top level await is supported by ESLint default parser
+  {
+    parser: "@babel/eslint-parser",
+    parserOptions: {
+      requireConfigFile: false,
+    },
+  },
+
   // Files in this repository are all meant to be executed in Node.js
   // and we want to tell this to ESLint.
-  // As a result ESLint can consider `window` as undefined and `global`
-  // as an existing global variable.
+  // As a result ESLint can consider `window` as undefined
+  // and `global` as an existing global variable.
   {
     env: {
       node: true,
@@ -31,7 +37,6 @@ const eslintConfig = composeEslintConfig(
   {
     rules: {
       ...jsenvEslintRules,
-      "valid-jsdoc": ["off"],
     },
   },
 
@@ -41,13 +46,14 @@ const eslintConfig = composeEslintConfig(
     settings: {
       "import/resolver": {
         // Tell ESLint to use the importmap to resolve imports.
-        // Read more in https://github.com/jsenv/jsenv-node-module-import-map#Configure-vscode-and-eslint-for-importmap
+        // Read more in https://github.com/jsenv/importmap-node-module#Configure-vscode-and-eslint-for-importmap
         "@jsenv/importmap-eslint-resolver": {
           projectDirectoryUrl: __dirname,
-          importMapFileRelativeUrl: "./importmap.dev.importmap",
+          importMapFileRelativeUrl: "./node_resolution.importmap",
           node: true,
         },
       },
+      "import/extensions": [".js", ".mjs"],
     },
     rules: jsenvEslintRulesForImport,
   },
@@ -60,6 +66,7 @@ const eslintConfig = composeEslintConfig(
       __filename: "off",
       __dirname: "off",
       require: "off",
+      exports: "off",
     },
     overrides: [
       {
@@ -72,6 +79,7 @@ const eslintConfig = composeEslintConfig(
           __filename: true,
           __dirname: true,
           require: true,
+          exports: true,
         },
 
         // inside *.cjs files, use commonjs module resolution
