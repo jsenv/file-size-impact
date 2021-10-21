@@ -2,12 +2,12 @@ import { assert } from "@jsenv/assert"
 import { resolveUrl, ensureEmptyDirectory, writeFile, writeDirectory } from "@jsenv/filesystem"
 import { createCancellationToken } from "@jsenv/cancellation"
 
-import { getFileSizeReport, raw } from "@jsenv/file-size-impact"
+import { generateFileSizeReport, raw } from "@jsenv/file-size-impact"
 
 const transformations = { raw }
 const tempDirectoryUrl = resolveUrl("./temp/", import.meta.url)
 const test = (params) => {
-  return getFileSizeReport({
+  return generateFileSizeReport({
     cancellationToken: createCancellationToken(),
     ...params,
   })

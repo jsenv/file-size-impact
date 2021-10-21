@@ -4,5 +4,5 @@ await reportFileSizeImpact({
   ...readGitHubWorkflowEnv(),
   logLevel: "debug",
   buildCommand: null,
-  fileSizeModulePath: "./script/file_size/generate_file_size_report.mjs",
+  fileSizeReportModulePath: "./script/file_size/generate_file_size_report.mjs#fileSizeReport",
 })

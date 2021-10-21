@@ -44,22 +44,25 @@ npm install --save-dev @jsenv/file-size-impact
 _generate_file_size_report.mjs_
 
 ```js
-import { getFileSizeReport } from "@jsenv/file-size-impact"
+import { generateFileSizeReport } from "@jsenv/file-size-impact"
 
-export const generateFileSizeReport = async () => {
-  return getFileSizeReport({
-    projectDirectoryUrl: new URL("./", import.meta.url),
-    trackingConfig: {
-      dist: {
-        "./dist/**/*": true,
-        "./dist/**/*.map": false,
-      },
+export const filesizeReport = await generateFileSizeReport({
+  log: process.argv.includes("--log"),
+  projectDirectoryUrl: new URL("./", import.meta.url),
+  trackingConfig: {
+    dist: {
+      "./dist/**/*": true,
+      "./dist/**/*.map": false,
     },
-  })
-}
+  },
+})
 ```
 
-At this stage, you could generate a file size report on your machine. For an example, see [script/file_size/generate_file_size_report.mjs#L14](./script/file_size/generate_file_size_report.mjs#L14).
+At this stage, you could generate a file size report on your machine with the following command.
+
+```console
+node ./generate_file_size_report.mjs --log
+```
 
 Now it's time to configure a workflow to compare file size reports before and after merging a pull request.
 
@@ -176,14 +179,14 @@ In order to analyse the impact of a pull request on file size the following step
 7. Analyse differences between the two file size reports
 8. Post or update comment in the pull request
 
-# getFileSizeReport
+# generateFileSizeReport
 
-_getFileSizeReport_ is an async function scanning filesystem to compute a list of file sizes and return these infos into an object.
+_generateFileSizeReport_ is an async function scanning filesystem to compute a list of file sizes and return these infos into an object.
 
 ```js
-import { getFileSizeReport, raw, gzip } from "@jsenv/file-size-impact"
+import { generateFileSizeReport, raw, gzip } from "@jsenv/file-size-impact"
 
-const fileSizeReport = await getFileSizeReport({
+const fileSizeReport = await generateFileSizeReport({
   projectDirectoryUrl: new URL("./", import.meta.url),
   trackingConfig: {
     dist: {
@@ -204,9 +207,9 @@ _trackingConfig_ values are objects associating a pattern to a value. This objec
 For example you can create two groups named _"critical files"_ and _"remaining files"_ like this:
 
 ```js
-import { getFileSizeReport } from "@jsenv/file-size-impact"
+import { generateFileSizeReport } from "@jsenv/file-size-impact"
 
-await getFileSizeReport({
+await generateFileSizeReport({
   trackingConfig: {
     "critical files": {
       "./dist/main.js": true,
@@ -231,9 +234,9 @@ _transformations_ parameter is an object used to transform files content before 
 You can use this parameter to track file size after gzip compression.
 
 ```js
-import { getFileSizeReport, raw, gzip, brotli } from "@jsenv/file-size-impact"
+import { generateFileSizeReport, raw, gzip, brotli } from "@jsenv/file-size-impact"
 
-await getFileSizeReport({
+await generateFileSizeReport({
   transformations: { raw, gzip, brotli },
 })
 ```
@@ -245,9 +248,9 @@ _raw_, _gzip_ and _brotli_ compression can be enabled this way.
 It's also possible to control compression level.
 
 ```js
-import { getFileSizeReport, raw, gzip } from "@jsenv/file-size-impact"
+import { generateFileSizeReport, raw, gzip } from "@jsenv/file-size-impact"
 
-await getFileSizeReport({
+await generateFileSizeReport({
   transformations: {
     raw,
     gzip7: (buffer) => gzip(buffer, { level: 7 }),
@@ -259,9 +262,9 @@ await getFileSizeReport({
 Finally _transformations_ can be used to add custom _transformations_.
 
 ```js
-import { getFileSizeReport, raw, gzip, brotli } from "@jsenv/file-size-impact"
+import { generateFileSizeReport, raw, gzip, brotli } from "@jsenv/file-size-impact"
 
-await getFileSizeReport({
+await generateFileSizeReport({
   transformations: {
     raw,
     trim: (buffer) => String(buffer).trim(),

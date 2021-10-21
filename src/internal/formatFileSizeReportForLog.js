@@ -1,6 +1,6 @@
-import { formatSize } from "./internal/formatSize.js"
+import { formatSize } from "./formatSize.js"
 
-export const logFileSizeReport = (fileSizeReport) => {
+export const formatFileSizeReportForLog = (fileSizeReport) => {
   const { groups } = fileSizeReport
 
   const groupMessages = Object.keys(groups).map((groupName) => {
@@ -32,5 +32,5 @@ ${groupMessages.join(`
 `)}
 `
 
-  console.log(message)
+  return message
 }

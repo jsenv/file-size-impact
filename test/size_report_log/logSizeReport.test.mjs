@@ -1,7 +1,8 @@
-import { getFileSizeReport, logFileSizeReport } from "@jsenv/file-size-impact"
+import { generateFileSizeReport } from "@jsenv/file-size-impact"
 
-const fileSizeReport = await getFileSizeReport({
+await generateFileSizeReport({
   projectDirectoryUrl: new URL("./", import.meta.url),
+  log: true,
   trackingConfig: {
     "first group": {
       "./dist/**/*.js": true,
@@ -13,5 +14,3 @@ const fileSizeReport = await getFileSizeReport({
     },
   },
 })
-
-logFileSizeReport(fileSizeReport)

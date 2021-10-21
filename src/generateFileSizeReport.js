@@ -10,9 +10,11 @@ import {
 import { transform as rawTransform } from "./rawTransformation.js"
 import { jsenvTrackingConfig } from "./jsenvTrackingConfig.js"
 import { applyTrackingConfig } from "./internal/applyTrackingConfig.js"
+import { formatFileSizeReportForLog } from "./internal/formatFileSizeReportForLog.js"
 
-export const getFileSizeReport = async ({
+export const generateFileSizeReport = async ({
   cancellationToken,
+  log,
   logLevel,
   projectDirectoryUrl,
   trackingConfig = jsenvTrackingConfig,
@@ -58,6 +60,10 @@ export const getFileSizeReport = async ({
   const fileSizeReport = {
     transformationKeys: Object.keys(transformations),
     groups,
+  }
+
+  if (log) {
+    logger.info(formatFileSizeReportForLog(fileSizeReport))
   }
 
   return fileSizeReport

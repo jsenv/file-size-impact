@@ -1,6 +1,6 @@
 {
   "name": "@jsenv/file-size-impact",
-  "version": "11.0.2",
+  "version": "12.0.0",
   "description": "Add files size impact into pull requests",
   "license": "MIT",
   "repository": {
@@ -27,7 +27,7 @@
   "scripts": {
     "eslint-check": "node ./node_modules/eslint/bin/eslint.js . --ext=.js,.mjs",
     "generate-importmap": "node ./script/importmap/generate_importmap.mjs",
-    "measure-file-sizes": "node ./script/file_size/generate_file_size_report.mjs --local",
+    "measure-file-sizes": "node ./script/file_size/generate_file_size_report.mjs --log",
     "generate-comment-snapshot-file": "node ./test/comment/generate_comment_snapshot_file.mjs",
     "test": "node ./script/test/test.mjs",
     "test-with-coverage": "npm run test -- --coverage",
@@ -39,9 +39,10 @@
     "postpublish": "node ./script/publish/restore_postinstall.mjs"
   },
   "dependencies": {
+    "@jsenv/dynamic-import-worker": "1.0.0",
+    "@jsenv/filesystem": "2.3.1",
     "@jsenv/github-pull-request-impact": "1.6.4",
     "@jsenv/logger": "4.0.1",
-    "@jsenv/filesystem": "2.2.0",
     "pretty-bytes": "5.6.0"
   },
   "devDependencies": {
@@ -50,7 +51,7 @@
     "@jsenv/assert": "2.3.2",
     "@jsenv/cancellation": "3.0.0",
     "@jsenv/codecov-upload": "3.5.0",
-    "@jsenv/core": "23.0.2",
+    "@jsenv/core": "23.0.5",
     "@jsenv/eslint-config": "16.0.8",
     "@jsenv/filesystem": "2.2.0",
     "@jsenv/github-release-package": "1.2.3",
