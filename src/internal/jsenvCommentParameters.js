@@ -108,7 +108,13 @@ export const jsenvCommentParameters = {
 const formatSizeImpactAsPercentage = ({ sizeBeforeMerge, sizeAfterMerge }) => {
   const sizeDiff = sizeAfterMerge - sizeBeforeMerge
   const sizeDiffRatio =
-    sizeBeforeMerge === 0 ? 1 : sizeAfterMerge === 0 ? -1 : sizeDiff / sizeBeforeMerge
+    sizeDiff === 0
+      ? 0
+      : sizeBeforeMerge === 0
+      ? 1
+      : sizeAfterMerge === 0
+      ? -1
+      : sizeDiff / sizeBeforeMerge
   const sizeDiffAsPercentage = sizeDiffRatio * 100
   const sizeDiffAsPercentageFormatted = `${sizeDiffAsPercentage < 0 ? `-` : "+"}${Math.abs(
     limitDecimals(sizeDiffAsPercentage, 2),

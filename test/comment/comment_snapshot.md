@@ -523,8 +523,8 @@
       </tr>
       <tr>
         <td nowrap>0.js</td>
-        <td nowrap>0 B (0 B / +100%)</td>
-        <td nowrap>0 B (0 B / +100%)</td>
+        <td nowrap>0 B (0 B / +0%)</td>
+        <td nowrap>0 B (0 B / +0%)</td>
         <td>:ghost:</td>
       </tr>
       <tr>
