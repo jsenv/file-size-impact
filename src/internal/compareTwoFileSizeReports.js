@@ -1,4 +1,6 @@
-import { resolveUrl, comparePathnames, urlToRelativeUrl } from "@jsenv/filesystem"
+import { comparePathnames } from "@jsenv/filesystem"
+
+import { manifestToMappings } from "./manifest.js"
 
 export const compareTwoFileSizeReports = ({
   afterMergeFileSizeReport,
@@ -144,31 +146,6 @@ const compareTwoGroups = (beforeMergeGroup, afterMergeGroup) => {
     tracking: afterMergeGroup.tracking,
     fileImpactMap,
   }
-}
-
-const ABSTRACT_DIRECTORY_URL = "file:///directory/"
-
-const manifestToMappings = (manifestMap) => {
-  const mappings = {}
-  Object.keys(manifestMap).forEach((manifestRelativeUrl) => {
-    const manifest = manifestMap[manifestRelativeUrl]
-    const manifestAbstractUrl = resolveUrl(manifestRelativeUrl, ABSTRACT_DIRECTORY_URL)
-    Object.keys(manifest).forEach((manifestKey) => {
-      const manifestValue = manifest[manifestKey]
-      const manifestKeyAsAbstractUrl = resolveUrl(manifestKey, manifestAbstractUrl)
-      const manifestValueAsAbstractUrl = resolveUrl(manifestValue, manifestAbstractUrl)
-      const manifestKeyAsRelativeUrl = urlToRelativeUrl(
-        manifestKeyAsAbstractUrl,
-        ABSTRACT_DIRECTORY_URL,
-      )
-      const manifestValueAsRelativeUrl = urlToRelativeUrl(
-        manifestValueAsAbstractUrl,
-        ABSTRACT_DIRECTORY_URL,
-      )
-      mappings[manifestKeyAsRelativeUrl] = manifestValueAsRelativeUrl
-    })
-  })
-  return mappings
 }
 
 const manifestKeyFromRelativeUrl = (relativeUrl, mappings) => {
