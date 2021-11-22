@@ -1,6 +1,6 @@
 import { comparePathnames } from "@jsenv/filesystem"
 
-import { manifestToMappings } from "./manifest.js"
+import { manifestToMappings, manifestKeyFromRelativeUrl } from "./manifest.js"
 
 export const compareTwoFileSizeReports = ({
   afterMergeFileSizeReport,
@@ -146,12 +146,6 @@ const compareTwoGroups = (beforeMergeGroup, afterMergeGroup) => {
     tracking: afterMergeGroup.tracking,
     fileImpactMap,
   }
-}
-
-const manifestKeyFromRelativeUrl = (relativeUrl, mappings) => {
-  return Object.keys(mappings).find((keyCandidate) => {
-    return mappings[keyCandidate] === relativeUrl
-  })
 }
 
 const sortFileStructure = (fileStructure) => {

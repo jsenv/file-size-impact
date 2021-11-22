@@ -1,5 +1,5 @@
 import { formatSize } from "./formatSize.js"
-import { manifestToMappings } from "./manifest.js"
+import { manifestToMappings, manifestKeyFromRelativeUrl } from "./manifest.js"
 
 export const formatFileSizeReportForLog = (fileSizeReport) => {
   const { groups } = fileSizeReport
@@ -9,7 +9,7 @@ export const formatFileSizeReportForLog = (fileSizeReport) => {
 
     const mappings = manifestToMappings(manifestMap)
     const fileMessages = Object.keys(fileMap).map((fileRelativeUrl) => {
-      const fileDisplayed = mappings[fileRelativeUrl] || fileRelativeUrl
+      const fileDisplayed = manifestKeyFromRelativeUrl(fileRelativeUrl, mappings) || fileRelativeUrl
       const file = fileMap[fileRelativeUrl]
       const { sizeMap } = file
       const sizeNames = Object.keys(sizeMap)

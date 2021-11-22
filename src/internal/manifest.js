@@ -24,3 +24,9 @@ export const manifestToMappings = (manifestMap) => {
 }
 
 const ABSTRACT_DIRECTORY_URL = "file:///directory/"
+
+export const manifestKeyFromRelativeUrl = (relativeUrl, mappings) => {
+  return Object.keys(mappings).find((keyCandidate) => {
+    return mappings[keyCandidate] === relativeUrl
+  })
+}
