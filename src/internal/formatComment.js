@@ -186,7 +186,7 @@ ${JSON.stringify(groupConfig, null, "  ")}
 }
 
 const formulateMergeImpact = ({ pullRequestBase, pullRequestHead }) => {
-  return `<p>Merging <em>${pullRequestHead}</em> into <em>${pullRequestBase}</em> impact files as follow:</p>`
+  return `<p>Impact on file sizes when merging <em>${pullRequestHead}</em> into <em>${pullRequestBase}</em>.</p>`
 }
 
 const metaToData = (meta, { fileRelativeUrl, sizeBeforeMerge, sizeAfterMerge, sizeImpactMap }) => {
