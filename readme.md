@@ -46,7 +46,7 @@ _generate_file_size_report.mjs_
 ```js
 import { generateFileSizeReport } from "@jsenv/file-size-impact"
 
-export const filesizeReport = await generateFileSizeReport({
+export const fileSizeReport = await generateFileSizeReport({
   log: process.argv.includes("--log"),
   projectDirectoryUrl: new URL("./", import.meta.url),
   trackingConfig: {
