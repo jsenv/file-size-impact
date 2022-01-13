@@ -118,9 +118,11 @@ import { reportFileSizeImpact, readGitHubWorkflowEnv } from "@jsenv/file-size-im
 await reportFileSizeImpact({
   ...readGitHubWorkflowEnv(),
   buildCommand: "npm run dist",
-  fileSizeReportModulePath: "./generate_file_size_report.mjs",
+  fileSizeReportModulePath: "./generate_file_size_report.mjs#fileSizeReport",
 })
 ```
+
+where `fileSizeReport` is the name of the export from _generate_file_size_report.mjs_.
 
 ## Other tools
 
@@ -320,7 +322,7 @@ await reportFileSizeImpact({
 
   installCommand: "npm install",
   buildCommand: "npm run build",
-  fileSizeReportModulePath: "./generate_file_size_report.mjs",
+  fileSizeReportModulePath: "./generate_file_size_report.mjs#fileSizeReport",
 
   filesOrdering: "size_impact",
 })
